@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Price Assistant Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@500;600&family=Work+Sans:wght@500;600;700;800&display=swap">
+<style>
+  :root {
+    --red: #BE0000; --red-dark: #A00000; --ink: #303133; --ink-2: #4c4c4c;
+    --bg: #f7f7f7; --line: #e5e5e5; --dark: #1b1d1f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Open Sans", system-ui, sans-serif; color: #000; background: var(--bg); }
+  a { color: var(--red-dark); }
+
+  .demo-strip {
+    background: var(--dark); color: #d9d9d9; font: 600 11px/1 "Poppins", sans-serif; letter-spacing: .08em;
+    text-transform: uppercase; padding: 9px 16px; display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+  }
+  .demo-strip b { color: #fff; }
+  .demo-strip a { color: #ff8a8a; text-decoration: none; }
+  .demo-strip a:hover { text-decoration: underline; }
+
+  header.site {
+    position: sticky; top: 0; z-index: 50; background: #fff; height: 74px; display: flex; align-items: center;
+    padding: 0 30px; gap: 24px; box-shadow: 0 1px 0 rgba(0,0,0,.06);
+  }
+  .logo img { height: 52px; display: block; }
+  nav.main { margin-left: auto; display: flex; gap: 32px; align-items: center; }
+  nav.main a { font: 600 12px/1 "Poppins", sans-serif; letter-spacing: .05em; color: var(--ink); text-decoration: none; text-transform: uppercase; }
+  nav.main a:hover { color: var(--red); }
+  .search-btn { border: 0; background: none; width: 22px; height: 22px; padding: 0; cursor: pointer; color: var(--ink); }
+  .search-btn:hover { color: var(--red); }
+  .menu-btn { display: none; }
+
+  .alert { background: var(--red); color: #fff; text-align: center; font: 500 24px/1.3 "Work Sans", sans-serif; padding: 8px 16px; }
+
+  .hero {
+    min-height: 515px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    padding: 60px 24px; color: #fff;
+    background: linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.25)), url("https://www.price.utah.edu/wp-content/uploads/2024/05/Price-Building-Header_1200px.jpg") center/cover, #5a6470;
+  }
+  .hero h1 { font: 800 clamp(30px, 4.6vw, 60px)/1.2 "Work Sans", sans-serif; margin: 0 0 32px; text-shadow: 0 2px 12px rgba(0,0,0,.45); max-width: 1250px; }
+  .btn-red { background: var(--red); color: #fff; border-radius: 4px; padding: 15px 30px; font: 600 14px/1 "Poppins", sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+  .btn-red:hover { background: var(--red-dark); }
+
+  .depts { display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; }
+  .dept { padding: 36px 30px 40px; text-align: center; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .dept svg { width: 64px; height: 64px; color: var(--red); margin-bottom: 18px; }
+  .dept h3 { font: 500 20px/1.4 "Work Sans", sans-serif; color: var(--ink); margin: 0 0 12px; letter-spacing: .01em; }
+  .dept p { color: #4c4c4c; font-size: 16px; line-height: 1.75; margin: 0; }
+  .dept ul { list-style: none; margin: 0; padding: 0; line-height: 1.75; }
+
+  .news { padding: 56px 30px 80px; }
+  .news h2 { font: 500 34px/1.2 "Work Sans", sans-serif; color: var(--ink); margin: 0; }
+  .news .rule { width: 90px; height: 3px; background: var(--red); margin: 18px 0 22px; }
+  .news .lede { color: #4c4c4c; max-width: 760px; line-height: 1.75; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 30px; }
+  .card { background: #fff; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.08); overflow: hidden; display: flex; flex-direction: column; }
+  .card .thumb { height: 150px; background: linear-gradient(135deg, #2a2d30, #5b2020); display: flex; align-items: flex-end; padding: 14px; }
+  .card .thumb span { font: 600 10px/1 "Poppins", sans-serif; letter-spacing: .12em; color: #fff; text-transform: uppercase; background: var(--red); padding: 6px 8px; border-radius: 2px; }
+  .card .body { padding: 18px 16px 24px; }
+  .card time { font: 600 13px/1 "Work Sans", sans-serif; color: var(--red-dark); text-decoration: underline; }
+  .card a.t { display: block; margin-top: 14px; font: 500 16px/1.25 "Work Sans", sans-serif; color: var(--red-dark); }
+  .skeleton { height: 18px; background: #eee; border-radius: 4px; margin-top: 14px; }
+
+  .addr { background: var(--red); color: #fff; font: 500 16px/1 "Work Sans", sans-serif; padding: 17px 30px; width: min(648px, 100%); text-align: center; }
+  footer { background: var(--dark); color: #fff; }
+  .foot-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; padding: 36px 30px 40px; }
+  footer h4 { font: 500 18px/1 "Work Sans", sans-serif; margin: 12px 0 22px; }
+  footer ul { list-style: none; padding: 0; margin: 0; line-height: 1.75; font-family: "Work Sans", sans-serif; }
+  footer a { color: #fff; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .cal li { display: flex; background: #fff; color: var(--ink); border-bottom: 1px solid #eee; font-size: 13px; }
+  .cal li b { background: var(--red); color: #fff; width: 68px; flex: none; padding: 10px; font: 600 16px/1 "Work Sans", sans-serif; }
+  .cal li span { padding: 10px; }
+  .legal { text-align: center; padding: 28px 16px 40px; font-family: "Work Sans", sans-serif; background: #141618; }
+  .legal img { height: 74px; margin: 0 22px 24px; vertical-align: middle; }
+
+  @media (max-width: 1100px) {
+    nav.main { display: none; }
+    .menu-btn { display: block; margin-left: auto; border: 0; background: none; font: 600 12px "Poppins"; letter-spacing: .08em; }
+    .depts, .cards { grid-template-columns: repeat(2, 1fr); }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    header.site { padding: 0 16px; }
+    .logo img { height: 40px; }
+    .alert { font-size: 16px; }
+    .hero { min-height: 380px; }
+    .depts, .cards, .foot-grid { grid-template-columns: 1fr; }
+    .news { padding: 40px 16px 60px; }
+    .foot-grid { padding: 30px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-strip">
+  <span><b>Local demo</b> · AI assistant proof of concept · not the official site</span>
+  <a href="/designs">View design concepts →</a>
+</div>
+
+<header class="site">
+  <a class="logo" href="https://www.price.utah.edu/" aria-label="Price College of Engineering home">
+    <img src="https://www.price.utah.edu/wp-content/uploads/2023/01/ENG_Logo_Price_Final_HEX.svg" alt="John and Marcia Price College of Engineering, The University of Utah">
+  </a>
+  <nav class="main" aria-label="Main">
+    <a href="#">College</a><a href="#">Departments</a><a href="#">People</a><a href="#">Students</a><a href="#">Research</a>
+    <a href="#">Faculty Resources</a><a href="#">Alumni</a><a href="#">Outreach</a><a href="#">Donate</a>
+    <button class="search-btn" aria-label="Search (opens the AI assistant)" title="Search: opens the AI assistant" onclick="window.PriceAssistant && PriceAssistant.open()">
+      <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </nav>
+  <button class="menu-btn" onclick="window.PriceAssistant && PriceAssistant.open()">MENU</button>
+</header>
+
+<div class="alert">Click for Federal Funding Updates and Resources for the Research Community</div>
+
+<section class="hero">
+  <h1>Progress Continues! See the Construction of the<br>John and Marcia Price Computing and Engineering Building!</h1>
+  <a class="btn-red" href="https://www.price.utah.edu/jmpceb-live-feed">Watch the Progress Live!</a>
+</section>
+
+<section class="depts" aria-label="Departments">
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><path fill="currentColor" d="M32 56 9.5 34.2A13.5 13.5 0 0 1 32 15.6a13.5 13.5 0 0 1 22.5 18.6Z"/><path d="M8 33h14l4-8 6 16 5-12 3 4h16" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/></svg>
+    <h3>Biomedical Engineering</h3><p>A rich interdisciplinary department comprising science, engineering and medicine.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><path fill="currentColor" d="M33 6c2 9 12 14 12 26a13 13 0 0 1-26 0c0-7 4-10 6-15 1 5 3 7 5 8 1-6-1-12 3-19Z"/><rect x="16" y="54" width="32" height="4" fill="currentColor"/></svg>
+    <h3>Chemical Engineering</h3><p>Chemical engineering education based on a hands-on curriculum and scale simulations.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><path fill="currentColor" d="M24 10h16l14 44H38l-2-8h-8l-2 8H10Zm5 26h6l-3-12Z"/></svg>
+    <h3>Civil &amp; Environmental Engineering</h3><p>Our graduates create all aspects of the future environmentally.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><path d="M22 16a20 20 0 1 0 20 0" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M32 8v22" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>
+    <h3>Electrical &amp; Computer Engineering</h3><p>We make advances using electrical systems, connect people and develop novel sensors.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M32 12 56 24 32 36 8 24Z"/><path d="m8 32 24 12 24-12M8 40l24 12 24-12"/></g></svg>
+    <h3>Materials Science &amp; Engineering</h3><p>Providing an integrated discipline of chemistry, physics and engineering.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><g fill="currentColor"><circle cx="24" cy="36" r="9"/><circle cx="44" cy="20" r="6"/><circle cx="44" cy="46" r="5"/></g><g stroke="currentColor" stroke-width="5"><path d="M24 20v32M8 36h32M13 25l22 22M13 47l22-22"/></g></svg>
+    <h3>Mechanical Engineering</h3><p>If it rolls, flies, flows or produces sound, a mechanical engineer probably designed it.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><rect x="12" y="14" width="40" height="28" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><path d="M6 48h52l-3 5H9Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg>
+    <h3>Kahlert School of Computing</h3><p>A top-tier computer science curriculum preparing graduates for industry and academia.</p>
+  </div>
+  <div class="dept">
+    <svg viewBox="0 0 64 64"><path d="M24 24h16v16H24zM24 24v-6a6 6 0 1 0-6 6h6Zm16 0v-6a6 6 0 1 1 6 6h-6ZM24 40v6a6 6 0 1 1-6-6h6Zm16 0v6a6 6 0 1 0 6-6h-6Z" fill="none" stroke="currentColor" stroke-width="4.5"/></svg>
+    <h3>Other Degree Programs</h3>
+    <ul><li><a href="#">Computer Engineering</a></li><li><a href="#">Construction Engineering</a></li><li><a href="#">Geological Engineering</a></li><li><a href="#">Mining Engineering</a></li><li><a href="#">Nuclear Engineering</a></li><li><a href="#">Robotics</a></li></ul>
+  </div>
+</section>
+
+<section class="news">
+  <h2>Recent News From The College</h2>
+  <div class="rule"></div>
+  <p class="lede">Our students and faculty are constantly doing amazing things. Read about the latest in student successes, faculty research, and more. These headlines come from the chatbot's local index of the site.</p>
+  <div class="cards" id="news">
+    <div class="card"><div class="thumb"></div><div class="body"><div class="skeleton"></div><div class="skeleton"></div></div></div>
+    <div class="card"><div class="thumb"></div><div class="body"><div class="skeleton"></div><div class="skeleton"></div></div></div>
+    <div class="card"><div class="thumb"></div><div class="body"><div class="skeleton"></div><div class="skeleton"></div></div></div>
+    <div class="card"><div class="thumb"></div><div class="body"><div class="skeleton"></div><div class="skeleton"></div></div></div>
+  </div>
+</section>
+
+<div class="addr">72 Central Campus Dr. Salt Lake City, UT 84112</div>
+<footer>
+  <div class="foot-grid">
+    <div>
+      <h4>Calendar</h4>
+      <ul class="cal" id="cal"><li><b>…</b><span>Loading the college calendar</span></li></ul>
+    </div>
+    <div><h4>College Links</h4><ul><li><a href="#">Academic Advising</a></li><li><a href="#">Corporate Partners</a></li><li><a href="#">Directory</a></li><li><a href="#">Give</a></li><li><a href="#">How to Apply</a></li><li><a href="#">Research Centers</a></li></ul></div>
+    <div><h4>Campus Links</h4><ul><li><a href="#">A-Z Index</a></li><li><a href="#">AnswerU</a></li><li><a href="#">Careers</a></li><li><a href="#">Map</a></li><li><a href="#">Events Calendar</a></li><li><a href="#">Academic Calendar</a></li></ul></div>
+    <div><h4>Contact</h4><ul><li>72 Central Campus Dr.</li><li>Room 1650 WEB</li><li>Salt Lake City, UT 84112</li><li style="margin-top:14px">Phone: 801-581-6911</li><li>Email: contact@coe.utah.edu</li></ul></div>
+  </div>
+  <div class="legal">
+    <div>
+      <img src="https://www.price.utah.edu/wp-content/uploads/2017/12/UU-Logo-CTR_RED-WhiteText.svg" alt="University of Utah">
+      <img src="https://www.price.utah.edu/wp-content/uploads/2017/12/price-logo-stacked-white.svg" alt="Price College of Engineering">
+    </div>
+    © 2026 The John and Marcia Price College of Engineering at the University of Utah · local demo copy
+  </div>
+</footer>
+
+<script>
+  // Recent headlines from the local index (the same data the assistant searches).
+  fetch("/api/news?n=4").then((r) => r.json()).then((posts) => {
+    if (!posts.length) return;
+    const fmt = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
+    const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    document.getElementById("news").innerHTML = posts.map((p) => `
+      <article class="card"><div class="thumb"><span>News</span></div><div class="body">
+        <time>${fmt(p.date)}</time><a class="t" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>
+      </div></article>`).join("");
+  }).catch(() => {});
+
+  // Footer calendar: live from the college's Trumba calendar (the same feed the assistant's get_events tool reads).
+  fetch("/api/events?days=30&limit=5").then((r) => r.json()).then((events) => {
+    const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const day = (iso) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    document.getElementById("cal").innerHTML = events.length
+      ? events.map((e) => `<li><b>${day(e.start)}</b><span><a href="${esc(e.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(e.title)}</a></span></li>`).join("")
+      : "<li><b>—</b><span>No upcoming events</span></li>";
+  }).catch(() => { document.getElementById("cal").innerHTML = "<li><b>—</b><span>Calendar unavailable</span></li>"; });
+</script>
+<script src="/widget.js" defer></script>
+</body>
+</html>

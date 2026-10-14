@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+# Scraped data is rebuilt with `python -m app.sync build`
+data/
+evals/results/

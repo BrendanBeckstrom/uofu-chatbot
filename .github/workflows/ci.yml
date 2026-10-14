@@ -1,0 +1,47 @@
+# Runs on every pull request and every push to main. Merge only when this is green.
+# All checks are free: no API key, no university servers, about a minute.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Python code compiles
+        run: python -m compileall -q app evals tests
+
+      - name: Chat widget has no syntax errors
+        run: node --check web/widget.js
+
+      - name: Answer loop (scripted fake Claude, no API calls)
+        run: python -m tests.test_chat_loop
+
+      - name: Planning-document selection
+        run: python -m tests.test_documents
+
+      - name: Website sync (fake WordPress site)
+        run: python -m tests.test_sync
+
+      - name: Rate limits, tokens and spend cap
+        run: python -m tests.test_guard
+
+      - name: Usage report
+        run: python -m tests.test_analytics
+
+      - name: Eval graders accept good answers and reject empty ones
+        run: python -m evals.run selftest
