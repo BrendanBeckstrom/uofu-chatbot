@@ -173,7 +173,9 @@ The widget is a single file that renders inside a Shadow DOM, so it won't clash 
 <script src="https://YOUR-HOST/widget.js" defer></script>
 ```
 
-Optional attributes: `data-api` (backend origin), `data-open="true"`, `data-load-fonts="false"`. The page
+Optional attributes: `data-api` (backend origin), `data-open="true"`, `data-load-fonts="false"`, and
+`data-adobe-fonts="<project id>"` to use the University's brand fonts (Myriad Pro and Factoria) from its Adobe
+Fonts project. Colors follow the [University web guidelines](https://brand.utah.edu/digital/web-guidelines/). The page
 can also call `PriceAssistant.open()` or `PriceAssistant.ask("question")`. The demo wires the nav search icon
 to the assistant.
 
