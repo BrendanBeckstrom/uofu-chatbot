@@ -144,6 +144,7 @@ API failures are logged separately and never counted as wrong answers. Results a
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | how the code works, following one question from widget to answer |
 | [docs/MAKING_CHANGES.md](docs/MAKING_CHANGES.md) | recipes for common changes, and the pull-request routine |
 | [docs/SECURITY.md](docs/SECURITY.md) | scope, abuse and cost controls, research, open questions for the university |
+| [docs/DATA_PLAN.md](docs/DATA_PLAN.md) | what usage data to save, why, for how long, and how it maps to Firestore or AWS (draft) |
 | [CLAUDE.md](CLAUDE.md) | rules and commands for Claude Code sessions in this repo |
 
 ## Security, abuse and cost protection

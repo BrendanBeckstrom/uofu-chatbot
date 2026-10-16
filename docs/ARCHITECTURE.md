@@ -148,8 +148,8 @@ Every answer, decline and error adds one line to `data/usage.jsonl`:
 `python -m app.analytics --days 30` turns this into a report: people per day, questions, error rate, topics,
 the most-asked questions, and recent questions it couldn't fully answer (content to add or surface on the
 site). `--json` gives the same numbers for a dashboard. Eval runs log to their own results folder, so they
-don't count as visitors. When the app moves to a host, these lines can go to a database or Firestore
-instead; the report only needs the same fields.
+don't count as visitors. [DATA_PLAN.md](DATA_PLAN.md) is the plan for what to record once the app is
+hosted, with retention and a Firestore-or-AWS storage mapping.
 
 ## Data files
 
