@@ -178,10 +178,15 @@
     "must_include": [
       [
         "TA",
+        "TAs",
         "teaching assistant"
       ],
       [
-        "department"
+        "department",
+        "Mechanical Engineering",
+        "Civil",
+        "Biomedical",
+        "Kahlert"
       ]
     ],
     "reference": "Each department runs a tutoring program alongside TA office hours; check Canvas and your syllabus for TA hours, and ask your academic advisor for more support.",

@@ -6,6 +6,7 @@ import json
 import re
 import time
 import uuid
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
 from urllib.parse import urlparse
@@ -78,6 +79,11 @@ the results don't clearly answer the question, call search_site with different w
 program name, a synonym) and call fetch_page to read the most promising page in full. fetch_page can read \
 any utah.edu page, including links listed on a page you fetched.
 - Keep tool use proportionate: most questions need zero to two tool calls. Stop once you have what you need.
+- When someone needs an answer for their own situation (their credits, their plan, an exception), point \
+future students to the college's engineering advisers, who meet prospective students at info sessions \
+(https://www.price.utah.edu/future/request-information/info-sessions) and are listed at \
+https://www.price.utah.edu/academic-advisors, and point current students to their own department's \
+academic advisors, naming the department's advising contact or page when you find it.
 - If you can't find the answer, say so briefly and point to the most relevant page or contact: the \
 college office at contact@coe.utah.edu or 801-581-6911 (72 Central Campus Dr., Room 1650 WEB, Salt \
 Lake City), or a department advising office you found.
@@ -93,6 +99,8 @@ have changed, and point to the office that can confirm.
 can change, such as a person's role.
 - When pages disagree (one says applications are closed, another gives the next opening date), go with \
 the more recently updated page and link it.
+- Search excerpts are partial. Before telling someone that something is closed, unavailable or doesn't \
+exist, read the most recently updated relevant page in full with fetch_page.
 - Don't say how many items a list has unless a page you read shows the whole list.
 
 ## Degree planning
@@ -108,8 +116,8 @@ label. Check that the courses you list add up to the credit total printed for th
 the closest official plan, and explain what changes the timeline only as far as the documents say, such as \
 starting math level, transfer or AP credit, or a lighter course load.
 - You can't see their transcript or credits, so don't build a complete personal plan or promise a \
-graduation date. Close by suggesting they confirm with their department's academic advisor, and give the \
-advising contact or link when you found it.
+graduation date. Close by suggesting they confirm with an advisor: their department's academic advisor \
+for current students, or the college's engineering advisers for future students.
 
 ## Style
 - You're in a small chat window. Lead with the direct answer, then the key details: usually two to \
@@ -158,7 +166,8 @@ TOOLS = [
             "Read the current, live version of a University of Utah web page or PDF (any *.utah.edu URL). "
             "Returns the page's main text and the links on it. Use it for specifics such as "
             "requirements, deadlines, contacts or schedules, or to follow a link to a department site. "
-            "PDFs come back a few pages at a time; use `pages` to choose, e.g. the page a search result named."
+            "PDFs come back a few pages at a time: use `pages` for a page a search result named, or `find` to jump "
+            "to the pages about a topic."
         ),
         "eager_input_streaming": True,
         "input_schema": {
@@ -166,6 +175,9 @@ TOOLS = [
             "properties": {
                 "url": {"type": "string", "description": "Full https URL on a utah.edu domain"},
                 "pages": {"type": "string", "description": "PDFs only: page or range to read, like '2' or '3-5'"},
+                "find": {"type": "string",
+                         "description": "PDFs only: words to look for, like 'credit hours required'; returns the "
+                                        "best-matching pages instead of starting at page 1"},
             },
             "required": ["url"],
         },
@@ -259,10 +271,22 @@ def page_range(spec, total: int) -> list[int]:
     return nums
 
 
-def pdf_view(title: str, url: str, pages: dict[int, str], spec=None) -> str:
+def best_pages(pages: dict[int, str], find: str, n: int = 3) -> list[int]:
+    terms = set(tokenize(find, expand=True))
+    scored = []
+    for num, text in pages.items():
+        counts = Counter(tokenize(text))
+        score = sum(min(counts[t], 5) for t in terms) + 3 * sum(1 for t in terms if counts[t])
+        if score:
+            scored.append((score, num))
+    return sorted(num for _, num in sorted(scored, reverse=True)[:n])
+
+
+def pdf_view(title: str, url: str, pages: dict[int, str], spec=None, find=None) -> str:
     """A PDF a few pages at a time, so a 40-page handbook doesn't land in the context whole."""
     total = max(pages, default=0)
-    wanted = page_range(spec, total) or list(range(1, total + 1))
+    wanted = (page_range(spec, total) or (best_pages(pages, find) if isinstance(find, str) and find.strip() else [])
+              or list(range(1, total + 1)))
     out, shown, used = [], [], 0
     for n in wanted:
         text = pages.get(n, "")
@@ -271,8 +295,8 @@ def pdf_view(title: str, url: str, pages: dict[int, str], spec=None) -> str:
         out.append(f"[Page {n}]\n{text or '(no text on this page)'}")
         shown.append(n)
         used += len(text)
-    more = (f" Call fetch_page with pages='{shown[-1] + 1}-{min(total, shown[-1] + 3)}' for more, or "
-            "search_site to find the page you need.") if shown and shown[-1] < total else ""
+    more = (f" For other pages, call fetch_page with pages='{shown[-1] + 1}-{min(total, shown[-1] + 3)}' or with "
+            "find='topic words'.") if shown and shown[-1] < total else ""
     if not shown:
         return f"{title}\nURL: {url}\nThis PDF has no readable text."
     span = f"page {shown[0]}" if len(shown) == 1 else f"pages {shown[0]}-{shown[-1]}"
@@ -402,7 +426,7 @@ class ChatEngine:
             doc = self.index.lookup(url) if self.index else None
             if doc and doc["type"] == "pdf":
                 sess.titles.setdefault(doc["url"], doc["title"])
-                return pdf_view(doc["title"], doc["url"], split_pages(doc["text"]), args.get("pages")), False
+                return pdf_view(doc["title"], doc["url"], split_pages(doc["text"]), args.get("pages"), args.get("find")), False
             try:
                 page = await fetch_page(url)
             except FetchError as e:
@@ -416,7 +440,7 @@ class ChatEngine:
             sess.titles[page["url"]] = page["title"]
             sess.titles.setdefault(url, page["title"])
             if page.get("pages") is not None:
-                return pdf_view(page["title"], page["url"], page["pages"], args.get("pages")), False
+                return pdf_view(page["title"], page["url"], page["pages"], args.get("pages"), args.get("find")), False
             links = "\n".join(f"- {l['text']}: {l['url']}" for l in page["links"])
             return f"{page['title']}\nURL: {page['url']}\n\n{page['text']}\n\nLinks on this page:\n{links}", False
         if name == "get_events":

@@ -97,6 +97,8 @@ schedule" questions.
   - `pypdf` runs in layout mode, so a semester grid stays as "fall course | spring course" on one line.
   - Each page is stored with a `[Page N]` marker. A PDF is indexed page by page, so search results say
     which page matched, and `fetch_page` returns a few pages at a time instead of a whole 40-page handbook.
+    Claude can ask for specific pages (`pages: "9-11"`) or for the pages about a topic
+    (`find: "credit hours required"`), which saves a tool round on long handbooks.
   - **Degree plans** print each year's label ("Freshman year (28 credits)") beside the middle of its rows,
     so in flat text a year's first row lands above its label. `_label_plan_years` adds up the credits row
     by row to find where each year really starts, then writes a `[Freshman year (28 credits)]` heading

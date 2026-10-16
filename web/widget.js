@@ -6,7 +6,9 @@
  * Optional attributes:
  *   data-api="https://..."   API origin (defaults to wherever this script was loaded from)
  *   data-open="true"         open the panel on load
- *   data-load-fonts="false"  skip loading Work Sans / Open Sans / Poppins (the host page already has them)
+ *   data-load-fonts="false"  skip loading the fallback web fonts (the host page already has them)
+ *   data-adobe-fonts="abc1234"  the university's Adobe Fonts project ID, to use the brand fonts
+ *                               (Myriad Pro for text, Factoria for headings; brand.utah.edu/branding/typography)
  *
  * Everything renders inside a Shadow DOM so the host page's CSS can't leak in or out.
  */
@@ -39,12 +41,13 @@
   const P = "https://www.price.utah.edu";
   const CONTACTS = [
     { title: "Future students", items: [
-      ["Ask an Ambassador", `${P}/ambassadors`, "Current engineering students answer your questions"],
+      ["Talk with an engineering adviser", `${P}/future/request-information/info-sessions`, "Info sessions on majors, admissions and registration"],
+      ["Request information", `${P}/future/request-information`, "Get information sent to you"],
       ["Book a tour", `${P}/tours`, "See the engineering buildings in person"],
-      ["How to apply", `${P}/future/admissions`, "Steps for first-year and transfer students"],
+      ["Ask an Ambassador", `${P}/ambassadors`, "A current engineering student's perspective"],
     ] },
     { title: "Current students", items: [
-      ["Academic advisors", `${P}/academic-advisors`, "Find your department's advisor; they own your degree plan"],
+      ["Your department's advisors", `${P}/academic-advisors`, "They own your degree plan; find yours by department"],
       ["Tutoring resources", `${P}/tutoring-resources`, "TA hours and department tutoring"],
     ] },
   ];
@@ -71,12 +74,15 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 .root {
-  --red: #BE0000; --red-dark: #A00000; --red-deep: #7d0000; --red-tint: #fbeaea;
-  --ink: #303133; --ink-2: #4c4c4c; --muted: #6b6e72; --line: #e3e3e3;
-  --bg: #f7f7f7; --surface: #ffffff; --dark: #1b1d1f;
-  --head: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --body: "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --label: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* University of Utah core colors: Utah Red, Black, White, Zion Cinder Cone. Accents (Red Rocks,
+     Salt Flat Grey, Mountain Green, Wasatch Sunrise) only for small details, per brand.utah.edu. */
+  --red: #BE0000; --red-dark: #890000; --red-deep: #000000; --red-tint: #E2E6E6;
+  --ink: #000000; --ink-2: #000000; --muted: #707271; --line: #E2E6E6;
+  --bg: #ffffff; --surface: #ffffff; --dark: #000000; --focus: #000000;
+  --ok: #6CC24A; --warn: #FFB81D;
+  --head: "factoria", "Factoria", "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "myriad-pro", "Myriad Pro", "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --label: "myriad-pro", "Myriad Pro", "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
   --shadow: 0 24px 60px -12px rgba(27,29,31,.35), 0 4px 14px rgba(27,29,31,.12);
   font-family: var(--body); color: var(--ink); font-size: 15px; line-height: 1.55;
   position: fixed; right: 24px; bottom: 24px; z-index: 2147483000;
@@ -95,7 +101,7 @@ svg { width: 100%; height: 100%; display: block; }
 }
 .launcher:hover { background: var(--red-dark); transform: translateY(-2px); }
 .launcher:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, .send:focus-visible, .src:focus-visible, .act:focus-visible, .nudge-x:focus-visible, .steps-toggle:focus-visible {
-  outline: 3px solid #1a73e8; outline-offset: 2px;
+  outline: 3px solid var(--focus); outline-offset: 2px;
 }
 .launcher .ico { width: 24px; height: 24px; }
 .root[data-open="true"] .launcher { width: 54px; padding: 0; justify-content: center; }
@@ -133,12 +139,12 @@ svg { width: 100%; height: 100%; display: block; }
 .title { font-family: var(--head); font-weight: 600; font-size: 16px; line-height: 1.2; }
 .sub { font-size: 12px; opacity: .9; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap; }
 .sub-txt { overflow: hidden; text-overflow: ellipsis; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: #7CE38B; box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
-.dot.off { background: #ffd166; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
+.dot.off { background: var(--warn); }
 .icon-btn { width: 34px; height: 34px; padding: 8px; border-radius: 8px; color: #fff; opacity: .92; flex: none; }
 .icon-btn:hover { background: rgba(255,255,255,.16); opacity: 1; }
 
-.banner { background: #fff7e0; color: #6a4b00; font-size: 12.5px; padding: 8px 16px; border-bottom: 1px solid #f1e2b3; }
+.banner { background: var(--surface); color: var(--ink); font-size: 12.5px; padding: 8px 16px 8px 12px; border-left: 4px solid var(--warn); border-bottom: 1px solid var(--line); }
 
 .log { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
 .root[data-expanded="true"] .log { padding: 24px 12%; }
@@ -178,12 +184,12 @@ svg { width: 100%; height: 100%; display: block; }
 .contact > p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
 .card-title { font-family: var(--label); font-size: 10.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--red); }
-.card a { color: var(--red-dark); font-weight: 600; text-decoration: none; font-size: 14px; }
+.card a { color: var(--red); font-weight: 600; text-decoration: none; font-size: 14px; }
 .card a:hover { text-decoration: underline; }
 .card .c-note { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
 .card .line { font-size: 13.5px; color: var(--ink); }
-.card.support { background: var(--red-tint); border-color: #f0caca; }
-.tab:focus-visible, .seg:focus-visible, .card a:focus-visible { outline: 3px solid #1a73e8; outline-offset: 2px; }
+.card.support { border-left: 4px solid var(--red); }
+.tab:focus-visible, .seg:focus-visible, .card a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
 /* messages */
 .msg { display: flex; gap: 10px; max-width: 100%; animation: rise .22s ease both; }
@@ -195,19 +201,19 @@ svg { width: 100%; height: 100%; display: block; }
 .bot .bubble { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; color: var(--ink); }
 .bubble p { margin: 0 0 8px; } .bubble p:last-child { margin-bottom: 0; }
 .bubble ul, .bubble ol { margin: 4px 0 8px; padding-left: 20px; } .bubble li { margin: 3px 0; }
-.bubble a { color: var(--red-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-.bubble a:hover { color: var(--red); }
+.bubble a { color: var(--red); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.bubble a:hover { text-decoration-thickness: 2px; }
 .bubble strong { font-weight: 700; color: var(--dark); }
 .bubble h3, .bubble h4 { font-family: var(--head); font-size: 15px; margin: 10px 0 4px; color: var(--dark); }
 .bubble code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
-.bubble.error { background: #fff4f4; border-color: #f2c4c4; color: #8a1c1c; }
+.bubble.error { background: var(--surface); border-color: var(--red); color: var(--ink); }
 .cursor > :last-child::after, .cursor:empty::after { content: ""; display: inline-block; width: 7px; height: 15px; margin-left: 2px; vertical-align: -2px; background: var(--red); border-radius: 1px; animation: blink 1s steps(2) infinite; }
 
 /* live activity (what the bot is searching / reading) */
 .steps { font-size: 12.5px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
 .step { display: flex; align-items: center; gap: 8px; }
-.step .s-ico { width: 14px; height: 14px; flex: none; color: #2e8540; }
-.spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #e2c2c2; border-top-color: var(--red); animation: spin .8s linear infinite; flex: none; }
+.step .s-ico { width: 14px; height: 14px; flex: none; color: var(--muted); }
+.spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--red); animation: spin .8s linear infinite; flex: none; }
 .steps-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); align-self: flex-start; }
 .steps-toggle .chev { width: 14px; height: 14px; transition: transform .15s; }
 .steps-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
@@ -221,14 +227,14 @@ svg { width: 100%; height: 100%; display: block; }
   display: inline-flex; align-items: center; gap: 6px; max-width: 100%; background: var(--surface); border: 1px solid var(--line);
   border-radius: 999px; padding: 5px 11px 5px 8px; font-size: 12.5px; color: var(--ink); text-decoration: none;
 }
-.src:hover { border-color: var(--red); color: var(--red-dark); }
+.src:hover { border-color: var(--red); color: var(--red); }
 .src .p-ico { width: 14px; height: 14px; color: var(--red); flex: none; }
 .src span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
 .src-date { font-style: normal; color: var(--muted); font-size: 11px; white-space: nowrap; }
 
 .actions { display: flex; gap: 2px; }
 .act { width: 28px; height: 28px; padding: 6px; border-radius: 7px; color: var(--muted); }
-.act:hover { background: #ececec; color: var(--ink); }
+.act:hover { background: var(--line); color: var(--ink); }
 .act[aria-pressed="true"] { color: var(--red); background: var(--red-tint); }
 
 /* composer */
@@ -239,7 +245,7 @@ textarea {
   flex: 1; border: 0; outline: 0; resize: none; font: inherit; font-size: 14.5px; color: var(--ink); background: transparent;
   padding: 7px 0; max-height: 120px; min-height: 22px; line-height: 1.45;
 }
-textarea::placeholder { color: #8b8e92; }
+textarea::placeholder { color: var(--muted); }
 .send { width: 36px; height: 36px; border-radius: 10px; background: var(--red); color: #fff; padding: 8px; flex: none; transition: background .15s, opacity .15s; }
 .send:hover { background: var(--red-dark); }
 .send:disabled { opacity: .35; cursor: default; }
@@ -332,7 +338,14 @@ textarea::placeholder { color: #8b8e92; }
   }
 
   // ---------------------------------------------------------------- DOM
-  if (!script || script.dataset.loadFonts !== "false") {
+  const kit = script && (script.dataset.adobeFonts || "").replace(/[^a-z0-9]/gi, "");
+  if (kit && !document.querySelector(`link[href*="typekit.net/${kit}"]`)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `https://use.typekit.net/${kit}.css`;
+    document.head.appendChild(link);
+  }
+  if (!kit && (!script || script.dataset.loadFonts !== "false")) {
     if (!document.querySelector('link[href*="Work+Sans"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";

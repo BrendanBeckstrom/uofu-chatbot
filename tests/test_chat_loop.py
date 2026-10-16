@@ -239,6 +239,8 @@ async def main():
     view, err = await engine.run_tool(engine.sessions.get("loop-test-4"), "fetch_page", {"url": CS_PLAN, "pages": "2"})
     chat_module.fetch_page = real_fetch
     assert not err and "PDF, 2 pages. Showing page 2." in view and "CS 1420" in view and "CS 1400:" not in view
+    view, _ = await engine.run_tool(engine.sessions.get("loop-test-4"), "fetch_page", {"url": CS_PLAN, "find": "accelerated"})
+    assert "Showing page 2." in view, "find jumps to the matching page"
     print("✓ documents: PDFs are searched by page and read from the index a few pages at a time")
 
     engine.client = FakeClient([NS(stop_reason="end_turn", content=[text("CS 1400 is the usual start.")])])

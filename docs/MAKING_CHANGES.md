@@ -53,7 +53,14 @@ All in `web/widget.js`:
 - **Welcome message:** `renderWelcome()`
 - **Example questions** for future and current students: `SUGGESTIONS`
 - **Contact tab links:** `CONTACTS`, plus `renderContact()` for the college office and support cards
-- **Colors and fonts:** the CSS variables at the top of `CSS` (`--red`, `--head`, …)
+- **Colors and fonts:** the CSS variables at the top of `CSS` (`--red`, `--head`, …). Follow the University's
+  [web guidelines](https://brand.utah.edu/digital/web-guidelines/):
+  - Use only the core colors: Utah Red `#BE0000`, black, white and Zion Cinder Cone `#707271`.
+  - Accent colors (Red Rocks `#890000`, Salt Flat Grey `#E2E6E6`, Mountain Green `#6CC24A`, Wasatch Sunrise
+    `#FFB81D`, …) are for small details only, never headings or links, and at most 10% of the design.
+  - Fonts are Myriad Pro (text) and Factoria (headings), served from the University's Adobe Fonts project:
+    set `data-adobe-fonts="<project id>"` on the script tag. Without it, the widget falls back to the
+    Google fonts that price.utah.edu uses today.
 
 Reload the page to see changes; the server sends the widget uncached. Only link utah.edu pages you have
 opened and checked.
