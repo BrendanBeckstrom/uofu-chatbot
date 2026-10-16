@@ -38,6 +38,8 @@ How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Change recipes:
 - **Be polite to the university's servers.** Keep the 10-second per-site delay (from `robots.txt`) and make
   requests one at a time per site. Several department sites share a backend, and heavy parallel API queries
   returned 504s.
+- **Changes go through pull requests.** `main` rejects direct pushes; merging needs green CI and the code
+  owner's approval (`.github/CODEOWNERS`).
 - **Never commit** `.env` or `data/`. The API key exists only in `.env` and the host's secret settings.
 - **Model:** `claude-haiku-5-5` unless the maintainers decide otherwise. A model change needs a `PRICES`
   entry in `app/pricing.py` and an answer-eval run.
