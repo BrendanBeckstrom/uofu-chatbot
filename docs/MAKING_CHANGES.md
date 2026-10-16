@@ -10,8 +10,9 @@ and review what it proposes.
 
 ## The routine for every change
 
-1. **Make a branch.** Never commit straight to `main`. In GitHub's web editor, choose "Create a new branch"
-   when you commit.
+1. **Make a branch.** `main` is protected and rejects direct pushes. In GitHub's web editor, choose "Create a
+   new branch" when you commit. Without write access to the repo, fork it and open the pull request from your
+   fork.
 2. **Make the change** using a recipe below.
 3. **Run the checks** (about 30 seconds, free, no API key needed):
    ```bash
@@ -27,8 +28,12 @@ and review what it proposes.
    .venv/bin/python -m evals.run answers
    ```
    Compare the pass rate with the last run (each run is saved in `evals/results/`).
-5. **Open a pull request.** GitHub runs the same checks automatically (the "CI" check). Merge only when it's
-   green. If it's red, click "Details" to see which check failed and why.
+5. **Open a pull request.** GitHub runs the same checks automatically (the "CI" check). If it's red, click
+   "Details" to see which check failed and why.
+6. **Get it reviewed.** A pull request can be merged only when CI is green and the code owner listed in
+   `.github/CODEOWNERS` has approved it. New commits after an approval need a fresh approval. The rule is the
+   "Protect main" ruleset under the repo's Settings → Rules; the repo admin can bypass it from a pull
+   request, for their own changes.
 
 ## Recipes
 

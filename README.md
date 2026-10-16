@@ -225,10 +225,9 @@ app/server.py     FastAPI: chat (SSE), sync, events, feedback, status, static pa
 web/widget.js     embeddable chat widget
 web/index.html    demo landing page
 web/designs.html  design concepts
-docs/             ARCHITECTURE, MAKING_CHANGES, SECURITY
+docs/             ARCHITECTURE, MAKING_CHANGES, SECURITY, DATA_PLAN
 tests/            offline tests; tests/fixtures.py is their small made-up corpus
-.github/          CI workflow (runs the tests on every pull request) and PR checklist
+.github/          CI workflow (runs the tests on every pull request), PR checklist and CODEOWNERS (who approves)
 CLAUDE.md         guidance for Claude Code
 evals/            accuracy questions and the eval runner
-tests/            scripted chat-loop and sync tests
 ```
