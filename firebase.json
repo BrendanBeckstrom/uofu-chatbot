@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "public": "build/hosting",
+    "cleanUrls": true,
+    "headers": [
+      { "source": "**", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] },
+      { "source": "**/*.@(js|html)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

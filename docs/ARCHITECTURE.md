@@ -21,11 +21,13 @@ The assistant has three parts:
    chat window and talks to the server.
 
 `app/server.py` (FastAPI) connects them, and `app/guard.py` sits in front of the answer loop to stop abuse and
-cap spending.
+cap spending. The hosted beta runs the same server on Cloud Run and the pages on Firebase Hosting, behind a
+shared password; [DEPLOY.md](DEPLOY.md) covers that setup.
 
 ## What happens when someone asks a question
 
-1. **Widget** (`web/widget.js`): on first use it gets a signed browser token from `POST /api/token`. It sends
+1. **Widget** (`web/widget.js`): on first use it gets a signed browser token from `POST /api/token`. In the
+   hosted beta, the login page (`web/login.html`) gets the token instead, and only for the right password. It sends
    `POST /api/chat` with the message, the session ID and, if the visitor picked one on the welcome screen,
    their audience (`prospective` or `current`). The token is stored in `localStorage`, the conversation in
    `sessionStorage`.
@@ -52,7 +54,9 @@ cap spending.
       The last round has tools switched off and a nudge to write the answer.
    6. While text streams out, it watches for the prompt-leak canary. If the canary shows up, the answer is
       replaced and the turn is dropped.
-   7. It records tokens and cost (`data/usage.jsonl`, `data/spend.json`) and sends the source links.
+   7. It saves a record of the question, the answer, its sources, tokens and cost (`app/records.py`), adds
+      the cost to the day's spend, and sends the source links. The record's ID goes to the widget, so a
+      thumbs up or down points at it.
 4. **Widget** shows what the bot is doing ("Searching…", "Reading…"), then renders the streamed answer (only
    utah.edu links are clickable), source chips with dates, and thumbs up/down.
 
@@ -133,23 +137,33 @@ The server rebuilds the index when `data/docs.json` changes on disk.
 The calendar comes from the college's public Trumba JSON feed (`uu-college-of-engineering`), cached for 15
 minutes.
 
-## Usage statistics (`app/analytics.py`)
+## Usage records (`app/records.py`) and statistics (`app/analytics.py`)
 
-Every answer, decline and error adds one line to `data/usage.jsonl`:
+Every answer, decline and error saves one question record:
 
 - an anonymous user ID (a hash of the browser token, so "people per day" can be counted without cookies or
   trackers)
-- the redacted question
+- the redacted question and answer, and the pages it cited
+- the outcome (answered, declined, crisis, cached, search_only, error)
 - the scope label and a topic, both from the scope gate's single call
 - the audience
 - whether the answer admitted it couldn't find something (`gap`)
-- seconds and cost
+- seconds, tokens, cost and the app version
 
-`python -m app.analytics --days 30` turns this into a report: people per day, questions, error rate, topics,
-the most-asked questions, and recent questions it couldn't fully answer (content to add or surface on the
-site). `--json` gives the same numbers for a dashboard. Eval runs log to their own results folder, so they
-don't count as visitors. [DATA_PLAN.md](DATA_PLAN.md) is the plan for what to record once the app is
-hosted, with retention and a Firestore-or-AWS storage mapping.
+Thumbs up and down save a feedback record that points at its question. Crisis messages are never stored.
+[DATA_PLAN.md](DATA_PLAN.md) lists every field.
+
+Where the records go depends on `LOG_BACKEND`:
+- **Locally (`files`):** `data/usage.jsonl` and `data/feedback.jsonl`.
+- **The hosted beta (`firestore`):** the Firestore collections `questions` and `feedback`, plus the day's spend in `spend`.
+
+Firestore writes run on a background thread so they never slow an answer. The server waits for them
+(`records.flush()`) before closing each response, because Cloud Run pauses the CPU once a response ends.
+
+`python -m app.analytics --days 30` turns the records into a report: people per day, questions, error
+rate, topics, the most-asked questions, and recent questions it couldn't fully answer (content to add or
+surface on the site). `--firestore` reads the hosted beta's records, and `--json` gives the same numbers
+for a dashboard. Eval runs log to their own results folder, so they don't count as visitors.
 
 ## Data files
 
@@ -163,9 +177,9 @@ build` and `python -m app.sync documents`.
 | `data/raw/<site>/` | raw API responses and rendered HTML for thin pages | sync |
 | `data/raw/documents.json` | extracted text and cache headers for each document | `app/documents.py` |
 | `data/raw/documents/` | the original PDF files, for offline re-extraction | `app/documents.py` |
-| `data/usage.jsonl` | one line per answer or error: anonymous user, redacted question, gate label, topic, audience, gap, tokens, cost, seconds | chat |
-| `data/feedback.jsonl` | thumbs up/down with the question and answer (redacted) | server |
-| `data/spend.json` | today's spend, so a restart doesn't reset the daily cap | guard |
+| `data/usage.jsonl` | one question record per answer, decline or error (locally; Firestore when hosted) | chat |
+| `data/feedback.jsonl` | thumbs up/down, linked to the question record (locally; Firestore when hosted) | server |
+| `data/spend.json` | today's spend, so a restart doesn't reset the daily cap (Firestore when hosted) | guard |
 | `data/.token_secret` | key that signs browser tokens (set `CHAT_TOKEN_SECRET` in production) | guard |
 
 ## Settings
@@ -180,6 +194,10 @@ ones people change most:
 - the `*_LIMITS` rate limits
 - `SYNC_TTL_MINUTES`
 - `RECONCILE_DAYS`
+- `LOG_BACKEND`
+- `BETA_PASSWORD`
+
+The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md).
 
 ## Tests and evals
 
@@ -188,8 +206,8 @@ ones people change most:
 | `python -m tests.test_chat_loop` | nothing | the answer loop with a scripted fake Claude: tools, caps, cache, refusals, the scope gate, crisis replies, PDFs, audience |
 | `python -m tests.test_documents` | nothing | which PDFs get picked and how versions are matched |
 | `python -m tests.test_sync` | nothing | build, change-only update and deletion check against a fake WordPress site |
-| `python -m tests.test_guard` | nothing | rate limits, tokens, spend cap, request-size limits |
-| `python -m tests.test_analytics` | nothing | the usage report's counts |
+| `python -m tests.test_guard` | nothing | rate limits, tokens, the beta password, spend cap, request-size limits |
+| `python -m tests.test_analytics` | nothing | the usage report's counts; Firestore records and spend, against an in-memory fake |
 | `python -m evals.run selftest` | internet (calendar) | the eval graders accept good answers and reject empty ones |
 | `python -m evals.run retrieval` | the local index | does the first search find the right page? |
 | `python -m evals.run answers` | API key, about $0.05 a run | the real bot on every question in `evals/questions.json` |

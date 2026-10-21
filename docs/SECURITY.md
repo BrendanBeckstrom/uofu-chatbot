@@ -55,6 +55,7 @@ Knobs: `SCOPE_GATE=false` turns the gate off. Anthropic recommends `high` effort
 **Why not just per-IP?** Many students share one public IP on campus Wi-Fi, so per-IP limits strict enough to stop abuse would block real users. Meanwhile an attacker can rotate IPv6 addresses. So identity is layered [R13][R22]:
 
 - **Per-browser token.** `POST /api/token` returns a random ID with an expiry, signed with HMAC so it can't be forged or extended. The widget keeps it in `localStorage` and sends it as an `X-Chat-Token` header. A header is used rather than a cookie because third-party cookies are blocked when the widget is embedded on another site [R28].
+- **Beta password.** With `BETA_PASSWORD` set (the hosted beta), `/api/token` issues a token only for the shared password, entered on `web/login.html`. Wrong tries are limited to 10 per 10 minutes per IP (`LOGIN_LIMITS`). Tokens are signed with a key derived from the password, so changing it signs everyone out. Feedback needs a token too, so strangers can't write to the logs.
 - **Per-IP backstop.** Much looser limits, so a whole campus network isn't throttled as one person. IPv6 is grouped by /64.
 - **Global limits** across everyone.
 

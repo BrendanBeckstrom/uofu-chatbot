@@ -145,7 +145,15 @@ API failures are logged separately and never counted as wrong answers. Results a
 | [docs/MAKING_CHANGES.md](docs/MAKING_CHANGES.md) | recipes for common changes, and the pull-request routine |
 | [docs/SECURITY.md](docs/SECURITY.md) | scope, abuse and cost controls, research, open questions for the university |
 | [docs/DATA_PLAN.md](docs/DATA_PLAN.md) | what usage data to save, why, for how long, and how it maps to Firestore or AWS (draft) |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | the hosted beta: Cloud Run, Firebase Hosting, the beta password, reading the logs |
 | [CLAUDE.md](CLAUDE.md) | rules and commands for Claude Code sessions in this repo |
+
+## Hosted beta
+
+Testers use https://uofuchatbot.web.app, behind a shared password. The server runs on Google Cloud Run and
+the pages on Firebase Hosting. Every question and answer is saved to Firestore for 90 days so we can review
+them, and testers are told so on the login page. [docs/DEPLOY.md](docs/DEPLOY.md) covers deploying, the
+password and reading the logs.
 
 ## Security, abuse and cost protection
 
@@ -194,7 +202,8 @@ real site.
 
 ## Known limitations (it's a POC)
 
-- Conversations live in server memory and are lost on restart.
+- Conversations live in server memory and are lost on restart. The hosted beta restarts after it's been
+  idle for a while, so an open conversation starts over.
 - Department sites that aren't WordPress, and other U offices (admissions, registrar), are only read live.
 - PDFs that are scanned images (several Mechanical Engineering flowcharts) have no text to read.
 - Keyword search (BM25) can miss paraphrases. Claude compensates by re-searching, and embeddings would be a
@@ -218,14 +227,19 @@ app/events.py     college calendar (Trumba feed)
 app/live.py       live page reads + WordPress search fallback
 app/chat.py       Claude tool-use loop, sessions, system prompt
 app/scope.py      scope gate, decline wording, prompt-leak canary
-app/guard.py      rate limits, browser tokens, concurrency, daily spend cap
+app/guard.py      rate limits, browser tokens, the beta password, concurrency, daily spend cap
+app/records.py    question, feedback and spend records: local files or Firestore
 app/privacy.py    redaction of identifiers in logs
 app/pricing.py    per-model token prices
 app/server.py     FastAPI: chat (SSE), sync, events, feedback, status, static pages
 web/widget.js     embeddable chat widget
+web/login.html    the hosted beta's password page
 web/index.html    demo landing page
 web/designs.html  design concepts
-docs/             ARCHITECTURE, MAKING_CHANGES, SECURITY, DATA_PLAN
+docs/             ARCHITECTURE, MAKING_CHANGES, SECURITY, DATA_PLAN, DEPLOY
+deploy/           setup, secrets and deploy scripts for the hosted beta
+Dockerfile        the Cloud Run server image (.gcloudignore picks what's uploaded)
+firebase.json     Firebase Hosting and Firestore rules (firestore.rules)
 tests/            offline tests; tests/fixtures.py is their small made-up corpus
 .github/          CI workflow (runs the tests on every pull request), PR checklist and CODEOWNERS (who approves)
 CLAUDE.md         guidance for Claude Code

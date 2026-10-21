@@ -4,7 +4,8 @@
  * Embed on any page:
  *   <script src="http://localhost:8000/widget.js" defer></script>
  * Optional attributes:
- *   data-api="https://..."   API origin (defaults to wherever this script was loaded from)
+ *   data-api="https://..."   API origin (defaults to window.PRICE_ASSISTANT_API from /config.js, then to
+ *                            wherever this script was loaded from)
  *   data-open="true"         open the panel on load
  *   data-load-fonts="false"  skip loading the fallback web fonts (the host page already has them)
  *   data-adobe-fonts="abc1234"  the university's Adobe Fonts project ID, to use the brand fonts
@@ -18,7 +19,8 @@
   window.__priceAssistantLoaded = true;
 
   const script = document.currentScript;
-  const API = (script && script.dataset.api) || (script ? new URL(script.src).origin : location.origin);
+  const API = (script && script.dataset.api) || window.PRICE_ASSISTANT_API ||
+    (script ? new URL(script.src).origin : location.origin);
   const STORE_KEY = "price-assistant:v1";
   const MAX_LEN = 1000;
 
@@ -327,6 +329,11 @@ textarea::placeholder { color: var(--muted); }
       } catch (_) {}
     }
     const r = await fetch(`${API}/api/token`, { method: "POST" });
+    if (r.status === 401) {  // the hosted beta: tokens come from the login page (web/login.html)
+      const e = new Error("Please sign in to keep using the beta.");
+      e.login = true;
+      throw e;
+    }
     if (!r.ok) {
       let detail = "Couldn't start a chat session.";
       try { detail = (await r.json()).detail || detail; } catch (_) {}
@@ -424,12 +431,15 @@ textarea::placeholder { color: var(--muted); }
   }
 
   let statusChecked = false;
+  let betaNote = false;
   async function checkStatus() {
     if (statusChecked) return;
     statusChecked = true;
     try {
       const s = await (await fetch(`${API}/api/status`)).json();
       aiEnabled = !!s.ai_enabled;
+      betaNote = !!s.login_required;
+      shadow.querySelectorAll(".beta-note").forEach((n) => (n.hidden = !betaNote));
       if (aiEnabled && (s.ai_issue === "no_credits" || s.ai_issue === "daily_budget")) {
         $(".dot").classList.add("off");
         $(".sub-txt").textContent = "Search only: AI paused";
@@ -466,6 +476,7 @@ textarea::placeholder { color: var(--muted); }
           <li><strong>Reach</strong> the right advisor or office</li>
         </ul>
         <p class="fine">I can't see your records or do homework, and I don't replace your advisor.</p>
+        <p class="fine beta-note"${betaNote ? "" : " hidden"}>Beta: conversations are saved to improve the assistant. Please don't include personal information.</p>
       </div></div></div>
       <div class="aud" role="group" aria-label="Which describes you?">
         <span class="aud-label">I'm a</span>
@@ -556,6 +567,11 @@ textarea::placeholder { color: var(--muted); }
   function fillBot(view, msg) {
     if (msg.text) { view.bubble.hidden = false; view.bubble.innerHTML = markdown(msg.text); }
     if (msg.error) { view.bubble.hidden = false; view.bubble.classList.add("error"); view.bubble.textContent = msg.error; }
+    if (msg.error && msg.login) {
+      const a = document.createElement("a");
+      a.href = "/login.html"; a.textContent = "Sign in";
+      view.bubble.append(" ", a);
+    }
     if (msg.steps && msg.steps.length) renderStepsCollapsed(view, msg.steps);
     if (msg.sources && msg.sources.items && msg.sources.items.length) renderSources(view, msg.sources);
     if (msg.text && !msg.error) wireActions(view, msg);
@@ -611,12 +627,15 @@ textarea::placeholder { color: var(--muted); }
       down.setAttribute("aria-pressed", String(msg.rating === -1));
     };
     mark();
-    const rate = (r) => {
+    const rate = async (r) => {
       msg.rating = msg.rating === r ? 0 : r; mark(); save();
-      fetch(`${API}/api/feedback`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: state.sessionId, rating: msg.rating, question: msg.question || "", answer: msg.text.slice(0, 8000) }),
-      }).catch(() => {});
+      try {
+        await fetch(`${API}/api/feedback`, {
+          method: "POST", headers: { "Content-Type": "application/json", "X-Chat-Token": await getToken(false) },
+          body: JSON.stringify({ session_id: state.sessionId, question_id: msg.questionId || "", rating: msg.rating,
+                                 question: msg.question || "", answer: msg.text.slice(0, 8000) }),
+        });
+      } catch (_) {}
     };
     up.onclick = () => rate(1);
     down.onclick = () => rate(-1);
@@ -698,12 +717,15 @@ textarea::placeholder { color: var(--muted); }
             msg.text = d.text; paint();
           } else if (ev === "sources") {
             msg.sources = { kind: d.kind, items: d.items };
+          } else if (ev === "usage") {
+            if (d.question_id) msg.questionId = d.question_id;
           } else if (ev === "error") {
             msg.error = d.text;
           }
         }
       }
     } catch (err) {
+      msg.login = !!(err && err.login);
       msg.error = err && err.message && !/fetch|network/i.test(err.message)
         ? err.message
         : "Couldn't reach the assistant server. Is it running?";

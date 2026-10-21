@@ -3,7 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Price Assistant Demo</title>
+<script src="/config.js"></script>
+<script>
+  // The hosted beta sends visitors without a valid sign-in to the login page; locally there's no password.
+  (async () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("price-assistant:token") || "null");
+      if (saved && saved.expires > Date.now() + 60_000) return;
+      const s = await (await fetch(`${window.PRICE_ASSISTANT_API || ""}/api/status`)).json();
+      if (s.login_required) location.replace("/login.html");
+    } catch (_) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@500;600&family=Work+Sans:wght@500;600;700;800&display=swap">
@@ -100,7 +113,7 @@
 <body>
 
 <div class="demo-strip">
-  <span><b>Local demo</b> · AI assistant proof of concept · not the official site</span>
+  <span><b>Demo</b> · AI assistant proof of concept · not the official site</span>
   <a href="/designs">View design concepts →</a>
 </div>
 
@@ -189,13 +202,14 @@
       <img src="https://www.price.utah.edu/wp-content/uploads/2017/12/UU-Logo-CTR_RED-WhiteText.svg" alt="University of Utah">
       <img src="https://www.price.utah.edu/wp-content/uploads/2017/12/price-logo-stacked-white.svg" alt="Price College of Engineering">
     </div>
-    © 2026 The John and Marcia Price College of Engineering at the University of Utah · local demo copy
+    © 2026 The John and Marcia Price College of Engineering at the University of Utah · demo copy
   </div>
 </footer>
 
 <script>
   // Recent headlines from the local index (the same data the assistant searches).
-  fetch("/api/news?n=4").then((r) => r.json()).then((posts) => {
+  const API = window.PRICE_ASSISTANT_API || "";
+  fetch(`${API}/api/news?n=4`).then((r) => r.json()).then((posts) => {
     if (!posts.length) return;
     const fmt = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
     const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -206,7 +220,7 @@
   }).catch(() => {});
 
   // Footer calendar: live from the college's Trumba calendar (the same feed the assistant's get_events tool reads).
-  fetch("/api/events?days=30&limit=5").then((r) => r.json()).then((events) => {
+  fetch(`${API}/api/events?days=30&limit=5`).then((r) => r.json()).then((events) => {
     const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     const day = (iso) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     document.getElementById("cal").innerHTML = events.length

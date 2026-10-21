@@ -58,6 +58,7 @@ All in `web/widget.js`:
 - **Welcome message:** `renderWelcome()`
 - **Example questions** for future and current students: `SUGGESTIONS`
 - **Contact tab links:** `CONTACTS`, plus `renderContact()` for the college office and support cards
+- **The beta's login page** is a separate file, `web/login.html`
 - **Colors and fonts:** the CSS variables at the top of `CSS` (`--red`, `--head`, …). Follow the University's
   [web guidelines](https://brand.utah.edu/digital/web-guidelines/):
   - Use only the core colors: Utah Red `#BE0000`, black, white and Zion Cinder Cone `#707271`.
@@ -141,6 +142,24 @@ Restart the server after editing `.env`.
 .venv/bin/python -m app.sync documents   # handbooks, plans, flowcharts
 .venv/bin/python -m app.sync status      # what was checked when, and any errors
 ```
+
+The hosted beta doesn't refresh itself; run `./deploy/deploy.sh server` afterwards to ship the new index.
+
+### Put a change on the hosted beta
+
+After the pull request is merged, from `main`:
+
+```bash
+./deploy/deploy.sh server    # anything in app/, or a refreshed index
+./deploy/deploy.sh pages     # anything in web/
+```
+
+[DEPLOY.md](DEPLOY.md) explains what each step does, how to read the server's logs and how to roll back.
+
+### Change the beta password
+
+Run `./deploy/secrets.sh beta-password` in your own terminal (it asks for the new password without showing
+it), then `./deploy/deploy.sh server`. Every tester is signed out and needs the new password.
 
 ## Things to avoid
 

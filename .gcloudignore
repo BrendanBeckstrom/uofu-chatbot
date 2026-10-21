@@ -1,0 +1,13 @@
+# What `gcloud run deploy --source .` uploads to Cloud Build: only the Dockerfile's inputs. Never .env.
+*
+!Dockerfile
+!requirements.txt
+!app/
+!app/**
+!web/
+!web/**
+!data/
+data/*
+!data/docs.json
+__pycache__/
+*.pyc

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Price Assistant Beta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Work+Sans:wght@600;700&display=swap">
+<script src="/config.js"></script>
+<style>
+  :root { --red: #BE0000; --red-dark: #890000; --ink: #000; --muted: #707271; --line: #E2E6E6; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+    font: 16px/1.6 "Open Sans", system-ui, sans-serif; color: var(--ink); background: #fff;
+  }
+  main { width: 100%; max-width: 420px; border: 1px solid var(--line); border-top: 6px solid var(--red); border-radius: 6px; padding: 32px 28px; }
+  h1 { font: 700 26px/1.25 "Work Sans", sans-serif; margin: 0 0 4px; }
+  .tag { display: inline-block; font: 600 12px/1 "Work Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--red); margin-bottom: 16px; }
+  p { margin: 0 0 16px; }
+  .fine { font-size: 14px; color: var(--muted); }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  input {
+    width: 100%; font: inherit; padding: 11px 12px; border: 1px solid var(--muted); border-radius: 4px; margin-bottom: 14px;
+  }
+  input:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+  button {
+    width: 100%; font: 600 15px/1 "Work Sans", sans-serif; letter-spacing: .04em; color: #fff; background: var(--red);
+    border: 0; border-radius: 4px; padding: 14px; cursor: pointer;
+  }
+  button:hover { background: var(--red-dark); }
+  button:disabled { opacity: .6; cursor: default; }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .error { color: var(--red-dark); font-weight: 600; min-height: 1.6em; margin: 12px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">Beta</span>
+  <h1>Price Engineering Assistant</h1>
+  <p>An AI assistant that answers questions from the Price College of Engineering's websites. It's a
+    student-built proof of concept, not an official University of Utah service.</p>
+  <form id="login">
+    <label for="password">Beta password</label>
+    <input id="password" type="password" autocomplete="current-password" required autofocus>
+    <button type="submit">Continue</button>
+    <p class="error" id="error" role="alert"></p>
+  </form>
+  <p class="fine">During the beta, conversations are saved so we can improve the assistant. Please don't
+    include personal information such as your uNID, grades or contact details.</p>
+</main>
+<script>
+  const API = window.PRICE_ASSISTANT_API || "";
+  const TOKEN_KEY = "price-assistant:token";  // the same key web/widget.js reads
+  const form = document.getElementById("login"), error = document.getElementById("error");
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null");
+    if (saved && saved.expires > Date.now() + 60_000) location.replace("/");
+  } catch (_) {}
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const button = form.querySelector("button");
+    button.disabled = true;
+    error.textContent = "";
+    try {
+      const r = await fetch(`${API}/api/token`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: document.getElementById("password").value }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (r.ok) {
+        try {
+          localStorage.setItem(TOKEN_KEY, JSON.stringify({ token: body.token, expires: Date.now() + body.ttl_hours * 3600_000 }));
+        } catch (_) {
+          error.textContent = "Your browser is blocking site storage, which the assistant needs. Allow it for this site, or try a normal (not private) window.";
+          button.disabled = false;
+          return;
+        }
+        location.replace("/");
+        return;
+      }
+      error.textContent = r.status === 401 ? "That password isn't right." : body.detail || `Sign-in failed (${r.status}).`;
+    } catch (_) {
+      error.textContent = "Couldn't reach the assistant's server. Please try again.";
+    }
+    button.disabled = false;
+  });
+</script>
+</body>
+</html>

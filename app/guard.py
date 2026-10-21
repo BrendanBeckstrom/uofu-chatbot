@@ -1,7 +1,8 @@
 """Abuse and cost protection for the public chat endpoint.
 
 Layers (all in-process; docs/SECURITY.md covers the multi-server version):
-  - who is asking:    a signed per-browser token, plus the client IP (proxy-aware, IPv6 per /64)
+  - who is asking:    a signed per-browser token, plus the client IP (proxy-aware, IPv6 per /64);
+                      with BETA_PASSWORD set, a token is issued only for the right password
   - how often:        sliding-window limits per token, per IP (looser, for shared campus Wi-Fi), and global
   - how many at once: one answer at a time per client, a small number overall
   - how much money:   a daily dollar cap with reservations; when hit, answers fall back to search results
@@ -18,7 +19,7 @@ from collections import defaultdict, deque
 from datetime import date
 from pathlib import Path
 
-from . import config
+from . import config, records
 from .pricing import cost_usd
 
 
@@ -65,11 +66,23 @@ def _load_secret() -> bytes:
 _SECRET = _load_secret()
 
 
+def _key() -> bytes:
+    """With a beta password, tokens are signed with a key derived from it, so changing the password
+    signs everyone out."""
+    if not config.BETA_PASSWORD:
+        return _SECRET
+    return hmac.new(_SECRET, f"beta:{config.BETA_PASSWORD}".encode(), hashlib.sha256).digest()
+
+
+def password_ok(attempt: str) -> bool:
+    return not config.BETA_PASSWORD or hmac.compare_digest(attempt.encode(), config.BETA_PASSWORD.encode())
+
+
 def issue_token() -> str:
     """A random browser ID with an expiry, signed so clients can't forge or extend it."""
     tid = secrets.token_urlsafe(12)
     expires = int(time.time() + config.TOKEN_TTL_HOURS * 3600)
-    sig = hmac.new(_SECRET, f"{tid}.{expires}".encode(), hashlib.sha256).hexdigest()[:32]
+    sig = hmac.new(_key(), f"{tid}.{expires}".encode(), hashlib.sha256).hexdigest()[:32]
     return f"{tid}.{expires}.{sig}"
 
 
@@ -77,7 +90,7 @@ def verify_token(token: str | None) -> str | None:
     """Returns the token's ID if it's genuine and unexpired, else None."""
     try:
         tid, expires, sig = (token or "").split(".")
-        good = hmac.new(_SECRET, f"{tid}.{expires}".encode(), hashlib.sha256).hexdigest()[:32]
+        good = hmac.new(_key(), f"{tid}.{expires}".encode(), hashlib.sha256).hexdigest()[:32]
         if hmac.compare_digest(sig, good) and int(expires) > time.time():
             return tid
     except ValueError:
@@ -177,12 +190,19 @@ class SpendGuard:
     """Daily dollar cap on model usage, persisted so a restart doesn't reset the day's total.
     Each answer reserves a worst-case amount up front and settles the real cost afterward."""
 
-    def __init__(self, daily_cap: float, path: Path):
-        self.daily_cap, self.path = daily_cap, path
-        try:
-            saved = json.loads(path.read_text())
-        except (FileNotFoundError, json.JSONDecodeError):
-            saved = {}
+    def __init__(self, daily_cap: float, path: Path, remote=None):
+        self.daily_cap, self.path, self.remote = daily_cap, path, remote  # remote: records.Firestore
+        if remote:
+            try:
+                saved = {"day": date.today().isoformat(), "spent": remote.get_spend(date.today().isoformat())}
+            except Exception as e:
+                print(f"[spend] couldn't read today's total, starting from 0: {type(e).__name__}: {e}", flush=True)
+                saved = {}
+        else:
+            try:
+                saved = json.loads(path.read_text())
+            except (FileNotFoundError, json.JSONDecodeError):
+                saved = {}
         self.day = saved.get("day", "")
         self.spent = float(saved.get("spent", 0)) if self.day == date.today().isoformat() else 0.0
         self.reserved = 0.0
@@ -220,6 +240,9 @@ class SpendGuard:
         self._roll()
         dollars = cost_usd(usage, model)
         self.spent += dollars
+        if self.remote:
+            self.remote.put_spend(self.day, round(self.spent, 6))
+            return dollars
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.path.write_text(json.dumps({"day": self.day, "spent": round(self.spent, 6)}))
@@ -244,4 +267,6 @@ search_limiter = SlidingWindowLimiter(config.SEARCH_LIMITS, "search")
 events_limiter = SlidingWindowLimiter(config.EVENTS_LIMITS, "events")
 feedback_limiter = SlidingWindowLimiter(config.FEEDBACK_LIMITS, "feedback")
 concurrency = ConcurrencyGuard(config.MAX_CONCURRENT_ANSWERS, config.MAX_CONCURRENT_PER_CLIENT)
-spend = SpendGuard(config.DAILY_BUDGET_USD, config.DATA_DIR / "spend.json")
+login_limiter = SlidingWindowLimiter(config.LOGIN_LIMITS, "login")
+spend = SpendGuard(config.DAILY_BUDGET_USD, config.DATA_DIR / "spend.json",
+                   remote=records.backend() if config.LOG_BACKEND == "firestore" else None)

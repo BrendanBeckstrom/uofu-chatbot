@@ -7,6 +7,7 @@ vanilla-JS widget.
 
 How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Change recipes:
 [docs/MAKING_CHANGES.md](docs/MAKING_CHANGES.md). Security and cost: [docs/SECURITY.md](docs/SECURITY.md).
+The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Commands
 
@@ -22,6 +23,7 @@ How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Change recipes:
 .venv/bin/python -m evals.run selftest                   # free; checks the eval graders
 .venv/bin/python -m evals.run retrieval                  # free; needs the local index
 .venv/bin/python -m evals.run answers                    # real API calls, about $0.05; ask before running
+./deploy/deploy.sh server | pages                        # update the hosted beta; ask before running
 ```
 
 ## Rules
@@ -40,6 +42,8 @@ How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Change recipes:
   returned 504s.
 - **Changes go through pull requests.** `main` rejects direct pushes; merging needs green CI and the code
   owner's approval (`.github/CODEOWNERS`).
+- **Deploying changes what testers see.** Run `deploy/deploy.sh` only when asked, from merged code.
+  `deploy/secrets.sh` is for the maintainer to run in their own terminal; never read or print secrets.
 - **Never commit** `.env` or `data/`. The API key exists only in `.env` and the host's secret settings.
 - **Model:** `claude-haiku-5-5` unless the maintainers decide otherwise. A model change needs a `PRICES`
   entry in `app/pricing.py` and an answer-eval run.
@@ -55,5 +59,11 @@ How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Change recipes:
 - PDF links on the WordPress sites are often inside page-builder buttons, stored URL-encoded as
   `url:%2F…pdf`. `app/documents.py` handles both forms.
 - Rate limits, sessions and the answer cache are in memory, so run exactly one server process.
+- Firebase Hosting cuts requests off at 60 seconds, so the pages call Cloud Run directly. The address comes
+  from `config.js`, which `deploy/deploy.sh` writes for Hosting and the server serves locally.
+- Cloud Run pauses the CPU once a response ends. Firestore writes are queued on a thread and flushed
+  (`records.flush()`) before each response closes; keep that when adding endpoints that write records.
+- `.gcloudignore` decides what's uploaded to Cloud Build. It must keep excluding `.env` and everything in
+  `data/` except `docs.json`. Check with `gcloud meta list-files-for-upload .`.
 - `tests/fixtures.py` is the test corpus. Tests must not depend on `data/` or the network, because CI has
   neither.
