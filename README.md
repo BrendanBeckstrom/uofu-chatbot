@@ -150,7 +150,7 @@ questions, especially ones the ambassadors hear often.
 | [docs/SECURITY.md](docs/SECURITY.md) | scope, abuse and cost controls, research, open questions for the university |
 | [docs/DATA_PLAN.md](docs/DATA_PLAN.md) | what usage data to save, why, for how long, and how it maps to Firestore or AWS (draft) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | the hosted beta: Cloud Run, Firebase Hosting, the beta password, reading the logs |
-| [docs/reports/](docs/reports/) | evaluation reports to share (download the HTML file and open it in a browser) |
+| [docs/reports/](docs/reports/) | evaluation reports to share; the [October 2026 beta evaluation](docs/reports/beta-evaluation-2026-10-21.pdf) opens right in the browser |
 | [CLAUDE.md](CLAUDE.md) | rules and commands for Claude Code sessions in this repo |
 
 ## Hosted beta

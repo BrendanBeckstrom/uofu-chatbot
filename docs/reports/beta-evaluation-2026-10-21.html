@@ -67,6 +67,7 @@
   .lede { font-size: 19px; }
   .small { font-size: 14px; color: var(--muted); }
   .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  p .num { font-family: inherit; font-weight: 600; }
 
   .decision { background: var(--surface); border-left: 4px solid var(--red); padding: 20px 24px; margin: 0 0 28px; border-radius: 0 6px 6px 0; }
   .decision h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
@@ -127,6 +128,29 @@
   code { font: 14px var(--mono); background: var(--surface); padding: 1px 5px; border-radius: 3px; }
   footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
   @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+  @media print {
+    @page { size: Letter; margin: 0.55in 0.6in; }
+    body { font-size: 10.5pt; }
+    .page { display: block; max-width: none; padding: 0; }
+    .toc { display: none; }
+    header { margin-bottom: 18pt; }
+    h1 { font-size: 26pt; }
+    h2 { font-size: 17pt; margin: 22pt 0 8pt; break-after: avoid; }
+    h3 { font-size: 12pt; break-after: avoid; }
+    p, li { max-width: none; }
+    .lede, .decision p { font-size: 12pt; }
+    .card, .t, tr, .row, .decision, .axis, .chart h3 { break-inside: avoid; }
+    .cards { grid-template-columns: repeat(3, 1fr); }
+    .transcripts { grid-template-columns: repeat(2, 1fr); }
+    .scroll { overflow: visible; }
+    table { min-width: 0; font-size: 9pt; }
+    th, td { padding: 6pt 7pt; }
+    details summary { list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    a { text-decoration: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
 </style>
 </head>
 <body>
@@ -477,15 +501,15 @@
 
     <section id="appendix" aria-labelledby="appendix-h">
       <h2 id="appendix-h">Method notes</h2>
-      <details>
+      <details open>
         <summary>How answers are graded</summary>
         <p>A question can have up to four checks. <em>Cited:</em> the answer links one of the pages that contain the answer. <em>Facts:</em> it includes each required fact; each fact accepts a few phrasings copied from the page. <em>Forbidden:</em> it doesn't make a known wrong statement. <em>Declined</em> or <em>not declined:</em> it refuses exactly when it should. An answer passes when every check passes. Network or service errors are logged separately and never counted as wrong answers; there were none in this run.</p>
       </details>
-      <details>
+      <details open>
         <summary>The likely ranges</summary>
         <p>Ranges are 95% Wilson score intervals, which stay honest for small numbers of questions. For example, 9 of 10 has a range of 60–98%, so small groups should be read as rough.</p>
       </details>
-      <details>
+      <details open>
         <summary>Results by check (all 96 questions, 192 answers)</summary>
         <div class="scroll"><table>
           <thead><tr><th>Check</th><th>Passed</th></tr></thead>
@@ -499,7 +523,7 @@
           </tbody>
         </table></div>
       </details>
-      <details>
+      <details open>
         <summary>Reproducing these numbers</summary>
         <p>From the project repository: <code>python -m evals.run answers --reps 2</code> for the question set, <code>python -m evals.run baseline</code> for the search comparison, and <code>python -m evals.converse</code> for conversation testing. Each run saves its answers and a summary under <code>evals/results/</code>.</p>
       </details>
