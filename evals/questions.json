@@ -305,42 +305,6 @@
     "notes": "Stale-content trap: /club-rush still describes the Jan 29, 2026 event; the directory says next Club Rush is TBA."
   },
   {
-    "id": "scholarship-deadline",
-    "category": "student-support",
-    "time_sensitive": true,
-    "question": "When is the deadline for engineering scholarships?",
-    "expect_urls": [
-      "price.utah.edu/scholarships"
-    ],
-    "must_include": [
-      [
-        "February 8",
-        "Feb 8",
-        "Feb. 8"
-      ],
-      [
-        "passed",
-        "past",
-        "last cycle",
-        "previous",
-        "already",
-        "next cycle",
-        "upcoming cycle",
-        "may change",
-        "confirm",
-        "not yet posted",
-        "hasn't been",
-        "haven't been"
-      ]
-    ],
-    "must_not_include": [
-      "February 8, 2027"
-    ],
-    "reference": "The Engineering Scholarships page still shows the last cycle: the application opened December 1, 2025 and the deadline was February 8, 2026, which has passed. Confirm the next cycle's dates with the college.",
-    "as_of": "2026-10-08",
-    "notes": "Stale-content trap: the page was edited 2026-10-07 but still lists last cycle's dates."
-  },
-  {
     "id": "research-areas",
     "category": "research",
     "question": "What are the college's research priority areas?",
@@ -852,7 +816,8 @@
       ],
       [
         "advisor",
-        "advising"
+        "advising",
+        "adviser"
       ]
     ],
     "reference": "The CS 4.5-year plan (CS handbook 2024-2025) starts Track A with CS 1420, Calculus I and two Gen Eds; confirm with a CS academic advisor.",
@@ -907,7 +872,8 @@
       ],
       [
         "advisor",
-        "advising"
+        "advising",
+        "adviser"
       ]
     ],
     "reference": "The 2026-2027 civil flowchart's first fall includes CVEEN 1000 Intro to Civil & Environmental Engineering, a math course and writing; confirm with an advisor.",
@@ -954,5 +920,1083 @@
     ],
     "reference": "Any course may be taken at most twice, and any grade including a W counts as an attempt; two unsuccessful attempts result in probation (CS handbook 2024-2025).",
     "as_of": "2026-10-14"
+  },
+  {
+    "id": "mech-c-minus-retake",
+    "category": "planning",
+    "question": "I got a C- in ME EN 2030. Does that count for mechanical engineering, and how many times can I retake it?",
+    "expect_urls": [
+      "mech.utah.edu/academics/undergraduate/current-students/department-policies"
+    ],
+    "must_include": [
+      [
+        "C or higher",
+        "C or better"
+      ],
+      [
+        "third attempt"
+      ]
+    ],
+    "must_not_include": [
+      "at most twice"
+    ],
+    "reference": "No. Mechanical Engineering requires a C or higher in all technical courses, so a C- has to be repeated. The U allows two attempts without advisor approval; a third attempt must be requested through the department's form, and a fourth also needs approval from the Price College's Associate Dean for Academic Affairs. For courses repeated on or after August 1st, 2026, the highest grade counts in your cumulative GPA. Check with your ME advisor before registering.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/department-policies/: 'Students must pass all technical coursework (engineering, math, and science courses) with a grade of 'C' or higher.'",
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/department-policies/: 'The University of Utah allows two attempts without advisor approval. A third attempt must be requested through this form. A fourth attempt must be requested through this form and approved by the Price College of Engineering's Associate Dean for Academic Affairs.'",
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/department-policies/: 'For courses repeated on or after August 1st, 2026, the highest grade will be calculated in your cumulative GPA.'"
+    ],
+    "notes": "The ME flowchart (Revised March 2025) still says 'second grade counts'. c02 turn 2 used that and the CS handbook's 'at most twice' rule.",
+    "seen_in": "c02 turn 2",
+    "origin": "persona-current"
+  },
+  {
+    "id": "mech-good-standing-gpa",
+    "category": "planning",
+    "question": "What GPA do I need to keep to stay in good standing in mechanical engineering?",
+    "expect_urls": [
+      "mech.utah.edu/academics/undergraduate/current-students/department-policies"
+    ],
+    "must_include": [
+      [
+        "2.500",
+        "2.5"
+      ],
+      [
+        "Good Academic Standing",
+        "good standing"
+      ]
+    ],
+    "reference": "A cumulative U of U GPA of 2.500 or higher keeps you in Good Academic Standing in the ME program, along with a C or higher in all technical courses; a 2.300 GPA in the Upper Division Core courses is required at graduation.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/department-policies/: 'A minimum of a 2.500 cumulative U of U GPA is required to be in Good Academic Standing in the program.'",
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/department-policies/: 'A minimum of a 2.300 cumulative GPA is required in the Upper Division Core courses at the time of graduation.'"
+    ],
+    "notes": "Seen as a follow-up in c02 turn 3, where the bot said it couldn't find the GPA needed to keep major status.",
+    "seen_in": "c02 turn 3 (follow-up wording)",
+    "origin": "persona-current"
+  },
+  {
+    "id": "mech-2-5xxx-eligible",
+    "category": "planning",
+    "question": "Some ME classes say they need 'Full Major status in Mechanical Engineering'. What is that and how do I get it?",
+    "expect_urls": [
+      "mech.utah.edu/academics/undergraduate/current-students/department-policies"
+    ],
+    "must_include": [
+      [
+        "2-5XXX"
+      ],
+      [
+        "ME EN 1000",
+        "ME EN 1010"
+      ]
+    ],
+    "reference": "To take ME EN courses numbered higher than ME EN 2010 Statics you need ME Major Status, met prerequisites, and membership in the 'ME EN 2-5XXX Eligible' Student Group; students with ME Major Status are added to that group when they enroll in ME EN 1000 or ME EN 1010 (transfer students qualify through separate criteria). Ask your ME advisor if you're unsure of your status.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/department-policies/: 'in order to enroll in ME EN courses numbered higher than ME EN 2010 Statics, a student must be in the \"ME EN 2-5XXX Eligible\" Student Group. Students with ME Major Status will be added to the \"ME EN 2-5XXX Eligible\" Student Group when they: (1) enroll in ME EN 1000 or ME EN 1010'",
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/emphasis-areas/dynamics-and-control-prior-2027/: 'Prerequisites : C or better in ME EN 3220 AND Full Major status in Mechanical Engineering.'"
+    ],
+    "notes": "The bot said it couldn't find a professional program and later couldn't define full major status (c02 turns 1 and 3).",
+    "seen_in": "c02 turns 1 and 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "mech-switch-gpa",
+    "category": "departments",
+    "question": "I'm a civil engineering major with about a 2.6 GPA. Is there a minimum GPA to switch into mechanical engineering?",
+    "expect_urls": [
+      "mech.utah.edu/academics/undergraduate/future-students/prospective-first-year-students",
+      "mech.utah.edu/academics/undergraduate/current-students"
+    ],
+    "must_include": [
+      [
+        "2.500",
+        "2.5"
+      ],
+      [
+        "ME Academic Advisor",
+        "advisor",
+        "adviser"
+      ]
+    ],
+    "must_not_include": [
+      "didn't find a minimum GPA",
+      "no minimum GPA"
+    ],
+    "reference": "Yes. To change your major to Mechanical Engineering you need a cumulative University of Utah GPA of 2.500 or higher, so a 2.6 meets it; schedule a meeting with an ME Academic Advisor to start the change.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/academics/undergraduate/future-students/prospective-first-year-students/: 'Students with a different major declared who want to change their major to Mechanical Engineering must have a cumulative University of Utah GPA of 2.500 or higher and schedule a meeting with an ME Academic Advisor to initiate the change.'"
+    ],
+    "seen_in": "c11 turn 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "bme-research-lab-deadline",
+    "category": "planning",
+    "question": "I'm a BME sophomore. Is there a deadline for when I need to be working in a research lab?",
+    "expect_urls": [
+      "UG_Handbook_2026",
+      "bme.utah.edu"
+    ],
+    "must_include": [
+      [
+        "winter break"
+      ],
+      [
+        "BME 4990"
+      ]
+    ],
+    "must_not_include": [
+      "isn't tied to a single deadline"
+    ],
+    "reference": "Yes. Every BME major takes BME 4990, and the BME Undergraduate Handbook 2026/27 says that at the very latest in the last week of the winter break of your junior year you must obtain a position in a research lab, an internship, or permission to use your design class project as your thesis project. The department has a directory organized by research topics to help you find a lab; confirm your timeline with a BME advisor.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.bme.utah.edu/wp-content/uploads/2026/03/UG_Handbook_2026.pdf (p.33): 'At the very latest in the last week of the winter break of the Junior year, obtain a position in a research lab, internship, or receive permission to use the design class project as your Thesis project. For help in finding lab placement there is a department directory that is organized by research topics'",
+      "https://www.bme.utah.edu/wp-content/uploads/2026/03/UG_Handbook_2026.pdf: 'Note: all students must take BME 4990 as part of the core requirements.'"
+    ],
+    "seen_in": "c05 turn 2",
+    "origin": "persona-current"
+  },
+  {
+    "id": "che-advisor-name",
+    "category": "departments",
+    "question": "Who is the undergraduate academic advisor for Chemical Engineering, and where is their office?",
+    "expect_urls": [
+      "che.utah.edu/undergraduate-advising"
+    ],
+    "must_include": [
+      [
+        "Kevin Worthley"
+      ],
+      [
+        "MEB 3290G",
+        "3290G"
+      ]
+    ],
+    "reference": "Kevin Worthley is Chemical Engineering's Academic Advisor, in MEB 3290G; send advising questions and appointment requests to cheundergrad@utah.edu. Professor Michael Nigra, Director of Undergraduate Studies, handles academic appeals.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.che.utah.edu/undergraduate-advising/: 'Kevin Worthley / Academic Advisor / Office: MEB 3290G'",
+      "https://www.che.utah.edu/undergraduate-advising/: 'Questions for our academic advising team should be directed to cheundergrad@utah.edu'",
+      "https://www.price.utah.edu/academic-advisors: Wanda Brown (Chemical Engineering) appears in the Graduate Advisors tab"
+    ],
+    "notes": "Mentioning the outdated directory listing is fine as long as the current advisor and office are given.",
+    "seen_in": "c03 turns 1 and 3, c14 turn 5",
+    "origin": "persona-current"
+  },
+  {
+    "id": "che-retake-limit",
+    "category": "planning",
+    "question": "How many times can I retake a required class in chemical engineering before I get dismissed from the major?",
+    "expect_urls": [
+      "CH-EN-UG-Guide-Handbook-2025-2026"
+    ],
+    "must_include": [
+      [
+        "two unsuccessful attempts",
+        "second attempt"
+      ],
+      [
+        "Nigra",
+        "Director of Undergraduate Studies"
+      ]
+    ],
+    "reference": "The ChE handbook's Repeating Courses section says that after two unsuccessful attempts at any required math, science or engineering course you're dismissed from the major, and a third attempt (for non-academic emergencies) must be approved by the Director of Undergraduate Studies, Michael Nigra. Another list in the same handbook says three attempts, so confirm with the advisors at cheundergrad@utah.edu before relying on either.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.che.utah.edu/wp-content/uploads/2026/08/CH-EN-UG-Guide-Handbook-2025-2026.pdf (p.23): 'After two unsuccessful attempts of any required math, science or engineering course, students will be dismissed from the Chemical Engineering Major. When non-academic emergencies take place, a third attempt must be approved by the Director of Undergraduate Studies, Michael Nigra.'",
+      "https://www.che.utah.edu/wp-content/uploads/2026/08/CH-EN-UG-Guide-Handbook-2025-2026.pdf (p.10): 'After three unsuccessful attempts of any required math, science or engineering course, students will be dismissed from the Chemical Engineering Major.'"
+    ],
+    "notes": "The handbook contradicts itself. A good answer gives the stricter Repeating Courses rule (or both) and routes to the advisors. c14 turn 3 gave only 'three'.",
+    "seen_in": "c14 turn 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "overwhelmed-failing",
+    "category": "student-support",
+    "question": "im failing physics 2220 and honestly so overwhelmed this semester, idk what to do",
+    "expect_urls": [
+      "price.utah.edu/student-resources",
+      "price.utah.edu/counseling",
+      "price.utah.edu/tutoring-resources"
+    ],
+    "must_include": [
+      [
+        "advisor",
+        "adviser"
+      ],
+      [
+        "Jiabao Gao",
+        "Mental Health Counselor",
+        "embedded counsel"
+      ]
+    ],
+    "must_not_include": [
+      "988"
+    ],
+    "decline": false,
+    "reference": "Talk to your instructor or TA and your department's academic advisor about your options, use the college's tutoring resources, and for the stress itself you can make an appointment with Jiabao Gao, the Price College of Engineering Mental Health Counselor (jgao@sa.utah.edu).",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/student-resources: 'Make an appointment with Jiabao Gao, the Price College of Engineering Mental Health Counselor.'",
+      "https://www.price.utah.edu/tutoring-resources: 'contact your TA, Instructor, and Advisor as soon as you feel that you need some additional help'"
+    ],
+    "notes": "Not a crisis: no 988 reply expected. c08 turn 1 mentioned only the University Counseling Center.",
+    "seen_in": "c08 turn 1",
+    "origin": "persona-current"
+  },
+  {
+    "id": "pce-counselor",
+    "category": "student-support",
+    "question": "Is there a counselor in the engineering college I can talk to about stress? It's not an emergency.",
+    "expect_urls": [
+      "price.utah.edu/counseling"
+    ],
+    "must_include": [
+      [
+        "Jiabao Gao"
+      ],
+      [
+        "801-581-6826",
+        "jgao@sa.utah.edu"
+      ]
+    ],
+    "decline": false,
+    "reference": "Yes. Jiabao Gao is the college's embedded counselor: email jgao@sa.utah.edu, or call the University Counseling Center at 801-581-6826 and ask for 'embedded counseling for College of Engineering'. Single sessions are Monday at 1:30 pm and Tuesday at 11 am, and the office is WEB 1707.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/counseling: 'Jiabao Gao'; 'jgao@sa.utah.edu'; '801-581-6826'; ask for 'embedded counseling for College of Engineering'; 'Monday at 1:30 pm and Tuesday at 11 am'; 'My office is at WEB 1707.'"
+    ],
+    "seen_in": "c08 turn 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "cs-minor-requirements",
+    "category": "programs",
+    "question": "I'm a civil engineering major. What do I need for the computer science minor and how do I declare it?",
+    "expect_urls": [
+      "CS-Minor-26-27.pdf",
+      "cs.utah.edu/minors"
+    ],
+    "must_include": [
+      [
+        "21-25"
+      ],
+      [
+        "B-"
+      ],
+      [
+        "advisor",
+        "adviser"
+      ]
+    ],
+    "must_not_include": [
+      "in place of CS 1410"
+    ],
+    "reference": "The CS minor (21-25 credits) needs CS 1400 and CS 1410, or CS 1420 alone; CS 2420 with a B- or higher; MATH 1210 with a C or higher (MATH 1310 and 1320 also accepted); and three CS 3000+ courses. Declare it by meeting with a Kahlert School of Computing academic advisor (ugrad-help@cs.utah.edu).",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.cs.utah.edu/wp-content/uploads/2026/07/CS-Minor-26-27.pdf: '21-25 credits'; 'CS 1400 Intro to Comp Prog 4 / CS 1410 Intro to OOP 4 / OR / CS 1420 Accel OOP 4'; 'Must get a B- or higher in CS 2420 and a C or higher in MATH 1210'; 'Engineering calculus MATH 1310 and 1320 also accepted'; 'Complete three CS 3000+ courses'",
+      "https://www.cs.utah.edu/minors/: 'Students interested in declaring the Artificial Intelligence Minor or Computer Science Minor should meet with a Kahlert School of Computing academic advisor.'"
+    ],
+    "seen_in": "c07 turn 1",
+    "origin": "persona-current"
+  },
+  {
+    "id": "cs-5-year-plan-followup",
+    "category": "planning",
+    "setup_turns": [
+      "hey im a freshman in CS, what classes should i be taking my first semester?"
+    ],
+    "question": "what if i work part time, is there like a 5 year plan?",
+    "expect_urls": [
+      "CS-Plan-5year.pdf"
+    ],
+    "must_include": [
+      [
+        "MATH 1080"
+      ],
+      [
+        "advisor",
+        "adviser"
+      ]
+    ],
+    "reference": "Yes. The CS handbook's suggested 5-year plan (2024-2025, updated June 2024) has a Track B for students starting with CS 1400 and Precalculus: freshman fall is CS 1400 (4), MATH 1080 (5) and two Gen Eds (3 each), 15 credits, and the first year totals 29 credits. Confirm your pace with a CS academic advisor.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://handbook.cs.utah.edu/2024-2025/CS/Academics/Files/Plans/CS-Plan-5year.pdf: 'Track B: Students who start with CS 1400 and Precalculus.' fall CS 1400 4, MATH 1080 5, Gen Ed 3, Gen Ed 3; spring CS 1410 4, MATH 1210 4, Gen Ed 3, WRTG 2010 3; 'Freshman year (29 credits)'; 'Updated June 2024'"
+    ],
+    "notes": "The first turn establishes the CS 1400 + Precalculus track. c01 turn 3 switched to Track A (CS 1420 + MATH 1210) and said it hadn't read Track B.",
+    "seen_in": "c01 turn 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "ece-ee-advisors",
+    "category": "departments",
+    "question": "I'm an electrical engineering major. Who are the advisors for EE students and how do I book?",
+    "expect_urls": [
+      "ece.utah.edu/advisors"
+    ],
+    "must_include": [
+      [
+        "Hannah Leopold"
+      ],
+      [
+        "Michaela Shelton"
+      ],
+      [
+        "Navigate"
+      ]
+    ],
+    "reference": "BS Electrical Engineering students are advised by Hannah Leopold and Michaela Shelton (Maddie Porter advises Computer Engineering); book through each advisor's Navigate360 appointment link on the ECE Advisors page.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.ece.utah.edu/advisors/: 'Hannah Leopold / Undergraduate Academic Advisor / BS Electrical Eng. Students'; 'Michaela Shelton / Undergraduate Academic Advisor / BS Electrical Eng. Students'; 'Maddie Porter / Undergraduate Academic Advisor / BS Computer Eng. Students'; Navigate360 appointment links"
+    ],
+    "seen_in": "c09 turns 1 and 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "pce-tutoring-physics",
+    "category": "student-support",
+    "question": "Does the PCE Tutoring Center help with physics, or just engineering classes?",
+    "expect_urls": [
+      "cs.utah.edu/undergraduate/current-students/tutoring"
+    ],
+    "must_include": [
+      [
+        "WEB 1622"
+      ],
+      [
+        "Physics Tutoring Resources",
+        "physics.utah.edu"
+      ]
+    ],
+    "reference": "The PCE Tutoring Center (drop-ins in WEB 1622) tutors computing courses and MATH 2200, not physics; for physics, use the Physics Tutoring Resources page (physics.utah.edu).",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.cs.utah.edu/undergraduate/current-students/tutoring/: 'drop-in hours in the PCE Tutoring Center (WEB 1622)'; tutors cover 'CS 1400, 1410, 1420 ... and MATH 2200'; link 'Physics Tutoring Resources' -> https://www.physics.utah.edu/undergraduate-program/tutoring-resources/"
+    ],
+    "seen_in": "c04 turn 2",
+    "origin": "persona-current"
+  },
+  {
+    "id": "stem-career-fair-next",
+    "category": "events",
+    "time_sensitive": true,
+    "question": "When's the next engineering career fair? I'm trying to land a summer internship.",
+    "expect_urls": [
+      "mech.utah.edu/academics/undergraduate/current-students/career-and-future-opportunities",
+      "cs.utah.edu/internship-career-opportunities",
+      "price.utah.edu/corporate-partners"
+    ],
+    "must_include": [
+      [
+        "Handshake"
+      ],
+      [
+        "every semester",
+        "each semester",
+        "Fall & Spring",
+        "fall and spring",
+        "late September",
+        "in the spring"
+      ]
+    ],
+    "must_not_include": [
+      "September 10-11, 2026",
+      "September 10, 2026"
+    ],
+    "reference": "The U's STEM Career & Internship Fair runs every semester. The fall 2026 fair was in late September, so the next one is the spring fair, and its date isn't posted on the college sites yet. Watch Handshake and book a Career Coach to prepare.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/academics/undergraduate/current-students/career-and-future-opportunities/: 'Every semester the career center puts on a STEM Career & Internship Fair. Over 100 employers come to recruit students for internships and full-time jobs.'",
+      "https://www.mech.utah.edu/directory/alumni-society/: 'The U is hosting its fall STEM career fair in late September.'",
+      "https://www.cs.utah.edu/internship-career-opportunities/: 'Handshake : Create an account to stay informed about career fairs, internships, jobs, and other professional opportunities.'",
+      "https://www.price.utah.edu/stem-career-fair-boot-camp: '2026 U of U STEM Career Fair' / 'Tuesday, September 10th' / 'Wednesday, September 11th' (weekdays fit 2024, not 2026) / 'Located in TBD'"
+    ],
+    "notes": "Stale-content trap: the boot-camp page carries '2026' but reuses 2024 weekday/date pairs. c06 turn 1 presented it as 'September 10-11, 2026'.",
+    "seen_in": "c06 turn 1",
+    "origin": "persona-current"
+  },
+  {
+    "id": "swe-contact",
+    "category": "student-support",
+    "question": "How do I get in touch with the Society of Women Engineers?",
+    "expect_urls": [
+      "price.utah.edu/club-rush",
+      "CH-EN-UG-Guide-Handbook-2025-2026",
+      "price.utah.edu/student-organizations"
+    ],
+    "must_include": [
+      [
+        "uofuswe@gmail.com"
+      ]
+    ],
+    "reference": "The Society of Women Engineers can be reached at uofuswe@gmail.com (listed in the Chemical Engineering undergraduate handbook); the college's Club Rush page lists Audrey Rubart as the contact, and the Student Organizations page links the CampusConnect club list.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.che.utah.edu/wp-content/uploads/2026/08/CH-EN-UG-Guide-Handbook-2025-2026.pdf (p.35): 'Society of Women Engineers (SWE) uofuswe@gmail.com'",
+      "https://www.price.utah.edu/club-rush: 'Society of Women Engineers | Audrey Rubart' (email only in a mailto link)",
+      "https://www.price.utah.edu/student-organizations: 'For inquiries about engineering student organizations, please contact Abby Harris.'"
+    ],
+    "notes": "Extraction drops mailto addresses on Club Rush. The bot also used swe.utahclubs.org from a 2018 'student-organizations-dnu' page.",
+    "seen_in": "c10 turn 2",
+    "origin": "persona-current"
+  },
+  {
+    "id": "robotics-minor",
+    "category": "programs",
+    "question": "Is there a robotics minor, and what does it require?",
+    "expect_urls": [
+      "robotics.coe.utah.edu/academics/undergraduate/minor"
+    ],
+    "must_include": [
+      [
+        "ROBOT 5000"
+      ],
+      [
+        "2.5"
+      ],
+      [
+        "16"
+      ]
+    ],
+    "reference": "Yes. The Robotics Minor needs at least 16 credits: one foundational pair (ME EN 3220 & 3230, ECE 3610 & 5615, or CS 4300 & 3350), ROBOT 5000 plus two more core courses from different areas, and a 1-credit project, with a C or better in each and a 2.5 average GPA. PHYS 2210 and MATH 2250 (or 2270 and 2280) are prerequisites; contact John Bolke to declare.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://robotics.coe.utah.edu/academics/undergraduate/minor/: 'Minimum of 16 minimum credits'; foundational pairs 'ME EN 3220 & ME EN 3230', 'ECE 3610 & ECE 5615', 'CS 4300 & CS 3350'; 'ROBOT 5000 | Robotics I: Mechanics'; 'Minimum C grade in all minor courses. Average GPA of 2.5 or higher'; 'PHYS 2210 and MATH 2250 OR 2270 AND 2280'; John Bolke, john.bolke@utah.edu"
+    ],
+    "seen_in": "c07 turn 3",
+    "origin": "persona-current"
+  },
+  {
+    "id": "mse-advising-booking",
+    "category": "departments",
+    "question": "How do I book an appointment with my Materials Science advisor?",
+    "expect_urls": [
+      "mse.utah.edu/undergraduate-academic-advising"
+    ],
+    "must_include": [
+      [
+        "Del Plain"
+      ],
+      [
+        "Current Student Appointment",
+        "utah.campus.eab.com",
+        "Navigate"
+      ]
+    ],
+    "reference": "Valerie Del Plain is the MSE undergraduate Academic Advisor (304 CME, valerie.del.plain@utah.edu, 801-581-6864); current students book through the Current Student Appointment link on the MSE advising page (utah.campus.eab.com).",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://mse.utah.edu/undergraduate-academic-advising/: 'Valerie Del Plain' 'Academic Advisor'; valerie.del.plain@utah.edu; '1-801-581-6864'; '304 CME'; 'Current Student Appointment' -> https://utah.campus.eab.com/pal/nB3w70cpCZ"
+    ],
+    "seen_in": "c03 turn 2",
+    "origin": "persona-current"
+  },
+  {
+    "id": "ece-capstone",
+    "category": "departments",
+    "question": "How does the ECE senior capstone work? Is it one semester or two?",
+    "expect_urls": [
+      "ece.utah.edu/senior-capstone-experience"
+    ],
+    "must_include": [
+      [
+        "ECE 4900"
+      ],
+      [
+        "ECE 4910"
+      ],
+      [
+        "Clinic"
+      ]
+    ],
+    "reference": "It's two successive semesters, ECE 4900 then ECE 4910, done as an industry-sponsored Engineering Clinic project, a faculty-supervised team project, or an individual research thesis; ask your ECE academic advisor about timing.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.ece.utah.edu/senior-capstone-experience/: 'ECE 4900 and then ECE 4910'; Engineering Clinic Program 'Each student receives a $500 scholarship which is distributed in the Spring semester'; team projects 'in a team of 2 or more under the supervision of an ECE Faculty advisor'; 'An individual research thesis or project'"
+    ],
+    "seen_in": "c09 turn 2",
+    "origin": "persona-current"
+  },
+  {
+    "id": "che-plan-gap",
+    "category": "planning",
+    "question": "What classes do chemical engineering students take in the spring of sophomore year?",
+    "expect_urls": [
+      "che.utah.edu/ugplans",
+      "CH-EN-UG-Guide-Handbook-2025-2026"
+    ],
+    "must_include": [
+      [
+        "Academic Plans",
+        "ugplans",
+        "Four-Year Plan"
+      ],
+      [
+        "advisor",
+        "cheundergrad@utah.edu",
+        "adviser"
+      ]
+    ],
+    "reference": "The sequence is on the department's Undergraduate Academic Plans page and in Table 1 (Four-Year Plan) of the CH EN UG Guide & Handbook 2025-2026; I can't read that table, so check it there and confirm your schedule with the advisors at cheundergrad@utah.edu.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.che.utah.edu/wp-content/uploads/2026/08/CH-EN-UG-Guide-Handbook-2025-2026.pdf (p.11): 'Table 1: Four-Year Plan. This table represents a summary of our curriculum ... Please consult this guide, the Academic Plans page of our site (https://www.che.utah.edu/ugplans/)' (table itself is an image)",
+      "https://www.che.utah.edu/ugplans/: 'Please meet with our undergraduates advisors if you have any questions.'"
+    ],
+    "notes": "Gap-handling guard: the ChemE plans are image-only, so the bot must not invent courses. If the plan tables get transcribed or OCR'd, replace this with a course-level case.",
+    "seen_in": "c14 turn 1",
+    "origin": "persona-current"
+  },
+  {
+    "id": "ai-degree",
+    "category": "programs",
+    "question": "i heard the U has a new AI degree?? how is that different from just doing CS",
+    "expect_urls": [
+      "cs.utah.edu/bs-in-ai",
+      "cs.utah.edu/artificial-intelligence",
+      "cs.utah.edu/ai-degrees",
+      "launches-bachelors-degree-in-artificial-intelligence"
+    ],
+    "must_include": [
+      [
+        "B.S. in Artificial Intelligence",
+        "Bachelor's degree in Artificial Intelligence",
+        "Bachelor of Science degree in Artificial Intelligence",
+        "Artificial Intelligence major"
+      ]
+    ],
+    "must_not_include": [
+      "not a separate degree"
+    ],
+    "reference": "Yes. The Kahlert School of Computing launched a B.S. in Artificial Intelligence, the first of its kind in Utah, accepting applicants from Fall 2026. It builds on computer science and math foundations, then focuses on machine learning, data analysis, natural language processing, computer vision and robotics, with ethics built in. CS also still offers an AI emphasis.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/2026/06/18/kahlert-school-of-computing-launches-bachelors-degree-in-artificial-intelligence: \"The John and Marcia Price College of Engineering and the Kahlert School of Computing have launched a Bachelor's degree in Artificial Intelligence. The degree is the first of its kind in the state of Utah, and will begin accepting applicants for the Fall 2026 semester.\"",
+      "https://www.cs.utah.edu/bs-in-ai/: \"B.S. in Artificial Intelligence\" ... \"Computer science and mathematics foundations, followed by machine learning, data analysis, natural language processing, computer vision, and robotics.\""
+    ],
+    "notes": "p05 turn 3 said 'appears to be an emphasis within the Computer Science B.S., not a separate degree'. Search for 'AI degree' returns only the AI emphasis page; ALIASES has no 'ai' entry.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "ap-csa-credit",
+    "category": "admissions",
+    "question": "I got a 5 on AP Computer Science A. Does that give me credit for CS 1400 and CS 1410?",
+    "expect_urls": [
+      "advanced-placement-credit",
+      "prior-learning-credit",
+      "ece.utah.edu/ece-department-courses"
+    ],
+    "must_include": [
+      [
+        "CS 1410"
+      ]
+    ],
+    "must_not_include": [
+      "couldn't confirm",
+      "could not confirm",
+      "sources disagree"
+    ],
+    "reference": "Yes. The Office of Admissions' AP credit table gives CS 1400 (4 hrs) + CS 1410 (4 hrs) for a 5 on AP Computer Science A (a 3 or 4 gives CS 1400). Confirm your first CS course with a Kahlert School advisor.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://admissions.utah.edu/information-resources/prior-learning-credit/advanced-placement-credit/: AP Computer Science A, Academic Year 2021-22 onwards: score 3 \"CS 1400 (4hrs)\", score 4 \"CS 1400 (4hrs)\", score 5 \"CS 1400 (4hrs) + CS 1410 (4hrs)\"",
+      "(index copy) https://www.ece.utah.edu/ece-department-courses/: \"CS 2420 – Introduction to Algorithms and Data Structures ... Prerequisite(s): C- or better in CS 1410 OR AP CS-A score of 5.\""
+    ],
+    "notes": "p05 turns 1-2: 'I couldn't confirm that ... the sources don't say a 5 counts as both CS 1400 and CS 1410'. admissions.utah.edu isn't indexed, so retrieval can only hit the ECE course page until the AP table is added.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "wue-out-of-state",
+    "category": "admissions",
+    "question": "Im from Colorado. does the U do WUE or any tuition discount for out of state students?",
+    "expect_urls": [
+      "financialaid.utah.edu/wue",
+      "admissions.utah.edu/financial-aid-scholarships/scholarships"
+    ],
+    "must_include": [
+      [
+        "150%"
+      ],
+      [
+        "3.3",
+        "3.30"
+      ]
+    ],
+    "must_not_include": [
+      "couldn't confirm whether Utah participates"
+    ],
+    "reference": "Yes. Colorado is a WUE state, and the U's WUE Tuition Rate means paying no more than 150% of the standard resident tuition. First-year students need an unweighted 3.30 GPA and a completed admission application by December 1. It's renewable for up to 8 semesters, and WUE students aren't eligible for the U's non-resident merit scholarships.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://financialaid.utah.edu/wue/index.php: \"pays no more than 150% of the standard resident tuition rate\"; freshman \"unweighted, cumulative GPA of 3.30 or higher at the time of application\"; eligible states include \"Colorado\"; \"renewable for up to 8 semesters\"",
+      "https://admissions.utah.edu/financial-aid-scholarships/scholarships/: \"Students from WUE states are only eligible for the WUE tuition rate if they meet the December 1 priority application deadline and have a minimum unweighted 3.3 GPA at the time of application.\""
+    ],
+    "notes": "p04 turns 1 and 4: 'I couldn't confirm whether Utah participates in WUE', while linking the admissions scholarships page that explains it. Neither page is indexed.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "engineering-day-week",
+    "category": "events",
+    "time_sensitive": true,
+    "setup_turns": [
+      "We're thinking of driving up to visit campus in november with my daughter. Can we do a tour of the engineering buildings or an info session while we're there?"
+    ],
+    "question": "Great. Is there anything else going on at the engineering college the week of Nov 9 that a high schooler could come see?",
+    "expect_urls": [
+      "price.utah.edu/engineering-day"
+    ],
+    "must_include": [
+      [
+        "Engineering Day"
+      ],
+      [
+        "November 14",
+        "Nov 14",
+        "Nov. 14"
+      ]
+    ],
+    "reference": "Yes: Engineering Day is Saturday, November 14, 2026, 9:00 a.m. to 12:00 p.m., at the Warnock Engineering Building. It's free and open to high school students and parents, with lab tours, research presentations and admissions counselors. Registration is currently closed, so check the Engineering Day page for updates.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/engineering-day: \"ENGINEERING DAY is a half-day event open to high school students, undecided majors, parents, transfer students, and anyone interested in engineering at the U. This event is FREE\"; \"Date: Saturday, November 14th, 2026 Time: 9:00 a.m. – 12:00 p.m. MST\"; \"Registration is currently closed. Please check back soon!\""
+    ],
+    "notes": "p06 turn 2 answered from the Trumba calendar only and said 'I didn't find a 2026 date'. Engineering Day isn't on the calendar, and old Engineering Day news posts outrank the page in search. Retire or re-date this case after November 14, 2026.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "engineering-day-high-school",
+    "category": "events",
+    "time_sensitive": true,
+    "question": "are there any engineering events for high school students coming up this fall that i could go to?",
+    "expect_urls": [
+      "price.utah.edu/engineering-day"
+    ],
+    "must_include": [
+      [
+        "Engineering Day"
+      ],
+      [
+        "November 14",
+        "Nov 14",
+        "Nov. 14"
+      ]
+    ],
+    "reference": "Engineering Day is Saturday, November 14, 2026, 9:00 a.m. to 12:00 p.m. at the Warnock Engineering Building, free and open to high school students. Registration is currently closed, so check the Engineering Day page.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/engineering-day: \"Date: Saturday, November 14th, 2026\"; \"open to high school students, undecided majors, parents, transfer students\""
+    ],
+    "notes": "Passed in p11 turn 3. This is the control for engineering-day-week: the same fact with 'high school' in the question.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "engineering-differential-tuition",
+    "category": "admissions",
+    "question": "Does it cost more to take engineering classes than other classes at the U? How much extra per credit?",
+    "expect_urls": [
+      "FreshSophTuitionFeeRes.pdf",
+      "FreshSophTuitionFeeNRes.pdf",
+      "bursar.utah.edu/undergraduate-tuition"
+    ],
+    "must_include": [
+      [
+        "71.21"
+      ]
+    ],
+    "reference": "Yes. In 2026-27, all students pay an additional $71.21 per credit hour for undergraduate (1000-5999) courses in the College of Engineering, on top of base tuition and fees ($101.70 per credit hour for graduate courses).",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://fbs.admin.utah.edu/download/income/FreshSophRes/FreshSophTuitionFeeRes.pdf (2026-27), page 2: \"Engineering Undergraduate Courses: All students, regardless of class standing, will be charged an additional $71.21 per credit hour for undergraduate courses (1000-5999 level courses) in the College of Engineering.\"",
+      "https://bursar.utah.edu/undergraduate-tuition/: \"All students will be charged additional differential tuition per credit hour for undergraduate courses taken in the following colleges and departments\" (lists the College of Engineering) and links the PDFs"
+    ],
+    "notes": "Seen on related questions: in p02 turn 1 and p04 turn 3 the bot read these PDFs and said it couldn't find the differential amount (it's on page 2). The tuition PDFs aren't indexed; the bot reaches them with fetch_page.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "resident-tuition-semester",
+    "category": "admissions",
+    "question": "Roughly what does a semester cost for a Utah resident freshman taking 12 credits?",
+    "expect_urls": [
+      "FreshSophTuitionFeeRes.pdf",
+      "bursar.utah.edu/undergraduate-tuition",
+      "tuition-estimator"
+    ],
+    "must_include": [
+      [
+        "4,702",
+        "4702"
+      ]
+    ],
+    "reference": "For 2026-27, a Utah resident freshman or sophomore taking 12 credits pays $4,702.20 per semester in tuition and mandatory fees, plus $71.21 per credit hour of engineering differential for College of Engineering courses. Housing and books are extra.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://fbs.admin.utah.edu/download/income/FreshSophRes/FreshSophTuitionFeeRes.pdf: \"2026-27 Tuition and Fees per Academic Semester / Undergraduate Lower Division / Resident\"; row 12: total tuition 4,190.62, total fees 511.58, \"Total Tuition & Fees\" 4,702.20"
+    ],
+    "notes": "Passed in p02 turn 1 (the bot fetched the PDF live). Update every academic year.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "hs-junior-start-year",
+    "category": "student-support",
+    "time_sensitive": true,
+    "setup_turns": [
+      "Hello, my son is a junior in high school and is interested in mechanical engineering at the U. Are there scholarships specifically for first-year engineering students?"
+    ],
+    "question": "So what's the actual scholarship deadline he should put on the calendar? He'd be starting college in fall 2028.",
+    "expect_urls": [
+      "price.utah.edu/scholarships",
+      "price.utah.edu/financial-aid"
+    ],
+    "must_include": [
+      [
+        "December 1",
+        "Dec 1",
+        "Dec. 1"
+      ]
+    ],
+    "must_not_include": [
+      "start in fall 2027",
+      "you shared"
+    ],
+    "reference": "For merit scholarships he just needs to apply to the U by December 1 of his senior year; the college considers admitted engineering applicants automatically. The Engineering Scholarships page currently lists February 1 as the PCE General Scholarships deadline for incoming students. Dates for the fall 2028 cycle aren't posted yet, so confirm them with the college.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/scholarships (live, modified 2026-10-19): \"Students who apply to the University of Utah by December 1 will automatically be considered for College of Engineering Merit Based scholarship. No further application is necessary.\"; \"February 1st PCE General Scholarships application deadline for current and incoming students.\"",
+      "https://www.price.utah.edu/financial-aid: \"For incoming freshmen, the scholarship application deadline is February 1st during their senior year of high school\""
+    ],
+    "notes": "p02 turn 2 told the parent 'A junior this fall would normally start in fall 2027' (wrong) and mentioned 'department-level pages you shared' (the user shared none).",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "scholarship-deadline-current-page",
+    "category": "student-support",
+    "time_sensitive": true,
+    "question": "engr scholarship deadlin?? for incoming freshmn",
+    "expect_urls": [
+      "price.utah.edu/scholarships"
+    ],
+    "must_include": [
+      [
+        "February 1",
+        "Feb 1",
+        "Feb. 1"
+      ],
+      [
+        "December 1",
+        "Dec 1",
+        "Dec. 1"
+      ]
+    ],
+    "reference": "The Engineering Scholarships page (updated October 19, 2026) lists December 1 as when the PCE General Scholarships application opens and the admission deadline for merit consideration, and February 1 as the application deadline for current and incoming students. Some older sections of the page still say February 8, so confirm with the college at contact@coe.utah.edu.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/scholarships (live, article:modified_time 2026-10-19T22:15:30Z): \"October 1st FAFSA in available December 1st PCE General Scholarships application opens Admissions application deadline for incoming first-year and transfer students to be considered for PCE merit scholarships February 1st PCE General Scholarships application deadline for current and incoming students.*\"",
+      "Same page, older section: \"Opens: December 1 Closes: February 8\" (David Jorgensen Scholarship)"
+    ],
+    "notes": "Replaces the existing 'scholarship-deadline' case, which expects Feb 8, 2026 and is now out of date. p12 turn 1 answered from the eval index's 2026-10-07 copy ('February 8, 2026 ... next cycle hasn't been posted'). Re-sync the index first. It may pass once the index has the 2026-10-19 version. The page's own Feb 1 / Feb 8 mix should be reported to the college.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "transfer-scholarship-deadline",
+    "category": "student-support",
+    "time_sensitive": true,
+    "question": "What's the engineering scholarship deadline for transfer students?",
+    "expect_urls": [
+      "price.utah.edu/scholarships",
+      "ece.utah.edu/transfer-student-admissions-and-resources"
+    ],
+    "must_include": [
+      [
+        "February 1",
+        "Feb 1",
+        "Feb. 1"
+      ]
+    ],
+    "reference": "Incoming transfer students who apply to the U by February 1 are automatically considered for PCE merit scholarships, and the PCE General Scholarships application in Scholarship Universe is due February 1 for department-level awards. Some older text on the page still says February 8, so confirm with the college.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/scholarships (live): \"PCE Merit Scholarships – Incoming transfer students who apply to the University of Utah* by February 1st will automatically be considered for Price College of Engineering merit-based scholarships.\"; \"Department-Level Scholarships – Complete the PCE General Scholarships application in Scholarship Universe ** by February 1st.\"",
+      "https://www.ece.utah.edu/transfer-student-admissions-and-resources/: February 1 Price College scholarship deadline; \"You do not need to be admitted to the major yet\""
+    ],
+    "notes": "Passed in p12 turn 2 (the bot read the live page).",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "first-gen-support",
+    "category": "student-support",
+    "question": "im first gen. is there any mentoring or support for first-generation engineering students at the U?",
+    "expect_urls": [
+      "firstgen.utah.edu",
+      "ece.utah.edu/all-resources/financial-assistance"
+    ],
+    "must_include": [
+      [
+        "First Generation Success",
+        "First-Generation Scholars",
+        "firstgen.utah.edu"
+      ]
+    ],
+    "reference": "Yes. The U's Office for First Generation Success (firstgen.utah.edu) supports first-generation students with mentorship and programs such as First-Generation Scholars. ECE also notes Alumni Scholarships open to first-generation college students.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://firstgen.utah.edu/: \"Office for First Generation Success\"; \"Our goal is to foster an inclusive campus culture that supports the academic, personal, and professional success of first-generation students.\"; programs include First-Generation Scholars, First Star, Impact Scholars and TRIO",
+      "(index copy) https://www.ece.utah.edu/all-resources/financial-assistance/: \"Alumni Scholarships – For students who had at least one parent or grandparent graduate from the U, or for first-generation college students\""
+    ],
+    "notes": "p08 turn 3: 'I couldn't find a first-gen-specific mentoring program'. firstgen.utah.edu isn't indexed.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "bme-upper-division",
+    "category": "planning",
+    "question": "Do I have to apply to get into upper-division biomedical engineering? What GPA do I need?",
+    "expect_urls": [
+      "UG_Handbook_2026.pdf",
+      "bme.utah.edu"
+    ],
+    "must_include": [
+      [
+        "Upper-Division Ready",
+        "Upper-Division-Ready",
+        "upper-division",
+        "upper division"
+      ],
+      [
+        "3.4"
+      ]
+    ],
+    "reference": "Yes. BME is a tiered program: you apply for Upper-Division Ready status, due the last day of fall classes. You need at least a 3.0 University GPA and a 3.0 Technical GPA to be considered. A University GPA above 3.0 with a Technical GPA above 3.4 is automatic; 3.0-3.4 gets further evaluation. Check with a BME advisor.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.bme.utah.edu/wp-content/uploads/2026/03/UG_Handbook_2026.pdf p.6: \"Biomedical Engineering is a tiered degree program. Students advance to upper division courses by application only. Applications are due on the last day of classes of Fall Semester.\"",
+      "Same PDF p.7: \"All students with a University GPA above 3.0 and a Technical GPA above 3.4 will gain automatic classification as BME-Upper-Division Ready. Students with a University GPA above 3.0 and a Technical GPA between 3.0 and 3.4 are subject to further evaluation\""
+    ],
+    "notes": "p07 turn 3 gave only the 3.0/3.0 minimums, left out 3.4 and the deadline, and said the technical courses weren't listed (they are, on p.6).",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "bme-first-semester",
+    "category": "planning",
+    "question": "what would my first semester look like in biomedical engineering? like what classes",
+    "expect_urls": [
+      "UG_Handbook_2026.pdf",
+      "bme.utah.edu"
+    ],
+    "must_include": [
+      [
+        "BME 1010"
+      ],
+      [
+        "MATH 1311"
+      ],
+      [
+        "advisor",
+        "adviser",
+        "advising"
+      ]
+    ],
+    "reference": "In the BME Undergraduate Handbook 2026/27 sample plan, freshman fall is BME 1010 (1), CHEM 1210 (4), CHEM 1215 (1), MATH 1311 (4), WRTG 1010 (3) and CS 1400 (4), 17 credits. It's a starting point, so confirm with a BME advisor.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.bme.utah.edu/wp-content/uploads/2026/03/UG_Handbook_2026.pdf p.20: \"Freshman Year / BME 1010 Careers in Biomed Eng 1 ... CHEM 1210 General Chemistry I (PS) 4 ... CHEM 1215 General Chemistry Lab I 1 ... MATH 1311 Accel. Eng Calc I (1) 4 ... WRTG 1010 Intro Acad. Writing (WR1) 3 ... CS 1400 Intro Comp Programming 4 / Total 17\"; \"a plan few students follow exactly but a useful starting point for planning\""
+    ],
+    "notes": "Passed in p07 turn 2. Complements plan-bme-credits. Note: the same handbook's sample plan totals 120 while p.9 says a minimum of 127 semester hours.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "transfer-gpa",
+    "category": "admissions",
+    "question": "what GPA do i need to get admitted as a transfer student, is it different for engineering?",
+    "expect_urls": [
+      "admissions.utah.edu/apply/transfer-students",
+      "price.utah.edu/future/admissions",
+      "mech.utah.edu/academics/undergraduate/future-students/future-transfer-students"
+    ],
+    "must_include": [
+      [
+        "no minimum GPA",
+        "no minimum",
+        "doesn't set a minimum",
+        "does not set a minimum",
+        "isn't a cutoff",
+        "not a cutoff"
+      ]
+    ],
+    "reference": "The U has no minimum GPA for transfer admission; it weighs your cumulative transferable GPA, grade trends and course progress (Fall 2024 transfers averaged a 3.38). Departments set their own major requirements; Mechanical Engineering, for example, needs a 3.0 weighted cumulative and major GPA for transfers with 30+ credits.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://admissions.utah.edu/apply/transfer-students/transfer-admission-standards/: \"While there is no minimum GPA to be admitted\"; Fall 2024 \"Average Transfer GPA\" 3.38",
+      "https://www.mech.utah.edu/academics/undergraduate/future-students/future-transfer-students/: \"Weighted cumulative and major GPA of 3.0 or higher AND no failed major courses\""
+    ],
+    "notes": "Passed in p03 turn 3, where the bot fetched the Admissions page live. Three alternatives in the group are paraphrases of the page's 'no minimum GPA'.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "me-ms-deadline",
+    "category": "departments",
+    "question": "When is the application deadline for the mechanical engineering MS for fall admission?",
+    "expect_urls": [
+      "mech.utah.edu/grads/admissions/application-deadlines-and-instructions"
+    ],
+    "must_include": [
+      [
+        "January 1",
+        "Jan 1",
+        "Jan. 1",
+        "1 January"
+      ],
+      [
+        "May 1",
+        "1 May"
+      ]
+    ],
+    "reference": "For fall, Mechanical Engineering's domestic priority deadline (for funding consideration) is January 1 and the final deadline is May 1; international applicants apply by January 1 and are typically admitted for fall only.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/grads/admissions/application-deadlines-and-instructions/: \"Fall 1 January 1 May 1 January\" (Domestic Priority / Domestic Final / International); \"To be eligible for fall funding, applications are due January 1.\""
+    ],
+    "notes": "Passed in p10 turn 1.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "me-grad-visit-weekend",
+    "category": "departments",
+    "time_sensitive": true,
+    "question": "Is there a visit weekend for mechanical engineering grad applicants? When is it?",
+    "expect_urls": [
+      "mech.utah.edu/grads/graduate-visitation-weekend"
+    ],
+    "must_include": [
+      [
+        "February"
+      ],
+      [
+        "January 1",
+        "Jan 1",
+        "Jan. 1"
+      ]
+    ],
+    "reference": "Yes. Mechanical Engineering's Graduate Visitation Weekend is planned for mid-to-late February 2027 (Thursday to Sunday). PhD applicants submit the visitation application and all documents by January 1 and hear by the end of January. Contact Mark Fehlberg, Director of Graduate Studies.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.mech.utah.edu/grads/graduate-visitation-weekend/: \"next year's visit mid-late February 2027 (Thursday to Sunday)\"; \"Complete both applications and submit all supporting documents (GRE scores, letters of recommendation, transcripts, etc) by January 1\"; \"If you're selected, we will notify you by the end of January\""
+    ],
+    "notes": "Passed in p10 turn 3.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "hs-summer-research",
+    "category": "research",
+    "time_sensitive": true,
+    "question": "is there a summer research program at the engineering college for high school students?",
+    "expect_urls": [
+      "price.utah.edu/k12/high-school-summer-research-internship"
+    ],
+    "must_include": [
+      [
+        "8-week",
+        "8 week",
+        "eight-week",
+        "eight week"
+      ],
+      [
+        "senior",
+        "seniors"
+      ]
+    ],
+    "reference": "Yes. The High School Summer Research Internship is an 8-week, 30-hours-a-week lab program at no cost, open to students who will be seniors next year (graduating in 2028). Registration for the last cycle is closed. Younger students can look at the Summer Research Boot Camp.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/k12/high-school-summer-research-internship: \"Duration: 8-week program | 30 hours per week of research\"; \"There is NO COST to participate in the program\"; \"Anyone who will be a senior next year (graduating in 2028) can apply to the program.\"; \"Registration is closed!\""
+    ],
+    "notes": "Passed in p09 turn 3 (minor slip: it attributed the lab-matching FAQ to the Boot Camp).",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "ce-abet",
+    "category": "programs",
+    "question": "is the computer engineering degree at the U ABET accredited?",
+    "expect_urls": [
+      "ece.utah.edu/accreditation"
+    ],
+    "must_include": [
+      [
+        "Engineering Accreditation Commission"
+      ]
+    ],
+    "must_not_include": [
+      "ece.utah.edu/advising)"
+    ],
+    "reference": "Yes. The Electrical Engineering and Computer Engineering programs are both accredited by the Engineering Accreditation Commission of ABET.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.ece.utah.edu/accreditation/: \"The Electrical Engineering program and the Computer Engineering program are both accredited by the Engineering Accreditation Commission of ABET.\"",
+      "https://www.ece.utah.edu/advising returns 404; the advising page is https://www.ece.utah.edu/advisors/"
+    ],
+    "notes": "The fact passed in p14 turn 3, but the answer invented a 404 link, https://www.ece.utah.edu/advising. must_not_include catches that link; this check may be flaky because it depends on whether the model invents the link again.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "women-in-engineering",
+    "category": "student-support",
+    "question": "I'm a girl looking at engineering and kind of nervous I won't fit in. are there groups for women in engineering at the U?",
+    "expect_urls": [
+      "price.utah.edu/student-organizations",
+      "price.utah.edu/club-rush",
+      "ece.utah.edu/student-organizations",
+      "mech.utah.edu/department/about-mechanical-engineering/women-m-e"
+    ],
+    "must_include": [
+      [
+        "Society of Women Engineers",
+        "SWE"
+      ],
+      [
+        "Women in Engineering",
+        "Women in Computing"
+      ]
+    ],
+    "reference": "Yes. The Society of Women Engineers and Women in Computing are active student clubs (both listed for the college's Club Rush), and the Women in Engineering (WIE) program serves women engineering and computer science students across the college.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "https://www.price.utah.edu/club-rush: club list includes \"Society of Women Engineers – Audrey Rubart\" and \"Women in Computing – Serena Aeschilman\"",
+      "(index copy) https://www.ece.utah.edu/student-organizations/: \"The Women in Engineering (WIE) program is dedicated to serving the community of women graduate and undergraduate engineering/computer science students\""
+    ],
+    "notes": "Passed in p08 turn 1, though it linked a 2018 '/student-organizations-dnu/' page rather than the current CampusConnect directory.",
+    "origin": "persona-prospective"
+  },
+  {
+    "id": "class-size-gap",
+    "category": "scope-answer",
+    "question": "How big are the engineering classes at the U usually? I don't want to be in a 300 person lecture all the time",
+    "decline": false,
+    "must_include": [
+      [
+        "couldn't find",
+        "could not find",
+        "didn't find",
+        "did not find",
+        "not published",
+        "doesn't publish",
+        "don't publish"
+      ]
+    ],
+    "reference": "I couldn't find published class-size figures for the college. ECE's prospective-student page (last updated 2021) lists a 1:8 faculty-to-undergraduate ratio, which isn't a class size, and Mechanical Engineering notes its technical electives have smaller classes. An engineering adviser at an info session can tell you more.",
+    "as_of": "2026-10-21",
+    "evidence": [
+      "(index copy) https://www.ece.utah.edu/prospective-students/ (modified 2021-11-05): \"Our faculty to undergraduate student ratio is 1:8\"",
+      "(index copy) mech.utah.edu technical electives page: \"ME EN technical electives offer the opportunity to dive deeper into mechanical engineering topics, often with an application-focus and smaller class sizes\""
+    ],
+    "notes": "Gap-handling case. Passed in p11 turn 1 with no invented numbers. The must_include phrases are acknowledgment phrases, not page text, like the existing club-rush case.",
+    "origin": "persona-prospective"
   }
 ]

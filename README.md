@@ -3,7 +3,10 @@
 An AI chat assistant for [price.utah.edu](https://www.price.utah.edu/), the John and Marcia Price College of
 Engineering website. It answers visitor questions from the college's own web content and links its sources.
 
-Everything runs locally:
+- **Try the beta:** https://uofuchatbot.web.app (ask the project lead for the password)
+- **Latest evaluation:** [October 2026 beta evaluation (PDF)](docs/reports/beta-evaluation-2026-10-21.pdf)
+
+To run it locally:
 
 | URL | What it is |
 | --- | --- |
@@ -116,13 +119,17 @@ role.
 ```bash
 .venv/bin/python -m evals.run retrieval   # no key: does the first search find the right page?
 .venv/bin/python -m evals.run selftest    # no key: graders accept reference answers, reject empty ones
-.venv/bin/python -m evals.run answers     # full bot; --reps 3 for variance
+.venv/bin/python -m evals.run answers     # full bot; --reps 2 to check consistency (about $0.25)
+.venv/bin/python -m evals.run baseline    # no key: the college site's own search box, for comparison (~12 min)
+.venv/bin/python -m evals.converse serve  # then `say` to hold a multi-turn test conversation
 ```
 
 Each answer is graded with separate checks (cites an expected page, contains the required facts, avoids
 known-wrong claims, mentions a real event from the live calendar, politely redirects off-topic requests).
-API failures are logged separately and never counted as wrong answers. Results and full transcripts go to
-`evals/results/<timestamp>/`. Add your own questions, especially ones the ambassadors hear often.
+API failures are logged separately and never counted as wrong answers. Results, full transcripts and a
+`summary.json` with pass rates and their 95% ranges go to `evals/results/<timestamp>/`. Questions marked
+`origin: persona-…` came from simulated-student testing and track known problems. Add your own
+questions, especially ones the ambassadors hear often.
 
 ## Testing and refining
 
@@ -146,6 +153,7 @@ API failures are logged separately and never counted as wrong answers. Results a
 | [docs/SECURITY.md](docs/SECURITY.md) | scope, abuse and cost controls, research, open questions for the university |
 | [docs/DATA_PLAN.md](docs/DATA_PLAN.md) | what usage data to save, why, for how long, and how it maps to Firestore or AWS (draft) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | the hosted beta: Cloud Run, Firebase Hosting, the beta password, reading the logs |
+| [docs/reports/](docs/reports/) | evaluation reports to share; the [October 2026 beta evaluation](docs/reports/beta-evaluation-2026-10-21.pdf) opens right in the browser |
 | [CLAUDE.md](CLAUDE.md) | rules and commands for Claude Code sessions in this repo |
 
 ## Hosted beta
