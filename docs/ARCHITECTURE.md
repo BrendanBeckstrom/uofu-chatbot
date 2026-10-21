@@ -165,6 +165,11 @@ rate, topics, the most-asked questions, and recent questions it couldn't fully a
 surface on the site). `--firestore` reads the hosted beta's records, and `--json` gives the same numbers
 for a dashboard. Eval runs log to their own results folder, so they don't count as visitors.
 
+## Site content audit (`audit/`)
+
+A separate, read-only check of the college's own pages for outdated or conflicting information. It reads `data/`
+but never writes to it, so it doesn't affect answers. [SITE_AUDIT.md](SITE_AUDIT.md) explains it.
+
 ## Data files
 
 Everything in `data/` is generated and git-ignored. It's safe to delete; rebuild with `python -m app.sync

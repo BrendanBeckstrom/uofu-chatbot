@@ -5,7 +5,7 @@ answers from the college's and departments' public web content, handbooks and ev
 sources. FastAPI backend, Claude Haiku 5.5 through the official `anthropic` SDK, and an embeddable
 vanilla-JS widget.
 
-How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Change recipes:
+How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Auditing the college's own pages: [docs/SITE_AUDIT.md](docs/SITE_AUDIT.md). Change recipes:
 [docs/MAKING_CHANGES.md](docs/MAKING_CHANGES.md). Security and cost: [docs/SECURITY.md](docs/SECURITY.md).
 The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs/DEPLOY.md](docs/DEPLOY.md).
 
@@ -26,6 +26,8 @@ The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs
 .venv/bin/python -m evals.run regrade --dir evals/results/<run>   # free; re-score saved answers after fixing a case
 .venv/bin/python -m evals.converse say <name> "<message>"  # one real API call; needs `evals.converse serve` running
 ./deploy/deploy.sh server | pages                        # update the hosted beta; ask before running
+.venv/bin/python -m audit.scan --links                   # site content audit candidates; read-only, ~10 min
+.venv/bin/python -m audit.lookup search "<words>"         # search the saved sites without the server
 ```
 
 ## Rules
