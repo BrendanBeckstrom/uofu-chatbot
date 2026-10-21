@@ -22,7 +22,9 @@ The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs
 .venv/bin/python -m app.analytics --days 7              # usage report: people, questions, topics, gaps
 .venv/bin/python -m evals.run selftest                   # free; checks the eval graders
 .venv/bin/python -m evals.run retrieval                  # free; needs the local index
-.venv/bin/python -m evals.run answers                    # real API calls, about $0.05; ask before running
+.venv/bin/python -m evals.run answers                    # real API calls, about $0.12 a pass; ask before running
+.venv/bin/python -m evals.run regrade --dir evals/results/<run>   # free; re-score saved answers after fixing a case
+.venv/bin/python -m evals.converse say <name> "<message>"  # one real API call; needs `evals.converse serve` running
 ./deploy/deploy.sh server | pages                        # update the hosted beta; ask before running
 ```
 

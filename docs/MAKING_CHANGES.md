@@ -22,8 +22,8 @@ and review what it proposes.
    .venv/bin/python -m tests.test_guard
    .venv/bin/python -m tests.test_analytics
    ```
-4. **If you changed what the bot says or how it searches,** also run the real-answer eval. It costs about
-   $0.05:
+4. **If you changed what the bot says or how it searches,** also run the real-answer eval. It costs
+   about $0.12 (or $0.25 with `--reps 2`):
    ```bash
    .venv/bin/python -m evals.run answers
    ```
@@ -101,6 +101,10 @@ Add an entry to `evals/questions.json`:
   - `decline: true` or `decline: false`: should it refuse?
   - `time_sensitive: true`
 - Check facts against the live site, never from memory.
+- `origin` (where the question came from) and `evidence` (the page text you checked) are optional notes for
+  reviewers; the graders ignore them.
+- If a grader turns out too strict (it failed a good answer), fix the case and re-score the saved run for free:
+  `.venv/bin/python -m evals.run regrade --dir evals/results/<run>`.
 - Run `.venv/bin/python -m evals.run selftest`. It confirms your reference answer passes the graders and an
   empty answer fails.
 
