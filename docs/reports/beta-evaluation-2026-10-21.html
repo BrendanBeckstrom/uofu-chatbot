@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Price Assistant Evaluation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }
+  /* Layout: one reading column with a section index beside it on wide screens; evidence (charts, tables,
+     transcripts) sits in the column at full width. University of Utah core colors, red used sparingly. */
+  :root {
+    --bg: #FFFFFF;
+    --surface: #F3F5F5;
+    --ink: #151515;
+    --muted: #5C5F61;
+    --line: #DCE1E1;
+    --red: #BE0000;
+    --pass: #2C7A43;
+    --warn: #9A6A00;
+    --fail: #890000;
+    --bar: #151515;
+    --bar-soft: #8A8E90;
+    --display: "Work Sans", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111314; --surface: #1A1D1F; --ink: #ECEEEE; --muted: #A4A8AA; --line: #2D3133;
+      --red: #FF5C5C; --pass: #6CC24A; --warn: #FFB81D; --fail: #FF7A7A; --bar: #ECEEEE; --bar-soft: #7D8285;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111314; --surface: #1A1D1F; --ink: #ECEEEE; --muted: #A4A8AA; --line: #2D3133;
+    --red: #FF5C5C; --pass: #6CC24A; --warn: #FFB81D; --fail: #FF7A7A; --bar: #ECEEEE; --bar-soft: #7D8285;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 17px/1.6 var(--body); }
+  .page { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px;
+          display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 56px; }
+  @media (max-width: 900px) { .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 24px 64px; } .toc { display: none; } }
+
+  .toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 14px; }
+  .toc p { font: 600 12px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .toc a { color: var(--muted); text-decoration: none; }
+  .toc a:hover, .toc a:focus-visible { color: var(--ink); text-decoration: underline; }
+
+  main { min-width: 0; }
+  header { border-top: 6px solid var(--red); padding-top: 20px; margin-bottom: 36px; }
+  .eyebrow { font: 600 12px/1.3 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--red); margin: 0 0 10px; }
+  h1 { font: 700 clamp(32px, 4.6vw, 46px)/1.1 var(--display); margin: 0 0 14px; text-wrap: balance; letter-spacing: -.01em; }
+  .meta { color: var(--muted); font-size: 15px; margin: 0; }
+  .meta span { white-space: nowrap; }
+  h2 { font: 700 27px/1.2 var(--display); margin: 64px 0 14px; text-wrap: balance; scroll-margin-top: 24px; }
+  h3 { font: 600 19px/1.3 var(--display); margin: 32px 0 8px; text-wrap: balance; }
+  p, li { max-width: 68ch; }
+  a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .lede { font-size: 19px; }
+  .small { font-size: 14px; color: var(--muted); }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .decision { background: var(--surface); border-left: 4px solid var(--red); padding: 20px 24px; margin: 0 0 28px; border-radius: 0 6px 6px 0; }
+  .decision h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .decision p { margin: 0; font-size: 19px; max-width: none; }
+  .decision p + p { margin-top: 10px; font-size: 16px; color: var(--muted); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 0 0 8px; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 4px; align-content: start; }
+  .card .label { font-size: 14px; color: var(--muted); }
+  .card .value { font: 600 30px/1.1 var(--display); }
+  .card .value small { font: 500 15px var(--body); color: var(--muted); }
+  .card .note { font-size: 14px; color: var(--muted); }
+  .status { font: 600 12px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; display: inline-flex; gap: 6px; align-items: center; }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .status.good { color: var(--pass); } .status.watch { color: var(--warn); } .status.fix { color: var(--fail); }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px 32px; }
+  .two > * { min-width: 0; }
+  ul.tight { padding-left: 20px; margin: 8px 0; display: grid; gap: 6px; }
+
+  .chart { margin: 16px 0 8px; display: grid; gap: 14px; }
+  .chart h3 { margin: 0; font-size: 16px; }
+  .row { display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr) 76px; gap: 12px; align-items: center; font-size: 15px; }
+  @media (max-width: 560px) { .row { grid-template-columns: minmax(0, 1fr) 70px; } .row .track { grid-column: 1 / -1; grid-row: 2; } }
+  .track { position: relative; height: 14px; background: var(--surface); border-radius: 3px; }
+  .fill { position: absolute; inset: 0 auto 0 0; background: var(--bar); border-radius: 3px; }
+  .fill.soft { background: var(--bar-soft); }
+  .range { position: absolute; top: 50%; height: 2px; background: var(--red); transform: translateY(-50%); }
+  .range::before, .range::after { content: ""; position: absolute; top: -5px; width: 2px; height: 12px; background: var(--red); }
+  .range::before { left: 0; } .range::after { right: 0; }
+  .row .n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; }
+  .axis { display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr) 76px; gap: 12px; font: 12px var(--mono); color: var(--muted); }
+  .axis div:nth-child(2) { display: flex; justify-content: space-between; }
+  @media (max-width: 560px) { .axis { grid-template-columns: minmax(0, 1fr); } .axis div:nth-child(1), .axis div:nth-child(3) { display: none; } }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 18px; height: 8px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+
+  .scroll { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { font: 600 13px/1.3 var(--display); letter-spacing: .03em; color: var(--muted); background: var(--surface); }
+  tr:last-child td { border-bottom: 0; }
+  td p { margin: 0; }
+  .sev { font: 600 12px/1 var(--display); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+  .sev.high { color: var(--fail); } .sev.med { color: var(--warn); } .sev.low { color: var(--muted); }
+
+  .transcripts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin: 16px 0; }
+  .t { border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .t .q { font-weight: 600; margin: 0; }
+  .t .q::before { content: "Student: "; font-weight: 400; color: var(--muted); }
+  .t blockquote { margin: 0; padding-left: 12px; border-left: 2px solid var(--line); font-size: 15px; color: var(--ink); }
+  .t blockquote p { margin: 0 0 6px; } .t blockquote p:last-child { margin: 0; }
+  .t .why { font-size: 14px; color: var(--muted); margin: 0; }
+  .t .tag { justify-self: start; }
+
+  details { border-top: 1px solid var(--line); padding: 12px 0; }
+  details summary { cursor: pointer; font: 600 16px var(--display); }
+  code { font: 14px var(--mono); background: var(--surface); padding: 1px 5px; border-radius: 3px; }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <nav class="toc" aria-label="Sections">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#what">What it is</a></li>
+      <li><a href="#method">How we tested</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#strengths">What it does well</a></li>
+      <li><a href="#limitations">Limitations and fixes</a></li>
+      <li><a href="#site">Problems on the college sites</a></li>
+      <li><a href="#next">Next steps</a></li>
+      <li><a href="#appendix">Method notes</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header>
+      <p class="eyebrow">University of Utah · Price College of Engineering · Beta evaluation</p>
+      <h1>How well does the Price Assistant answer students?</h1>
+      <p class="meta"><span>October 21, 2026</span> · <span>Model: Claude Haiku 5.5</span> · <span>App version ac059e1</span> · <span>Site content as of October 21, 2026</span> · <span>Prepared by Brendan Beckstrom, student engineering ambassador</span></p>
+    </header>
+
+    <section id="summary" aria-labelledby="summary-h">
+      <div class="decision">
+        <h2 id="summary-h">Recommendation</h2>
+        <p>Widen the password-protected beta to a small group of students, ambassadors and advisors (about 20 to 40 people) while we fix the four high-severity issues below. It is not ready for an unsupervised launch on price.utah.edu.</p>
+        <p>It answers the college's common questions accurately, cites the page it used, stays on topic and sends students to advisors. Its errors cluster around department policy details, advisor names and information that lives on central university sites.</p>
+      </div>
+
+      <div class="cards" role="list">
+        <div class="card" role="listitem">
+          <span class="label">Core questions answered correctly</span>
+          <span class="value num">111 <small>of 114</small></span>
+          <span class="note">97%, likely range 93–99%. 57 questions, each asked twice.</span>
+          <span class="status good">Strong</span>
+        </div>
+        <div class="card" role="listitem">
+          <span class="label">Stays on topic</span>
+          <span class="value num">24 <small>of 24</small></span>
+          <span class="note">Homework, off-topic and manipulation attempts declined. 0 of 22 real questions wrongly refused.</span>
+          <span class="status good">Strong</span>
+        </div>
+        <div class="card" role="listitem">
+          <span class="label">Fact-checked conversation answers</span>
+          <span class="value num">71 <small>of 82</small></span>
+          <span class="note">Correct or with only small issues. 11 had a significant error (see <a href="#limitations">limitations</a>).</span>
+          <span class="status watch">Needs fixes</span>
+        </div>
+        <div class="card" role="listitem">
+          <span class="label">Sends students to the right person</span>
+          <span class="value num">47 <small>of 49</small></span>
+          <span class="note">Answers that needed a referral to an advisor or office.</span>
+          <span class="status good">Strong</span>
+        </div>
+        <div class="card" role="listitem">
+          <span class="label">Finds the right page vs. the site's search box</span>
+          <span class="value num" id="baseline-card">49 <small>vs. 7 of 71</small></span>
+          <span class="note" id="baseline-card-note">Questions where the right page was in the top five results: the assistant's first search vs. price.utah.edu's search box.</span>
+          <span class="status good">Strong</span>
+        </div>
+        <div class="card" role="listitem">
+          <span class="label">Cost and speed</span>
+          <span class="value num">$0.0012 <small>per answer</small></span>
+          <span class="note">About $1.20 per 1,000 questions. Typical answer in 5.3 seconds; 9 in 10 within 9.3 seconds.</span>
+          <span class="status good">Low</span>
+        </div>
+      </div>
+
+      <div class="two">
+        <div>
+          <h3>What it does well</h3>
+          <ul class="tight">
+            <li>Answers from the college's own pages and links them, so every answer can be checked.</li>
+            <li>Finds the right page far more often than the site's search box: 49 vs. 7 of 71 questions.</li>
+            <li>Builds first-semester schedules from the departments' official 4-year plans, with credits that add up.</li>
+            <li>Says when it can't find something instead of guessing, and declines homework in about a second.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Top limitations, and how we'll handle them</h3>
+          <ul class="tight">
+            <li><strong>Misses a department's own policy page.</strong> Tune search to rank policy pages and handbook sections higher.</li>
+            <li><strong>Outdated or wrong advisor names.</strong> Drop moved pages from the index and keep the directory's undergraduate and graduate sections apart.</li>
+            <li><strong>Doesn't know central U pages</strong> (tuition discounts, AP credit, the Registrar's calendar). Add a short list of those pages to what it reads.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="what" aria-labelledby="what-h">
+      <h2 id="what-h">What it is, and what it isn't</h2>
+      <p>The Price Engineering Assistant is a chat window for the college's website, built as a student proof of concept. It answers from the public pages of price.utah.edu and the seven department sites (biomedical, chemical, civil, computing, electrical and computer, materials, mechanical), their handbooks, 4-year plans and flowcharts, the CS handbook site and the college's live events calendar. Every answer links the pages it used. It runs on Claude Haiku 5.5.</p>
+      <div class="two">
+        <div>
+          <h3>It is meant to</h3>
+          <ul class="tight">
+            <li>Save students the time it takes to find information spread across eight websites.</li>
+            <li>Give an example first semester or year from a department's official plan.</li>
+            <li>Send future students to the college's engineering advisers and current students to their department's advisors.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>It does not</h3>
+          <ul class="tight">
+            <li>Replace advisors, or make admissions or financial-aid decisions.</li>
+            <li>See anyone's records, grades or applications.</li>
+            <li>Do homework, write essays or answer questions unrelated to the U.</li>
+          </ul>
+        </div>
+      </div>
+      <p>The beta is behind a shared password. Each question and answer is saved for 90 days so we can review mistakes, with emails, phone numbers and uNIDs removed. Messages about self-harm get support resources, and their text is never saved. Spending on AI is capped at $5 a day.</p>
+    </section>
+
+    <section id="method" aria-labelledby="method-h">
+      <h2 id="method-h">How we tested</h2>
+      <div class="two">
+        <div>
+          <h3>1. A fixed question set</h3>
+          <p>96 questions with known answers, each asked twice (192 answers). 57 core questions were written from the college's pages; 39 more came from problems found in step 2. Each answer is graded by fixed checks: did it link an expected page, does it include the required facts in the page's own wording, does it avoid known wrong statements, and does it decline when it should. No AI grades the answers.</p>
+        </div>
+        <div>
+          <h3>2. Simulated students, fact-checked</h3>
+          <p>Two AI agents played future students and parents, and current students, in 28 realistic conversations (82 answers), including follow-ups, typos and vague questions. Every answer was checked against the live utah.edu pages and rated correct, minor issue or incorrect.</p>
+        </div>
+        <div>
+          <h3>3. Compared with the site's search box</h3>
+          <p>We typed the same questions, as keywords, into price.utah.edu's own search and checked whether the right page appeared in the top five results, then did the same for the assistant's first search.</p>
+        </div>
+        <div>
+          <h3>What we did not test</h3>
+          <p>Real students and advisors judging answers, accessibility with screen readers, heavy traffic, languages other than English, and the widget embedded on the live site. The questions were written by the project team, so they aren't an independent sample.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" aria-labelledby="results-h">
+      <h2 id="results-h">Results</h2>
+      <p>Bars show the share of answers that passed. The red line is the likely range: with this many questions, the true rate is very probably inside it. Small groups have wide ranges.</p>
+      <div class="legend" aria-hidden="true"><span><i style="background:var(--bar)"></i>Core questions</span><span><i style="background:var(--bar-soft)"></i>To-fix questions from testing</span><span><i style="background:var(--red);height:2px"></i>Likely range (95%)</span></div>
+
+      <div class="chart" id="chart-core" aria-label="Core questions by topic"></div>
+      <div class="chart" id="chart-fix" aria-label="To-fix questions by topic"></div>
+      <p class="small">The 39 to-fix questions were chosen because testing found a problem with them, so their pass rate (39 of 78, likely range 39–61%) measures progress on fixes, not typical questions. Across all 96 questions, 150 of 192 answers passed (78%, likely range 72–83%).</p>
+
+      <h3>Consistency</h3>
+      <p>The bot can answer the same question differently each time, so every question ran twice. The overall pass rate was within one point between the two runs. All 57 core questions passed at least once, and 54 passed both times.</p>
+
+      <h3>Questions about dates</h3>
+      <p>Questions whose answers change over time (events, deadlines, applications) passed <span class="num">30 of 34</span> times. The bot reads the live calendar and the most recently updated page, and says when a date has passed or may have changed.</p>
+
+      <h3>Finding the right page</h3>
+      <div class="chart" id="chart-search" aria-label="Right page in the top five results"></div>
+      <p id="baseline-text">price.utah.edu's search box found the right page in its top five for <span class="num">7 of 71</span> questions. For half the questions it returned no results at all, because it requires every word typed, and it can't search the department sites, where 36 of the answers live. The assistant's first search found <span class="num">49 of 71</span>, including 23 of the 36 answers on department sites. We typed each question's keywords. Shorter searches might do better, but a student would still have to know which of eight sites to search.</p>
+      <p>Counting its top six results, the assistant's first search found the right page for 50 of 71 questions. Of the 21 misses, 17 were pages it has but ranked too low, which better search tuning can fix, and 4 were pages it doesn't have, on central university sites. The bot often recovers by searching again or reading a page directly.</p>
+
+      <h3>Speed and cost</h3>
+      <p>The typical answer took <span class="num">5.3</span> seconds and 9 in 10 took under <span class="num">9.3</span>. Answers cost <span class="num">$0.0012</span> on average, so 1,000 questions cost about <span class="num">$1.20</span>. Testing for this report cost about <span class="num">$0.40</span> in total. Hosting during the beta is expected to stay within Google Cloud's free tiers.</p>
+    </section>
+
+    <section id="strengths" aria-labelledby="strengths-h">
+      <h2 id="strengths-h">What it does well</h2>
+      <p>Examples from the simulated conversations, each checked against the live pages.</p>
+      <div class="transcripts">
+        <article class="t">
+          <span class="status good tag">Correct · degree planning</span>
+          <p class="q">hey im a freshman in CS, what classes should i be taking my first semester?</p>
+          <blockquote>
+            <p>As a first-year CS student starting with CS 1400 and Precalculus, the Kahlert School's suggested plan for fall looks like this: CS 1400 (4 credits), MATH 1080 (5 credits), two Gen Ed courses (3 credits each). That totals 15 credits.…</p>
+            <p>Before you register, confirm your math placement and course plan with a CS academic advisor…</p>
+          </blockquote>
+          <p class="why">Courses and credits match the official CS 4-year plan it linked, it mentions the other starting track, and it sends the student to an advisor.</p>
+        </article>
+        <article class="t">
+          <span class="status good tag">Correct · graduate admissions</span>
+          <p class="q">I'm looking at the MS in mechanical engineering. What are the admission requirements and when is the deadline for fall 2027?</p>
+          <blockquote>
+            <p>…a priority deadline of January 1, 2027 (the date for fall funding consideration) and a final deadline of May 1, 2027.… Undergraduate GPA of at least 3.0 on a 4.0 scale. GRE General Test is optional.…</p>
+          </blockquote>
+          <p class="why">Every date, requirement and code matches the department's deadlines page, which it read live.</p>
+        </article>
+        <article class="t">
+          <span class="status good tag">Honest about a gap</span>
+          <p class="q">How big are the engineering classes at the U usually? I don't want to be in a 300 person lecture all the time</p>
+          <blockquote>
+            <p>I couldn't find published class-size numbers for the college, so I can't tell you the typical lecture size. The closest figure is on the ECE Prospective Students page, which lists a faculty-to-undergraduate ratio of 1:8. That's an overall ratio, not a class size, and the page was last updated in 2021…</p>
+          </blockquote>
+          <p class="why">No invented numbers. It gives the nearest real figure with its date and points to the advisers and the college office.</p>
+        </article>
+        <article class="t">
+          <span class="status good tag">Stays on topic</span>
+          <p class="q">can u check my statics hw answer? its ME EN 2010, a 200 N force at 30 degrees on a 2 m beam…</p>
+          <blockquote>
+            <p>I'm scoped to University of Utah questions, so I can't solve or write coursework, code or essays. If you're stuck on a class, the college's Tutoring Resources page lists TA hours, department tutoring and other help.</p>
+          </blockquote>
+          <p class="why">Declined in 1.2 seconds for $0.0001, with a pointer to tutoring.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="limitations" aria-labelledby="limitations-h">
+      <h2 id="limitations-h">Known limitations, and how we'll handle them</h2>
+      <p>Severity: <strong>high</strong> means a student could make a wrong decision from the answer; <strong>medium</strong> means confusing but unlikely to cause harm; <strong>low</strong> means cosmetic. None of the errors involved personal data or unsafe content.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>What we saw</th><th>Severity</th><th>Example</th><th>Why it happens</th><th>How we'll fix it</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><p>Misses a department's own policy page and answers from a secondary page</p></td>
+              <td><span class="sev high">High</span></td>
+              <td><p>Said there's no minimum GPA to switch into Mechanical Engineering. The department's page requires 2.500.</p></td>
+              <td><p>Search ranks flowcharts and transfer pages above the policy page.</p></td>
+              <td><p>Rank policy pages and handbook sections higher; treat "GPA", "repeat" and "full major" as policy questions. Regression questions added.</p></td>
+            </tr>
+            <tr>
+              <td><p>Outdated or wrong advisor names</p></td>
+              <td><span class="sev high">High</span></td>
+              <td><p>Named a graduate advisor to an undergraduate, from an old copy of the college's advisor directory.</p></td>
+              <td><p>The directory moved and the old copy stayed in the index; its undergraduate and graduate sections were merged into one list.</p></td>
+              <td><p>Drop pages that now redirect during the weekly check; keep section headings when reading pages; prefer the department's own advising page.</p></td>
+            </tr>
+            <tr>
+              <td><p>Doesn't know information on central university sites</p></td>
+              <td><span class="sev high">High</span></td>
+              <td><p>Couldn't confirm the WUE tuition discount for a Colorado student, or which AP Computer Science score earns CS 1400 and 1410.</p></td>
+              <td><p>Only the college and department sites are indexed.</p></td>
+              <td><p>Add a short list of central pages: admissions, tuition, WUE, AP credit, the Registrar's calendar, first-generation support.</p></td>
+            </tr>
+            <tr>
+              <td><p>Misses details inside long documents, or reports only one side of a conflict</p></td>
+              <td><span class="sev high">High</span></td>
+              <td><p>Said there's no deadline to join a research lab, though the BME handbook sets one (junior-year winter break). Missed the engineering tuition surcharge on page 2 of the tuition table.</p></td>
+              <td><p>Long PDFs are split by page, not by section, so the right passage isn't found.</p></td>
+              <td><p>Split handbooks by section heading; tell the bot to state both versions when sources disagree and send the student to an advisor.</p></td>
+            </tr>
+            <tr>
+              <td><p>Events and dates not on the calendar</p></td>
+              <td><span class="sev med">Medium</span></td>
+              <td><p>Missed Engineering Day (Saturday, November 14) when a parent asked what's on that week. Gave one wrong weekday.</p></td>
+              <td><p>Engineering Day isn't on the events calendar, and older news posts outrank its page.</p></td>
+              <td><p>Ask the college to add it to the calendar; rank the current event page above old news; give the bot dates with their weekday.</p></td>
+            </tr>
+            <tr>
+              <td><p>Slips in long conversations</p></td>
+              <td><span class="sev med">Medium</span></td>
+              <td><p>Referred to resources "I listed earlier" that it never listed; switched a student's CS plan track mid-conversation.</p></td>
+              <td><p>Follow-up searches lose names and details from earlier turns.</p></td>
+              <td><p>Carry earlier turns' key details into follow-up searches; add a rule against referring to things not said.</p></td>
+            </tr>
+            <tr>
+              <td><p>Links and link labels</p></td>
+              <td><span class="sev low">Low</span></td>
+              <td><p>3 of 209 cited links were broken: 1 made up by the bot, 2 copied from dead links on college pages. Some link labels didn't match their page.</p></td>
+              <td><p>The bot sometimes names a resource from memory and attaches the nearest link.</p></td>
+              <td><p>Check every link against the pages it actually read before sending the answer.</p></td>
+            </tr>
+            <tr>
+              <td><p>"Which major should I choose?" lists everything first</p></td>
+              <td><span class="sev low">Low</span></td>
+              <td><p>Listed all majors without asking about the student's interests. With interests given, it narrowed well.</p></td>
+              <td><p>No instruction for this kind of question.</p></td>
+              <td><p>Give a short overview, then ask what the student enjoys; test with new questions.</p></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Two examples of high-severity errors</h3>
+      <div class="transcripts">
+        <article class="t">
+          <span class="status fix tag">Incorrect · department policy</span>
+          <p class="q">is there a minimum gpa to switch into mech? mine is like a 2.6</p>
+          <blockquote>
+            <p>I didn't find a minimum GPA to declare mechanical engineering as a current U student.…</p>
+          </blockquote>
+          <p class="why">The department's future-students page requires a 2.500 University of Utah GPA to change into Mechanical Engineering, plus a meeting with an ME advisor, so this student qualifies. The bot answered from the policy and transfer pages instead, though it did send the student to an advisor.</p>
+        </article>
+        <article class="t">
+          <span class="status fix tag">Incorrect · events</span>
+          <p class="q">Is there anything else going on at the engineering college the week of Nov 9 that a high schooler could come see?</p>
+          <blockquote>
+            <p>…The college's Engineering Day, which offers lab tours and hands-on demos, has run in past years, but I didn't find a 2026 date…</p>
+          </blockquote>
+          <p class="why">Engineering Day is Saturday, November 14, 2026, for high school students and parents. It isn't on the events calendar. Asked directly in another conversation, the bot found it.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="site" aria-labelledby="site-h">
+      <h2 id="site-h">Problems found on the college's websites</h2>
+      <p>Checking answers against the live pages turned up content problems that affect students whether or not they use the assistant. Each was confirmed on the page on October 21.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Where</th><th>Problem</th><th>Suggested owner</th></tr></thead>
+          <tbody>
+            <tr><td><p>price.utah.edu/scholarships and /financial-aid</p></td><td><p>The scholarship deadline appears as both February 1 and February 8. The scholarships page was updated October 19 with February 1, but older sections and the financial aid page still say February 8.</p></td><td><p>College scholarships office</p></td></tr>
+            <tr><td><p>College events calendar</p></td><td><p>The calendar's fall 2026 "last day to withdraw" dates are two weeks earlier than the Registrar's: October 30 vs. November 13 for full-semester classes, and November 13 vs. November 27 for second-half classes. The Registrar's calendar is the official one.</p></td><td><p>College calendar editor, with the Registrar</p></td></tr>
+            <tr><td><p>College events calendar</p></td><td><p>Engineering Day (Saturday, November 14, 2026) isn't on the calendar.</p></td><td><p>Outreach / events</p></td></tr>
+            <tr><td><p>Majors, Future Students and Outreach pages</p></td><td><p>The "Which Engineering Major Should I Choose?" PDF link returns "not found".</p></td><td><p>Web team</p></td></tr>
+            <tr><td><p>Engineering Floor page</p></td><td><p>The housing application link (housing.utah.edu/applications) returns "not found".</p></td><td><p>Web team</p></td></tr>
+            <tr><td><p>Chemical Engineering handbook 2025–26</p></td><td><p>The 4-year and 5-year plans are images only, so screen readers and search can't read them. The repeat-course rule says three attempts on page 10 and two attempts (third with approval) on page 23.</p></td><td><p>Chemical Engineering advising</p></td></tr>
+            <tr><td><p>price.utah.edu/student-organizations-dnu</p></td><td><p>A 2018 student organizations page is still public and comes up in searches.</p></td><td><p>Web team</p></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="next" aria-labelledby="next-h">
+      <h2 id="next-h">Next steps</h2>
+      <div class="two">
+        <div>
+          <h3>Fix and re-measure</h3>
+          <ul class="tight">
+            <li>Fix the four high-severity patterns above (about one to two weeks of work).</li>
+            <li>Run the same 96 questions again and publish a before/after comparison, listing every question that changed.</li>
+            <li>Turn real beta questions into new test questions each week.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>A wider beta</h3>
+          <ul class="tight">
+            <li>20 to 40 testers: ambassadors, current students and two or three advisors, behind the password.</li>
+            <li>Review every thumbs-down weekly; refresh the site content weekly.</li>
+            <li>Pause the beta if a tester reports acting on a wrong deadline or requirement.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Human review</h3>
+          <ul class="tight">
+            <li>Two or three advisors rate about 50 real beta answers as pass or fail on: correct, actionable, right referral, and the linked page supports the claim.</li>
+            <li>A quarter of answers rated by two people, to check that raters agree.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Approvals needed before any public launch</h3>
+          <ul class="tight">
+            <li>University Counseling Center: the crisis response wording.</li>
+            <li>Privacy Office: saving conversations for 90 days.</li>
+            <li>UIT or college IT: hosting, and who maintains it after the pilot.</li>
+            <li>Web team and Marketing & Communications: putting it on price.utah.edu.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="appendix" aria-labelledby="appendix-h">
+      <h2 id="appendix-h">Method notes</h2>
+      <details>
+        <summary>How answers are graded</summary>
+        <p>A question can have up to four checks. <em>Cited:</em> the answer links one of the pages that contain the answer. <em>Facts:</em> it includes each required fact; each fact accepts a few phrasings copied from the page. <em>Forbidden:</em> it doesn't make a known wrong statement. <em>Declined</em> or <em>not declined:</em> it refuses exactly when it should. An answer passes when every check passes. Network or service errors are logged separately and never counted as wrong answers; there were none in this run.</p>
+      </details>
+      <details>
+        <summary>The likely ranges</summary>
+        <p>Ranges are 95% Wilson score intervals, which stay honest for small numbers of questions. For example, 9 of 10 has a range of 60–98%, so small groups should be read as rough.</p>
+      </details>
+      <details>
+        <summary>Results by check (all 96 questions, 192 answers)</summary>
+        <div class="scroll"><table>
+          <thead><tr><th>Check</th><th>Passed</th></tr></thead>
+          <tbody>
+            <tr><td>Linked an expected page</td><td class="num">121 of 142</td></tr>
+            <tr><td>Included the required facts</td><td class="num">116 of 154</td></tr>
+            <tr><td>Avoided known wrong statements</td><td class="num">42 of 44</td></tr>
+            <tr><td>Declined when it should</td><td class="num">24 of 24</td></tr>
+            <tr><td>Answered when it should</td><td class="num">22 of 22</td></tr>
+            <tr><td>Named an event really on the calendar</td><td class="num">4 of 4</td></tr>
+          </tbody>
+        </table></div>
+      </details>
+      <details>
+        <summary>Reproducing these numbers</summary>
+        <p>From the project repository: <code>python -m evals.run answers --reps 2</code> for the question set, <code>python -m evals.run baseline</code> for the search comparison, and <code>python -m evals.converse</code> for conversation testing. Each run saves its answers and a summary under <code>evals/results/</code>.</p>
+      </details>
+    </section>
+
+    <footer>
+      <p>Price Engineering Assistant is a student proof of concept and not an official University of Utah service. Results describe the beta as of October 21, 2026.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+  const GROUPS = [
+    ["Programs, plans and requirements", [28, 30, 0.787, 0.982], [21, 40, 0.375, 0.671]],
+    ["Admissions, costs and scholarships", [12, 12, 0.757, 1.0], [4, 10, 0.168, 0.687]],
+    ["Student support, contacts and people", [18, 18, 0.824, 1.0], [8, 18, 0.246, 0.663]],
+    ["Events and research", [11, 12, 0.646, 0.985], [4, 8, 0.215, 0.785]],
+    ["Staying on topic and safety", [42, 42, 0.916, 1.0], null],
+  ];
+  const SEARCH = [
+    ["Assistant: all questions", [49, 71, 0.575, 0.786], false],
+    ["Site search: all questions", [7, 71, 0.049, 0.19], true],
+    ["Assistant: answer on price.utah.edu", [26, 35, 0.579, 0.858], false],
+    ["Site search: answer on price.utah.edu", [7, 35, 0.1, 0.359], true],
+    ["Assistant: answer on a department site", [23, 36, 0.476, 0.775], false],
+    ["Site search: answer on a department site", [0, 36, 0.0, 0.096], true],
+  ];
+
+  function bars(el, title, rows, soft) {
+    const head = document.createElement("h3");
+    head.textContent = title;
+    el.append(head);
+    for (const [label, d, rowSoft] of rows) {
+      if (!d) continue;
+      const [passed, n, lo, hi] = d;
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<span>${label}</span>
+        <span class="track" role="img" aria-label="${passed} of ${n} passed; likely range ${Math.round(lo * 100)} to ${Math.round(hi * 100)} percent">
+          <span class="fill${(rowSoft ?? soft) ? " soft" : ""}" style="width:${(passed / n) * 100}%"></span>
+          ${lo !== null ? `<span class="range" style="left:${lo * 100}%;width:${(hi - lo) * 100}%"></span>` : ""}
+        </span>
+        <span class="n">${passed}/${n}</span>`;
+      el.append(row);
+    }
+    const axis = document.createElement("div");
+    axis.className = "axis";
+    axis.innerHTML = "<div></div><div><span>0%</span><span>50%</span><span>100%</span></div><div></div>";
+    el.append(axis);
+  }
+  bars(document.getElementById("chart-core"), "Core questions (57 questions, asked twice)", GROUPS.map(g => [g[0], g[1]]), false);
+  bars(document.getElementById("chart-fix"), "To-fix questions from testing (39 questions, asked twice)", GROUPS.map(g => [g[0], g[2]]), true);
+  bars(document.getElementById("chart-search"), "Right page in the top five results", SEARCH, false);
+</script>
+</body>
+</html>
