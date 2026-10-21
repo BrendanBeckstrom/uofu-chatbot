@@ -3,7 +3,10 @@
 An AI chat assistant for [price.utah.edu](https://www.price.utah.edu/), the John and Marcia Price College of
 Engineering website. It answers visitor questions from the college's own web content and links its sources.
 
-Everything runs locally:
+- **Try the beta:** https://uofuchatbot.web.app (ask the project lead for the password)
+- **Latest evaluation:** [October 2026 beta evaluation (PDF)](docs/reports/beta-evaluation-2026-10-21.pdf)
+
+To run it locally:
 
 | URL | What it is |
 | --- | --- |
