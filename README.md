@@ -116,13 +116,17 @@ role.
 ```bash
 .venv/bin/python -m evals.run retrieval   # no key: does the first search find the right page?
 .venv/bin/python -m evals.run selftest    # no key: graders accept reference answers, reject empty ones
-.venv/bin/python -m evals.run answers     # full bot; --reps 3 for variance
+.venv/bin/python -m evals.run answers     # full bot; --reps 2 to check consistency (about $0.25)
+.venv/bin/python -m evals.run baseline    # no key: the college site's own search box, for comparison (~12 min)
+.venv/bin/python -m evals.converse serve  # then `say` to hold a multi-turn test conversation
 ```
 
 Each answer is graded with separate checks (cites an expected page, contains the required facts, avoids
 known-wrong claims, mentions a real event from the live calendar, politely redirects off-topic requests).
-API failures are logged separately and never counted as wrong answers. Results and full transcripts go to
-`evals/results/<timestamp>/`. Add your own questions, especially ones the ambassadors hear often.
+API failures are logged separately and never counted as wrong answers. Results, full transcripts and a
+`summary.json` with pass rates and their 95% ranges go to `evals/results/<timestamp>/`. Questions marked
+`origin: persona-…` came from simulated-student testing and track known problems. Add your own
+questions, especially ones the ambassadors hear often.
 
 ## Testing and refining
 

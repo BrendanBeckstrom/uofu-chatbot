@@ -4,6 +4,8 @@
     python -m evals.run selftest             # no API key: graders pass reference answers, fail empty ones
     python -m evals.run answers              # full bot, needs ANTHROPIC_API_KEY with credit
     python -m evals.run answers --reps 3 --only events,admissions
+    python -m evals.run baseline             # no API key: the college site's own search box, for comparison
+    python -m evals.run regrade --dir evals/results/<timestamp>   # re-score saved answers after fixing a case
 
 Answers are graded with simple, separate checks (no AI judge):
   cited       links one of the expected pages
@@ -12,14 +14,18 @@ Answers are graded with simple, separate checks (no AI judge):
   events      mentions an event that is really on the live calendar for that window
   redirect    off-topic / out-of-scope requests get a polite redirect, not an attempt
 A case passes when all of its checks pass. API or network failures go to errors.jsonl and are
-never counted as wrong answers. Every run saves full transcripts under evals/results/<timestamp>/.
+never counted as wrong answers. Every run saves full transcripts and summary.json (pass rates with
+95% ranges, per category and per check, cost and speed) under evals/results/<timestamp>/.
+Exploratory, multi-turn testing uses evals/converse.py instead.
 """
 
 import argparse
 import asyncio
 import json
+import math
 import re
 import statistics
+import subprocess
 import time
 from datetime import date, timedelta
 from pathlib import Path
@@ -130,6 +136,44 @@ def jsonable(obj):
     return obj
 
 
+def wilson(passed: int, n: int, z: float = 1.96) -> list[float]:
+    """95% range for a pass rate measured on n questions (Wilson score interval); honest for small n."""
+    if not n:
+        return [0.0, 0.0]
+    p, d = passed / n, 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / d
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return [round(max(0.0, centre - half), 3), round(min(1.0, centre + half), 3)]
+
+
+def summarize(results: list[dict], errors: list[dict], cases: list[dict]) -> dict:
+    """The numbers the evaluation report uses, saved as summary.json next to each run."""
+    def block(rows):
+        passed = sum(r["pass"] for r in rows)
+        return {"n": len(rows), "passed": passed, "rate": round(passed / len(rows), 3) if rows else None,
+                "range95": wilson(passed, len(rows))}
+    costs = [r["cost_usd"] for r in results if r["cost_usd"] is not None]
+    secs = sorted(r["seconds"] for r in results)
+    try:
+        version = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    except OSError:
+        version = ""
+    return {
+        "date": date.today().isoformat(), "model": config.MODEL, "version": version, "cases": len(cases),
+        "overall": block(results), "errors_not_scored": len(errors),
+        "by_category": {c: block([r for r in results if r["category"] == c])
+                        for c in sorted({r["category"] for r in results})},
+        "by_check": {k: {"n": len(v), "passed": sum(v)} for k in
+                     ("cited", "facts", "forbidden", "events", "redirect", "declined", "not_declined")
+                     if (v := [r["checks"][k] for r in results if k in r["checks"]])},
+        "time_sensitive": block([r for r in results if r["time_sensitive"]]),
+        "cost_usd": {"total": round(sum(costs), 4), "per_answer": round(statistics.mean(costs), 5) if costs else None},
+        "seconds": {"median": statistics.median(secs) if secs else None,
+                    "p90": secs[int(0.9 * (len(secs) - 1))] if secs else None, "max": secs[-1] if secs else None},
+        "failed": sorted({r["id"] for r in results if not r["pass"]}),
+    }
+
+
 # ---- modes --------------------------------------------------------------------------------------
 
 def run_retrieval(cases: list[dict], k: int):
@@ -157,6 +201,85 @@ def run_retrieval(cases: list[dict], k: int):
         for c, _, urls in misses:
             print(f"  ✗ {c['id']}: {c['question']}\n      wanted {c['expect_urls']}\n      got    "
                   + "\n             ".join(u.replace("https://", "") for u in urls[:3]))
+
+
+STOPWORDS = set("""a an and are as at be can could do does for from get how i i'm if in is it me my of on or so
+    that the their there this to what when where which who why will with would you your should any about""".split())
+
+
+def keywords(question: str) -> str:
+    """What a student would type into a search box: the question minus filler words."""
+    return " ".join(w for w in re.findall(r"[a-z0-9']+", question.lower()) if w not in STOPWORDS)
+
+
+async def run_baseline(cases: list[dict], k: int):
+    """The college's own site search (price.utah.edu/?s=...) against the assistant's first search, on the
+    same questions. The site search gets the keywords, the charitable case. One request every CRAWL_DELAY
+    seconds, as the site's robots.txt asks."""
+    from bs4 import BeautifulSoup
+    from app.wp import PoliteClient
+    engine = ChatEngine(SearchIndex(Store().docs))
+    todo = [c for c in cases if c.get("expect_urls")]
+    print(f"Searching price.utah.edu for {len(todo)} questions, {config.CRAWL_DELAY:.0f}s apart "
+          f"(about {len(todo) * config.CRAWL_DELAY / 60:.0f} minutes)…")
+    rows = []
+    client = PoliteClient(config.CRAWL_DELAY)
+    try:
+        for c in todo:
+            query = keywords(c["question"])
+            resp = await client.get(f"{config.SITE}/", s=query)
+            site = [a.get("href") for a in BeautifulSoup(resp.text, "lxml").select(".entry-title a")][:k]
+            ours = []
+            for h in engine.index.search(c["question"], k=k * 2):
+                if h["url"] not in ours:
+                    ours.append(h["url"])
+            hit = lambda urls: any(url_matches(part, u) for part in c["expect_urls"] for u in urls[:k])
+            rows.append({"id": c["id"], "category": c["category"], "query": query, "site_hit": hit(site),
+                         "ours_hit": hit(ours), "on_price_site": any("price.utah.edu" in part for part in c["expect_urls"]),
+                         "site_top": site[:3]})
+            print(f"  site {'✓' if rows[-1]['site_hit'] else '✗'}  assistant {'✓' if rows[-1]['ours_hit'] else '✗'}  {c['id']}")
+    finally:
+        await client.aclose()
+
+    def line(label, subset):
+        site, ours = sum(r["site_hit"] for r in subset), sum(r["ours_hit"] for r in subset)
+        print(f"  {label:44} site search {site}/{len(subset)}   assistant {ours}/{len(subset)}")
+    print(f"\nRight page in the top {k}:")
+    line("all questions", rows)
+    line("answer is on price.utah.edu", [r for r in rows if r["on_price_site"]])
+    line("answer is on a department site", [r for r in rows if not r["on_price_site"]])
+    out = RESULTS_DIR / f"baseline-{date.today().isoformat()}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"date": date.today().isoformat(), "k": k, "rows": rows,
+                               "site_hits": sum(r["site_hit"] for r in rows), "assistant_hits": sum(r["ours_hit"] for r in rows),
+                               "n": len(rows)}, indent=1))
+    print(f"\nSaved to {out.relative_to(Path.cwd()) if out.is_relative_to(Path.cwd()) else out}")
+
+
+def run_regrade(folder: Path):
+    """Re-score a saved run with the current questions.json, e.g. after fixing a too-strict case. No API
+    calls. The live-calendar check can't be redone offline, so it keeps its saved result."""
+    cases = {c["id"]: c for c in load_cases()}
+    rows = [json.loads(line) for line in (folder / "results.jsonl").read_text().splitlines()]
+    errors = [json.loads(line) for line in (folder / "errors.jsonl").read_text().splitlines()] \
+        if (folder / "errors.jsonl").exists() else []
+    flipped = []
+    for r in rows:
+        c = cases.get(r["id"])
+        if not c:
+            continue
+        checks = grade(c, r["answer"], r["cited"], None)
+        if "events" in r["checks"]:
+            checks["events"] = r["checks"]["events"]
+        if all(checks.values()) != r["pass"]:
+            flipped.append(f"{r['id']} (rep {r['rep']}): {'pass' if all(checks.values()) else 'fail'}")
+        r["checks"], r["pass"] = checks, all(checks.values())
+    (folder / "results.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    summary = summarize(rows, errors, [c for c in cases.values() if any(r["id"] == c["id"] for r in rows)])
+    (folder / "summary.json").write_text(json.dumps(summary, indent=1))
+    o = summary["overall"]
+    print(f"Re-scored {len(rows)} answers: {o['passed']}/{o['n']} pass (95% range "
+          f"{o['range95'][0]:.0%}–{o['range95'][1]:.0%}). Changed: {', '.join(flipped) or 'none'}")
 
 
 async def run_selftest(cases: list[dict]):
@@ -267,7 +390,10 @@ async def run_answers(cases: list[dict], reps: int, concurrency: int):
     def rate(rows):
         return f"{sum(r['pass'] for r in rows)}/{len(rows)} ({sum(r['pass'] for r in rows) / max(len(rows), 1):.0%})"
 
-    print(f"\nPassed {rate(results)}   errors (not scored): {len(errors)}")
+    summary = summarize(results, errors, cases)
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
+    lo, hi = summary["overall"]["range95"]
+    print(f"\nPassed {rate(results)} (95% range {lo:.0%}–{hi:.0%})   errors (not scored): {len(errors)}")
     if reps > 1:
         per_rep = [statistics.mean(r["pass"] for r in results if r["rep"] == k) for k in range(reps)
                    if any(r["rep"] == k for r in results)]
@@ -303,7 +429,8 @@ async def run_answers(cases: list[dict], reps: int, concurrency: int):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["retrieval", "selftest", "answers"])
+    ap.add_argument("mode", choices=["retrieval", "selftest", "answers", "baseline", "regrade"])
+    ap.add_argument("--dir", help="regrade: the results folder to re-score")
     ap.add_argument("--only", help="comma-separated case ids or categories")
     ap.add_argument("--reps", type=int, default=1)
     ap.add_argument("--k", type=int, default=6)
@@ -317,6 +444,10 @@ def main():
         run_retrieval(cases, args.k)
     elif args.mode == "selftest":
         asyncio.run(run_selftest(cases))
+    elif args.mode == "regrade":
+        run_regrade(Path(args.dir))
+    elif args.mode == "baseline":
+        asyncio.run(run_baseline(cases, min(args.k, 5)))
     else:
         asyncio.run(run_answers(cases, args.reps, args.concurrency))
 

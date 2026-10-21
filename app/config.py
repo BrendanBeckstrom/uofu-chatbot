@@ -26,8 +26,8 @@ DATA_DIR = ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 DOCS_PATH = DATA_DIR / "docs.json"
 STATE_PATH = DATA_DIR / "sync_state.json"
-FEEDBACK_PATH = DATA_DIR / "feedback.jsonl"
-USAGE_PATH = DATA_DIR / "usage.jsonl"
+FEEDBACK_PATH = Path(os.getenv("FEEDBACK_PATH", DATA_DIR / "feedback.jsonl"))
+USAGE_PATH = Path(os.getenv("USAGE_PATH", DATA_DIR / "usage.jsonl"))  # evals/converse.py points these elsewhere
 WEB_DIR = ROOT / "web"
 
 # Identify the bot honestly. Cloudflare in front of the sites blocks generic
