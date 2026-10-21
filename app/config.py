@@ -45,6 +45,8 @@ LIVE_CACHE_TTL = float(os.getenv("LIVE_CACHE_TTL", "3600"))
 
 # Freshness: when a question arrives and the last change check is older than this,
 # a background sync asks each site "what changed?" (2 tiny requests per site).
+# Off on Cloud Run, which pauses the server between requests; there the index ships with each deploy.
+AUTO_SYNC = os.getenv("AUTO_SYNC", "true").lower() in ("1", "true", "yes")
 SYNC_TTL_MINUTES = float(os.getenv("SYNC_TTL_MINUTES", "30"))
 # Deleted or unpublished pages don't show up as "changed"; a fuller ID check finds them.
 RECONCILE_DAYS = float(os.getenv("RECONCILE_DAYS", "7"))
@@ -82,6 +84,11 @@ TOKEN_LIMITS = _limits("TOKEN_LIMITS", "5/60,30/3600,100/86400")          # per 
 IP_LIMITS = _limits("IP_LIMITS", "30/60,300/3600,1000/86400")             # per IP (IPv6 per /64)
 TOKEN_ISSUE_LIMITS = _limits("TOKEN_ISSUE_LIMITS", "60/3600")             # new tokens per IP
 TOKEN_TTL_HOURS = float(os.getenv("TOKEN_TTL_HOURS", "24"))
+# Beta gate: when set, a browser gets a token only after entering this shared password (web/login.html).
+BETA_PASSWORD = os.getenv("BETA_PASSWORD", "")
+LOGIN_LIMITS = _limits("LOGIN_LIMITS", "10/600")                          # password attempts per IP
+# Pages on other sites that may call the API (comma-separated), e.g. the Firebase Hosting addresses.
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 GLOBAL_CHAT_LIMITS = _limits("GLOBAL_CHAT_LIMITS", "30/60,600/3600")      # everyone combined
 SEARCH_LIMITS = _limits("SEARCH_LIMITS", "20/60")
 EVENTS_LIMITS = _limits("EVENTS_LIMITS", "60/60")
@@ -105,6 +112,12 @@ ANSWER_CACHE_HOURS = float(os.getenv("ANSWER_CACHE_HOURS", "6"))          # repe
 # Topic scoping: a small classifier call labels each message before the main answer.
 SCOPE_GATE = os.getenv("SCOPE_GATE", "true").lower() in ("1", "true", "yes")
 SCOPE_GATE_MODEL = os.getenv("SCOPE_GATE_MODEL", "claude-haiku-5-5")
+
+
+# Where question, feedback and spend records go: "files" (data/*.jsonl, the default) or "firestore".
+LOG_BACKEND = os.getenv("LOG_BACKEND", "files").lower()
+LOG_RETENTION_DAYS = int(os.getenv("LOG_RETENTION_DAYS", "90"))  # Firestore deletes records after this
+APP_VERSION = os.getenv("APP_VERSION", "")  # the git commit, set by deploy/deploy.sh
 
 
 def ai_enabled() -> bool:

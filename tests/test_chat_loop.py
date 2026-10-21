@@ -129,6 +129,11 @@ async def main():
     assert req["output_config"] == {"effort": config.EFFORT}
     chat_module.fetch_page = real_fetch
     print("✓ search → fetch → cited answer; history is append-only:", roles)
+    usage_event = next(e for e in events if e["event"] == "usage")
+    record = json.loads(config.USAGE_PATH.read_text().splitlines()[-1])
+    assert record["id"] == usage_event["question_id"] and record["outcome"] == "answered", record
+    assert "Info-Session" in record["answer"] and record["sources"][0].endswith("/info-sessions"), record
+    print("✓ each question is logged with its answer and sources, under the ID that feedback refers to")
 
     # Turn 2 in the same session: the prefix sent must equal the stored history exactly.
     before = list(sess.messages)
@@ -269,6 +274,7 @@ async def main():
     assert answer == scope.CRISIS and "988" in answer and not engine.client.requests
     logged = config.USAGE_PATH.read_text().splitlines()[-1]
     assert "alive" not in logged and "not stored" in logged, "crisis messages aren't written to the log"
+    assert json.loads(logged)["outcome"] == "crisis"
     print("✓ gate: crisis messages get the support resources, never a decline, and aren't logged")
 
     engine.client = FakeClient([NS(stop_reason="end_turn", content=[text("Engineering advising is in WEB.")])],

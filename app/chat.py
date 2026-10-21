@@ -2,7 +2,6 @@
 
 import asyncio
 import hashlib
-import json
 import re
 import time
 import uuid
@@ -13,7 +12,7 @@ from urllib.parse import urlparse
 
 import anthropic
 
-from . import config, guard, scope
+from . import config, guard, records, scope
 from .events import format_events, search_events, today
 from .index import SearchIndex, tokenize
 from .extract import split_pages
@@ -344,18 +343,31 @@ def anon_user(token_id: str) -> str:
     return hashlib.sha256(f"price-assistant:{token_id}".encode()).hexdigest()[:12]
 
 
-def log_usage(question: str, usage: dict, seconds: float, dollars: float, sess: "Session | None" = None):
-    """One line per question in data/usage.jsonl (identifiers redacted): cost, latency and the fields the
-    usage report (python -m app.analytics) counts."""
+def _outcome(usage: dict) -> str:
+    if usage.get("error"):
+        return "error"
+    if usage.get("cached"):
+        return "cached"
+    if usage.get("gate") == "crisis":
+        return "crisis"
+    if usage.get("gate") not in (None, "in_scope"):
+        return "declined"
+    return "search_only" if usage.get("empty") else "answered"
+
+
+def log_usage(question: str, usage: dict, seconds: float, dollars: float, sess: "Session | None" = None,
+              answer: str = "", sources: list[str] | None = None) -> str:
+    """One record per question (app/records.py; identifiers redacted): the question and answer, cost, latency
+    and the fields the usage report (python -m app.analytics) counts. Returns the record ID feedback links to."""
+    rid = records.new_id("q")
+    ts = records.now_local()
     who = {"user": sess.user, "session": sess.id[:8], "turn": sess.turns, "audience": sess.audience} if sess else {}
-    try:
-        config.USAGE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with config.USAGE_PATH.open("a") as f:
-            f.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "model": config.MODEL,
-                                "seconds": round(seconds, 1), "cost_usd": round(dollars, 6),
-                                "question": redact(question)[:200], **who, **usage}) + "\n")
-    except OSError:
-        pass
+    records.save("question", {
+        "id": rid, "ts": ts, "day": ts[:10], "model": config.MODEL, "version": config.APP_VERSION,
+        "seconds": round(seconds, 1), "cost_usd": round(dollars, 6), "outcome": _outcome(usage),
+        "question": redact(question)[:config.MAX_MESSAGE_CHARS], "answer": redact(answer),
+        "sources": (sources or [])[:8], **who, **usage})
+    return rid
 
 
 class ChatEngine:
@@ -548,8 +560,10 @@ class ChatEngine:
             sess.transcript += [("user", question), ("assistant", text)]
             sess.turns += 1
             sess.last_question = question
-            log_usage(question, {"cached": True}, time.time() - started, 0.0)
-            yield {"event": "usage", "seconds": round(time.time() - started, 2), "cached": True, "calls": 0}
+            rid = log_usage(question, {"cached": True}, time.time() - started, 0.0, sess,
+                            answer=text, sources=[i["url"] for i in items])
+            yield {"event": "usage", "seconds": round(time.time() - started, 2), "cached": True, "calls": 0,
+                   "question_id": rid}
             yield {"event": "sources", "kind": "cited", "items": items}
             yield {"event": "done"}
             return
@@ -582,9 +596,10 @@ class ChatEngine:
                     sess.transcript += [("user", question), ("assistant", decline)]
                     sess.turns += 1
                     logged = "[crisis message, not stored]" if label == "crisis" else question
-                    log_usage(logged, {"gate": label, "topic": topic}, time.time() - started, gate_cost, sess)
+                    rid = log_usage(logged, {"gate": label, "topic": topic}, time.time() - started, gate_cost, sess,
+                                    answer=decline)
                     yield {"event": "usage", "seconds": round(time.time() - started, 2), "gate": label,
-                           "calls": 0, "cost_usd": round(gate_cost, 6)}
+                           "calls": 0, "cost_usd": round(gate_cost, 6), "question_id": rid}
                     yield {"event": "done"}
                     return
         finally:
@@ -752,11 +767,12 @@ class ChatEngine:
         sess.last_question = question
         sess.turns += 1
         sess.transcript += [("user", question), ("assistant", answer_text)]
-        log_usage(question, {**usage, "gate": label, "topic": topic, "gap": bool(GAP_RE.search(answer_text))},
-                  time.time() - started, dollars, sess)
-        yield {"event": "usage", "seconds": round(time.time() - started, 2), "gate": label,
-               "cost_usd": round(dollars, 6), **usage}
         sources = self._sources_event(sess, answer_text, related)
+        rid = log_usage(question, {**usage, "gate": label, "topic": topic, "gap": bool(GAP_RE.search(answer_text))},
+                        time.time() - started, dollars, sess, answer=answer_text,
+                        sources=[i["url"] for i in sources["items"]] if sources["kind"] == "cited" else [])
+        yield {"event": "usage", "seconds": round(time.time() - started, 2), "gate": label,
+               "cost_usd": round(dollars, 6), "question_id": rid, **usage}
         if cache_key and answer_text and not used_events and config.ANSWER_CACHE_HOURS > 0:
             self._answer_cache[cache_key] = (time.time(), answer_text, sources["items"] if sources["kind"] == "cited" else [])
             if len(self._answer_cache) > 500:

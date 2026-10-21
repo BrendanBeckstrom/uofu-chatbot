@@ -114,10 +114,31 @@ def main():
     codes = [client.get("/api/search", params={"q": "advising"}).status_code for _ in range(21)]
     assert codes[:20] == [200] * 20 and codes[-1] == 429
     print("✓ server: per-IP backstop, request-size cap and search limit all hold")
+
+    # The hosted beta's password gate (web/login.html).
+    guard.login_limiter.hits.clear()
+    guard.login_limiter.clock = lambda: 1_000.0
+    config.BETA_PASSWORD = "correct horse"
+    try:
+        assert client.post("/api/token").json()["detail"] == "password_required"
+        assert chat_as(t2).status_code == 401, "tokens issued before the password was set stop working"
+        r = client.post("/api/token", json={"password": "nope"})
+        assert r.status_code == 401 and r.json()["detail"] == "wrong_password"
+        good = client.post("/api/token", json={"password": "correct horse"}).json()["token"]
+        assert guard.verify_token(good)
+        assert client.post("/api/feedback", json={"rating": 1}).status_code == 401, "feedback needs a token too"
+        for _ in range(9):
+            client.post("/api/token", json={"password": "nope"})
+        assert client.post("/api/token", json={"password": "correct horse"}).status_code == 429, \
+            "10 wrong passwords from one IP pause sign-ins there"
+        config.BETA_PASSWORD = "new password"
+        assert guard.verify_token(good) is None, "changing the password signs everyone out"
+    finally:
+        config.BETA_PASSWORD = ""
+    print("✓ beta gate: a token needs the password; wrong tries are limited; a new password signs everyone out")
     for lim in (guard.token_limiter, guard.ip_limiter, guard.global_limiter, guard.search_limiter,
-                guard.issue_limiter, guard.feedback_limiter):
+                guard.issue_limiter, guard.feedback_limiter, guard.login_limiter):
         lim.hits.clear()
-        lim.clock = lambda: 1_000.0  # a slow machine must not let early requests age out of the window
     print("All guard checks passed.")
 
 

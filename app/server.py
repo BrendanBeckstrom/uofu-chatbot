@@ -1,21 +1,21 @@
-"""Local web server: demo page, design concepts, embeddable widget and the chat API.
+"""Web server: demo and login pages, design concepts, embeddable widget and the chat API.
 
-Run:  .venv/bin/uvicorn app.server:app --reload --port 8000
+Run locally:  .venv/bin/uvicorn app.server:app --reload --port 8000
+Hosted, it runs on Cloud Run (docs/DEPLOY.md).
 """
 
 import asyncio
 import json
-import time
 from contextlib import asynccontextmanager
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, guard
+from . import config, guard, records
 from .chat import ChatEngine, anon_user, log_usage
 from .events import search_events, today
 from .index import SearchIndex
@@ -62,6 +62,7 @@ async def reload_if_rebuilt():
 @asynccontextmanager
 async def lifespan(_app):
     yield
+    await asyncio.to_thread(records.flush)
     if syncer._client:
         await syncer._client.aclose()
 
@@ -71,6 +72,7 @@ app.add_middleware(
     CORSMiddleware,
     # Local testing, plus the real site so the widget can be previewed there via the bookmarklet.
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?|https://(www\.)?price\.utah\.edu",
+    allow_origins=config.ALLOWED_ORIGINS,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "X-Chat-Token"],
 )
@@ -125,6 +127,7 @@ class ChatIn(BaseModel):
 
 class FeedbackIn(BaseModel):
     session_id: str | None = Field(default=None, max_length=64)
+    question_id: str = Field(default="", max_length=40)
     rating: int = Field(ge=-1, le=1)
     question: str = Field(default="", max_length=1500)
     answer: str = Field(default="", max_length=8000)
@@ -133,8 +136,24 @@ class FeedbackIn(BaseModel):
 
 @app.post("/api/token")
 async def token(request: Request):
-    """A signed per-browser token. The widget gets one on first use and sends it with each message."""
-    wait = guard.issue_limiter.check(guard.client_ip(request))
+    """A signed per-browser token. The widget gets one on first use and sends it with each message.
+    With BETA_PASSWORD set, the login page sends {"password": ...} and only the right one gets a token."""
+    ip = guard.client_ip(request)
+    if config.BETA_PASSWORD:
+        wait = guard.login_limiter.peek(ip)  # only wrong passwords count, so a room of testers can sign in
+        if wait:
+            return too_many(f"Too many wrong passwords. Try again in {wait_text(wait)}.", wait)
+        raw = await request.body()
+        try:
+            attempt = str(json.loads(raw).get("password", "")) if 0 < len(raw) <= 1024 else ""
+        except (ValueError, AttributeError):
+            attempt = ""
+        if not guard.password_ok(attempt):
+            if attempt:
+                guard.login_limiter.hit(ip)
+            return JSONResponse({"detail": "wrong_password" if attempt else "password_required"},
+                                status_code=401, headers={"Cache-Control": "no-store"})
+    wait = guard.issue_limiter.check(ip)
     if wait:
         return too_many(f"Too many new sessions from this network. Try again in {wait_text(wait)}.", wait)
     return JSONResponse({"token": guard.issue_token(), "ttl_hours": config.TOKEN_TTL_HOURS},
@@ -161,7 +180,8 @@ async def chat(body: ChatIn, request: Request):
         return too_many(msg, 5, status=429 if busy == "client" else 503)
 
     await reload_if_rebuilt()
-    syncer.maybe_sync()  # background "what changed?" check if the last one is older than SYNC_TTL_MINUTES
+    if config.AUTO_SYNC:
+        syncer.maybe_sync()  # background "what changed?" check if the last one is older than SYNC_TTL_MINUTES
 
     async def events():
         def sse(ev):
@@ -177,6 +197,10 @@ async def chat(body: ChatIn, request: Request):
             yield sse({"event": "done"})
         finally:
             guard.concurrency.release(key)
+            try:
+                await asyncio.to_thread(records.flush)  # before the response ends and Cloud Run pauses the CPU
+            except asyncio.CancelledError:
+                pass
 
     return StreamingResponse(events(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -190,11 +214,16 @@ async def reset(body: dict):
 
 @app.post("/api/feedback")
 async def feedback(body: FeedbackIn, request: Request):
+    tid = guard.verify_token(request.headers.get("x-chat-token"))
+    if not tid:
+        return JSONResponse({"detail": "token_required"}, status_code=401, headers={"Cache-Control": "no-store"})
     light_limit(request, guard.feedback_limiter)
-    record = {k: redact(v) if isinstance(v, str) else v for k, v in body.model_dump().items()}
-    config.FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with config.FEEDBACK_PATH.open("a") as f:
-        f.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), **record}) + "\n")
+    fields = body.model_dump()
+    fields["session_id"] = (fields["session_id"] or "")[:8]
+    ts = records.now_local()
+    records.save("feedback", {"id": records.new_id("f"), "ts": ts, "day": ts[:10], "user": anon_user(tid),
+                              **{k: redact(v) if isinstance(v, str) else v for k, v in fields.items()}})
+    await asyncio.to_thread(records.flush)
     return {"ok": True}
 
 
@@ -203,6 +232,8 @@ async def status():
     await reload_if_rebuilt()
     return {
         "ai_enabled": engine.client is not None,
+        "login_required": bool(config.BETA_PASSWORD),
+        "logs": config.LOG_BACKEND,
         "ai_issue": "daily_budget" if guard.spend.exhausted() else await engine.check_health(),
         "spend": guard.spend.status(),
         "scope_gate": config.SCOPE_GATE,
@@ -256,6 +287,18 @@ async def home():
 @app.get("/designs")
 async def designs():
     return FileResponse(config.WEB_DIR / "designs.html", headers=NO_CACHE)
+
+
+@app.get("/login.html")
+async def login_page():
+    return FileResponse(config.WEB_DIR / "login.html", headers=NO_CACHE)
+
+
+@app.get("/config.js")
+async def page_config():
+    """Pages served from here call this same server. deploy/deploy.sh writes the Firebase Hosting copy,
+    which points at Cloud Run instead."""
+    return Response('window.PRICE_ASSISTANT_API = "";\n', media_type="application/javascript", headers=NO_CACHE)
 
 
 @app.get("/widget.js")

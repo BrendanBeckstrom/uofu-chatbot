@@ -1,7 +1,8 @@
-"""Usage report from data/usage.jsonl and data/feedback.jsonl: people, questions, topics, errors and gaps.
+"""Usage report from the question and feedback records: people, questions, topics, errors and gaps.
 
-    python -m app.analytics              # last 30 days
+    python -m app.analytics              # last 30 days, from data/usage.jsonl and data/feedback.jsonl
     python -m app.analytics --days 7
+    python -m app.analytics --firestore  # the hosted beta's records (docs/DEPLOY.md: reading the logs)
     python -m app.analytics --json       # the same numbers, for a dashboard or spreadsheet
 
 "People" are distinct browsers (an anonymous hash of each browser's token), so one person on two devices
@@ -15,20 +16,13 @@ import statistics
 from collections import Counter, defaultdict
 from datetime import date, timedelta
 
-from . import config
-
-
-def _read(path) -> list[dict]:
-    try:
-        return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-    except FileNotFoundError:
-        return []
+from . import config, records
 
 
 def report(days: int = 30) -> dict:
     since = (date.today() - timedelta(days=days - 1)).isoformat()
-    rows = [r for r in _read(config.USAGE_PATH) if r.get("user") and r.get("ts", "")[:10] >= since]
-    feedback = [f for f in _read(config.FEEDBACK_PATH) if f.get("ts", "")[:10] >= since]
+    rows = sorted((r for r in records.read("question", since) if r.get("user")), key=lambda r: r["ts"])
+    feedback = records.read("feedback", since)
     questions = [r for r in rows if not r.get("error")]
     per_day: dict[str, dict] = defaultdict(lambda: {"people": set(), "questions": 0, "errors": 0})
     for r in rows:
@@ -89,7 +83,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--firestore", action="store_true", help="read the hosted beta's Firestore records")
     args = ap.parse_args()
+    if args.firestore:
+        config.LOG_BACKEND = "firestore"
     r = report(args.days)
     print(json.dumps(r, indent=1, default=list)) if args.json else _print(r)
 

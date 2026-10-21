@@ -154,24 +154,32 @@ data ("show transfer questions from last week"). DynamoDB is simpler to run but 
 the app gets one `record(event)` function with interchangeable back ends: a local file for development, plus
 Firestore, DynamoDB or Postgres in production. Switching later means changing settings, not code.
 
-## Today
+## Today: the hosted beta
 
-What's already in place (`data/usage.jsonl`, `data/feedback.jsonl`, `python -m app.analytics`):
+Built in `app/records.py`. The hosted beta writes to Firestore; local runs write `data/usage.jsonl` and
+`data/feedback.jsonl`. [DEPLOY.md](DEPLOY.md) covers reading them.
 
-- **Question records** have `ts`, `user`, `session`, `turn`, `audience`, `question` (redacted, ≤ 200 characters),
-  `topic`, `gate`, `gap`, `error`, `seconds`, `cost_usd`, `model` and token counts.
-- **Gaps against this plan:**
-  - `id`, `outcome`, `sources`, `tools`, `device`, `answer` and `version` are missing.
-  - Cached answers are logged without `user`, so the report undercounts people.
-  - Feedback copies the question and answer text instead of linking by `question_id`, and stores the raw
-    session ID.
-  - There's no retention, no daily summary and no widget activity.
+- **Question records:**
+  - who and when: `id`, `ts`, `day`, `user`, `session`, `turn`, `audience`
+  - what was said: `question` (redacted, ≤ 1,000 characters; empty for crisis), `answer` (redacted, in full),
+    `sources`
+  - what happened: `outcome`, `topic`, `gate`, `gap`, `error`
+  - cost and speed: `seconds`, `cost_usd`, `model`, `version`, token counts (`input`, `output`,
+    `cache_read`, `cache_write`, `calls`)
+  - `expire_at`
+- **Feedback records:** `id`, `ts`, `day`, `user`, `question_id`, `rating`, `comment`, and for now copies of the
+  question and answer.
+- **Spend:** one `spend/<day>` record with the day's total, so the daily cap survives restarts.
+- **Retention:** Firestore deletes each record 90 days after it's written (a TTL policy on `expire_at`). The
+  plan's year of text-free records isn't built; for the beta, everything goes at 90 days.
+- **Not built yet:** `tools`, `device`, widget activity and daily summaries.
 
 ## Open questions
 
-1. **Firestore or AWS?** The other engineer is checking. The schema doesn't change either way.
-2. **Keep answer text?** It's the most useful thing for fixing bad answers, but it's more data to protect.
-   Proposal: yes, for 90 days.
+1. **Firestore or AWS?** Firestore for the beta, in the maintainer's Firebase project (decided 2026-10-21).
+   The long-term home is still open, and the schema doesn't change either way.
+2. **Keep answer text?** Yes for the beta: every question and answer is saved for 90 days, and the login
+   page tells testers (decided 2026-10-21).
 3. **Retention periods:** are 90 days of text and 1 year of records acceptable to the Privacy Office?
 4. **Who can see individual questions,** as opposed to totals only?
 5. **Track widget activity** (opens, clicks)? It's needed for "how many people opened it but didn't ask".
