@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Work+Sans:wght@600;700&display=swap">
 <script src="/config.js"></script>
+<script src="/wake.js"></script>
 <style>
   :root { --red: #BE0000; --red-dark: #890000; --ink: #000; --muted: #707271; --line: #E2E6E6; }
   * { box-sizing: border-box; }
@@ -56,10 +57,24 @@
   const TOKEN_KEY = "price-assistant:token";  // the same key web/widget.js reads
   const form = document.getElementById("login"), error = document.getElementById("error");
 
+  let signedIn = false;
   try {
     const saved = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null");
-    if (saved && saved.expires > Date.now() + 60_000) location.replace("/");
+    signedIn = !!saved && saved.expires > Date.now() + 60_000;
   } catch (_) {}
+  if (signedIn) location.replace("/");
+  else PriceWake.ready().then(() => document.getElementById("password").focus()).catch(() => {});
+
+  // A request turned away while the server starts fails as a network error or a non-JSON 5xx: wait, then retry once.
+  async function requestToken(password) {
+    const send = () => fetch(`${API}/api/token`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }),
+    });
+    const r = await send().catch(() => null);
+    if (r && (r.ok || (r.headers.get("content-type") || "").includes("json"))) return r;
+    await PriceWake.ready();
+    return send();
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -67,10 +82,7 @@
     button.disabled = true;
     error.textContent = "";
     try {
-      const r = await fetch(`${API}/api/token`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: document.getElementById("password").value }),
-      });
+      const r = await requestToken(document.getElementById("password").value);
       const body = await r.json().catch(() => ({}));
       if (r.ok) {
         try {

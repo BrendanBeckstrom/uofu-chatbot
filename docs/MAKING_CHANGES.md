@@ -58,7 +58,7 @@ All in `web/widget.js`:
 - **Welcome message:** `renderWelcome()`
 - **Example questions** for future and current students: `SUGGESTIONS`
 - **Contact tab links:** `CONTACTS`, plus `renderContact()` for the college office and support cards
-- **The beta's login page** is a separate file, `web/login.html`
+- **The beta's login page** is a separate file, `web/login.html`, and the "Starting up" screen is `web/wake.js`
 - **Colors and fonts:** the CSS variables at the top of `CSS` (`--red`, `--head`, …). Follow the University's
   [web guidelines](https://brand.utah.edu/digital/web-guidelines/):
   - Use only the core colors: Utah Red `#BE0000`, black, white and Zion Cinder Cone `#707271`.

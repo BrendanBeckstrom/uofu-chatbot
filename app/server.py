@@ -306,4 +306,9 @@ async def widget():
     return FileResponse(config.WEB_DIR / "widget.js", media_type="application/javascript", headers=NO_CACHE)
 
 
+@app.get("/wake.js")
+async def wake():
+    return FileResponse(config.WEB_DIR / "wake.js", media_type="application/javascript", headers=NO_CACHE)
+
+
 app.mount("/static", StaticFiles(directory=config.WEB_DIR), name="static")

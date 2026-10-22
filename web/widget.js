@@ -319,6 +319,22 @@ textarea::placeholder { color: var(--muted); }
   let busy = false;
   let aiEnabled = true;
 
+  // The hosted beta's server sleeps when idle and takes up to about two minutes to start (docs/DEPLOY.md). Requests
+  // turned away meanwhile fail as network errors or non-JSON 5xx responses: wait for /api/status, then retry.
+  const answered = (r) => r.ok || (r.headers.get("content-type") || "").includes("json");
+  const asleep = () => Object.assign(new Error("The assistant's server is starting."), { asleep: true });
+  async function waitForServer() {
+    const until = Date.now() + 180_000;
+    for (;;) {
+      try {
+        const r = await fetch(`${API}/api/status`, { cache: "no-store", signal: AbortSignal.timeout(Math.max(until - Date.now(), 5_000)) });
+        if (r.ok) return;
+      } catch (_) {}
+      if (Date.now() >= until) throw new Error("The assistant's server didn't start. Please try again in a few minutes.");
+      await new Promise((res) => setTimeout(res, 3_000));
+    }
+  }
+
   // A signed per-browser token from the server; rate limits apply per token (see docs/SECURITY.md).
   const TOKEN_KEY = "price-assistant:token";
   async function getToken(fresh) {
@@ -334,6 +350,7 @@ textarea::placeholder { color: var(--muted); }
       e.login = true;
       throw e;
     }
+    if (!answered(r)) throw asleep();
     if (!r.ok) {
       let detail = "Couldn't start a chat session.";
       try { detail = (await r.json()).detail || detail; } catch (_) {}
@@ -681,7 +698,17 @@ textarea::placeholder { color: var(--muted); }
         headers: { "Content-Type": "application/json", "X-Chat-Token": await getToken(fresh) },
         body: JSON.stringify({ message: question, session_id: state.sessionId, audience: state.audience || undefined }),
       });
-      let resp = await send(false);
+      let resp = await send(false).then((r) => (answered(r) ? r : null), (err) => {
+        if (err instanceof TypeError || err.asleep) return null;
+        throw err;
+      });
+      if (!resp) {
+        msg.steps.push("Waking up the AI server (up to 2 minutes)");
+        renderSteps(view, msg.steps, true);
+        await waitForServer();
+        msg.steps.pop();
+        resp = await send(false);
+      }
       if (resp.status === 401) resp = await send(true);  // expired or server restarted: get a new token
       if (!resp.ok) {
         let detail = `Request failed (${resp.status}).`;

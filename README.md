@@ -242,6 +242,7 @@ app/pricing.py    per-model token prices
 app/server.py     FastAPI: chat (SSE), sync, events, feedback, status, static pages
 web/widget.js     embeddable chat widget
 web/login.html    the hosted beta's password page
+web/wake.js       the "Starting up" screen while the hosted server wakes
 web/index.html    demo landing page
 web/designs.html  design concepts
 docs/             ARCHITECTURE, MAKING_CHANGES, SECURITY, DATA_PLAN, DEPLOY

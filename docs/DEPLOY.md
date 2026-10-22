@@ -7,7 +7,7 @@ fits together, how to deploy a change, the beta password, and how to read what t
 
 | Piece | Where | What it does |
 | --- | --- | --- |
-| Pages | Firebase Hosting, https://uofuchatbot.web.app | The login page (`web/login.html`), the demo page, the widget and the design concepts. Static files only. |
+| Pages | Firebase Hosting, https://uofuchatbot.web.app | The login page (`web/login.html`), the start-up screen (`web/wake.js`), the demo page, the widget and the design concepts. Static files only. |
 | Server | Cloud Run, service `price-assistant` in `us-central1` | The same FastAPI app as locally (`app/`), built from the `Dockerfile` with the search index (`data/docs.json`) inside. |
 | Logs | Firestore, `(default)` database in `us-central1` | One record per question and per thumbs up/down, and the day's spend (`app/records.py`). |
 | Secrets | Secret Manager | `anthropic-api-key`, `chat-token-secret` (signs browser tokens) and `beta-password`. |
@@ -35,8 +35,23 @@ secrets, and nothing else. `firestore.rules` gives browsers no access at all.
 | `BETA_PASSWORD`, `ANTHROPIC_API_KEY`, `CHAT_TOKEN_SECRET` | from Secret Manager | |
 
 The server is capped at one instance (`--max-instances 1`), because rate limits, conversations and the answer
-cache live in its memory. When nobody has used it for a while, Cloud Run shuts it down. The next visitor
-waits a few extra seconds while it starts, and any open conversation starts over.
+cache live in its memory. About 15 minutes after the last request, Cloud Run shuts it down
+(`--min-instances 0`), and any open conversation starts over.
+
+**Waking up.** Starting the server again took 18 seconds to almost 2 minutes in October 2026, usually 20–50
+seconds. Almost all of that is Cloud Run finding a machine and starting the container; the app itself loads
+in about 2 seconds. Most requests that arrive meanwhile are turned away ("no available instance", HTTP 500)
+without CORS headers, so browsers report a network error. The pages wait instead of failing:
+
+- `web/wake.js` polls `/api/status` and shows a "Starting up" screen until the server answers, then the
+  demo page sends visitors who aren't signed in to the login page. It gives up after 3 minutes and offers
+  "Try again".
+- The widget, if its server has gone back to sleep mid-visit, shows "Waking up the AI server", waits for
+  `/api/status` the same way, and sends the question again.
+
+To remove the wait, keep one instance running: `--min-instances 1` in `deploy/deploy.sh`. An idle instance
+this size (1 vCPU, 1 GiB) is billed at $0.0000025 per vCPU-second plus $0.0000025 per GiB-second in
+us-central1, about $0.43 a day or $13 a month (Cloud Billing price list, October 2026).
 
 ## Deploying a change
 
@@ -45,7 +60,7 @@ Merge the change first, then from `main`:
 ```bash
 ./deploy/deploy.sh           # server and pages
 ./deploy/deploy.sh server    # code, prompt or search-index changes (about 3–5 minutes)
-./deploy/deploy.sh pages     # login page, demo page or widget changes (under a minute)
+./deploy/deploy.sh pages     # login page, start-up screen, demo page or widget changes (under a minute)
 ```
 
 The script uses whichever Google login `gcloud` and `firebase` are signed in with. To pick one, run

@@ -63,6 +63,10 @@ The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs
 - Rate limits, sessions and the answer cache are in memory, so run exactly one server process.
 - Firebase Hosting cuts requests off at 60 seconds, so the pages call Cloud Run directly. The address comes
   from `config.js`, which `deploy/deploy.sh` writes for Hosting and the server serves locally.
+- The hosted server sleeps after about 15 idle minutes and takes up to 2 minutes to start. Cloud Run turns
+  away requests that arrive meanwhile, and browsers see a network error, not a 500. Pages wait with
+  `web/wake.js` and the widget retries after `waitForServer()`; a failed status check must never count as
+  "no password needed".
 - Cloud Run pauses the CPU once a response ends. Firestore writes are queued on a thread and flushed
   (`records.flush()`) before each response closes; keep that when adding endpoints that write records.
 - `.gcloudignore` decides what's uploaded to Cloud Build. It must keep excluding `.env` and everything in
