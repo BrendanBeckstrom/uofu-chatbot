@@ -6,16 +6,18 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Price Assistant Demo</title>
 <script src="/config.js"></script>
+<script src="/wake.js"></script>
 <script>
-  // The hosted beta sends visitors without a valid sign-in to the login page; locally there's no password.
-  (async () => {
+  // Once the server is up, the hosted beta sends visitors without a valid sign-in to the login page; locally
+  // there's no password.
+  PriceWake.ready().then((s) => {
+    let signedIn = false;
     try {
       const saved = JSON.parse(localStorage.getItem("price-assistant:token") || "null");
-      if (saved && saved.expires > Date.now() + 60_000) return;
-      const s = await (await fetch(`${window.PRICE_ASSISTANT_API || ""}/api/status`)).json();
-      if (s.login_required) location.replace("/login.html");
+      signedIn = !!saved && saved.expires > Date.now() + 60_000;
     } catch (_) {}
-  })();
+    if (s.login_required && !signedIn) location.replace("/login.html");
+  }).catch(() => {});
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -209,7 +211,8 @@
 <script>
   // Recent headlines from the local index (the same data the assistant searches).
   const API = window.PRICE_ASSISTANT_API || "";
-  fetch(`${API}/api/news?n=4`).then((r) => r.json()).then((posts) => {
+  const awake = PriceWake.ready();
+  awake.then(() => fetch(`${API}/api/news?n=4`)).then((r) => r.json()).then((posts) => {
     if (!posts.length) return;
     const fmt = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
     const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -220,7 +223,7 @@
   }).catch(() => {});
 
   // Footer calendar: live from the college's Trumba calendar (the same feed the assistant's get_events tool reads).
-  fetch(`${API}/api/events?days=30&limit=5`).then((r) => r.json()).then((events) => {
+  awake.then(() => fetch(`${API}/api/events?days=30&limit=5`)).then((r) => r.json()).then((events) => {
     const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     const day = (iso) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     document.getElementById("cal").innerHTML = events.length

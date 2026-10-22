@@ -29,7 +29,7 @@ if [[ $WHAT == all || $WHAT == pages ]]; then
   API="$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')"
   rm -rf build/hosting
   mkdir -p build/hosting
-  cp web/*.html web/widget.js build/hosting/
+  cp web/*.html web/widget.js web/wake.js build/hosting/
   printf 'window.PRICE_ASSISTANT_API = "%s";\n' "$API" > build/hosting/config.js
   firebase deploy --only hosting,firestore:rules --project "$PROJECT"
 fi

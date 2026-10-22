@@ -18,7 +18,8 @@ The assistant has three parts:
    answer. Claude can search again, read any utah.edu page or PDF live, and check the college events
    calendar. The answer streams back with links to the pages used.
 3. **A chat widget.** `web/widget.js` is one self-contained script that any page can include. It draws the
-   chat window and talks to the server.
+   chat window and talks to the server. The hosted beta's pages also load `web/wake.js`, which shows a
+   "Starting up" screen while the sleeping server wakes ([DEPLOY.md](DEPLOY.md#settings-on-cloud-run)).
 
 `app/server.py` (FastAPI) connects them, and `app/guard.py` sits in front of the answer loop to stop abuse and
 cap spending. The hosted beta runs the same server on Cloud Run and the pages on Firebase Hosting, behind a
