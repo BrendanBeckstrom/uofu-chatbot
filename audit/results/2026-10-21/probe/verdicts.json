@@ -1,0 +1,94 @@
+{
+ "admissions-costs#0": [
+  "correct",
+  "Gave February 1, the newest date; didn't mention the February 8 conflict"
+ ],
+ "admissions-costs#1": [
+  "wrong",
+  "Told a transfer student December 1; Admissions says February 1"
+ ],
+ "admissions-costs#2": [
+  "wrong",
+  "Said the GRE is required (min 160) from the handbook; the department page says optional"
+ ],
+ "admissions-costs#3": [
+  "correct",
+  "Gave 110 and noted the handbook's 105"
+ ],
+ "admissions-costs#4": [
+  "correct",
+  "Gave the website's 3.0/3.3 and noted the handbook's 3.25"
+ ],
+ "admissions-costs#5": [
+  "flagged",
+  "Gave one set of dates, said the pages conflict and to confirm"
+ ],
+ "advising-contacts#0": [
+  "correct",
+  "Used ME's own advising page"
+ ],
+ "advising-contacts#2": [
+  "correct",
+  "Gave the right BME advisor and booking page"
+ ],
+ "advising-contacts#4": [
+  "correct",
+  "Used ME's own page; noted the old directory"
+ ],
+ "advising-contacts#6": [
+  "wrong",
+  "Gave only one BME advisor from the outdated college directory"
+ ],
+ "calendar-events#0": [
+  "no_answer",
+  "Couldn't find the date; pointed to the Registrar"
+ ],
+ "calendar-events#1": [
+  "no_answer",
+  "Couldn't find the date; pointed to the Registrar"
+ ],
+ "calendar-events#2": [
+  "wrong",
+  "Gave the Civil handbook's withdrawal dates, two weeks early"
+ ],
+ "calendar-events#3": [
+  "wrong",
+  "Said apply for graduation by March 13; the Registrar says January 22"
+ ],
+ "calendar-events#4": [
+  "wrong",
+  "Said convocation starts at 8:00 a.m., repeating the page's likely error"
+ ],
+ "calendar-events#5": [
+  "wrong",
+  "Gave MSE's outdated 'first ten calendar days' rule (did point to the calendar)"
+ ],
+ "policies-requirements#0": [
+  "correct",
+  "Gave the current 'highest grade' rule and flagged the old ECE handbook"
+ ],
+ "policies-requirements#1": [
+  "wrong",
+  "Gave only the handbook's lenient three-attempt version"
+ ],
+ "policies-requirements#2": [
+  "correct",
+  "Pointed to the 2026-27 checklist (but linked a 404 advising URL)"
+ ],
+ "policies-requirements#3": [
+  "wrong",
+  "Said a 3.0 GPA avoids probation, repeating the page's likely typo"
+ ],
+ "policies-requirements#4": [
+  "wrong",
+  "Missed ME's policy page; gave the college's outdated 2023 repeat rule"
+ ],
+ "policies-requirements#5": [
+  "correct",
+  "Gave ECE's current Monitoring List and petition rules"
+ ],
+ "policies-requirements#6": [
+  "correct",
+  "Used the 2026-27 CS minor sheet"
+ ]
+}

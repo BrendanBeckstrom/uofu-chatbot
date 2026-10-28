@@ -4,8 +4,7 @@
     python -m audit.report audit/results/<date> --pdf
 
 Writes site-content-audit-<date>.html into the same folder, and the PDF next to it with --pdf (needs Google
-Chrome). audit/results/ isn't committed: the report names staff and is for the team. Copy it to docs/reports/
-only if you decide to publish it.
+Chrome). Each run's folder is committed (docs/SITE_AUDIT.md).
 Only findings the verifier confirmed or marked uncertain are reported; refuted ones are counted, not shown.
 A finding with "duplicate_of" (added by hand to findings.json when two topics reported the same problem) is
 counted as merged and not shown twice.

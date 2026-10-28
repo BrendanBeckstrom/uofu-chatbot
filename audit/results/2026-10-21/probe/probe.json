@@ -1,0 +1,329 @@
+{
+ "admissions-costs#0": {
+  "question": "When is the deadline to apply for Price College of Engineering scholarships?",
+  "answer": "The main Price College of Engineering scholarship application deadline is **February 1**, according to the [Engineering Scholarships](https://www.price.utah.edu/scholarships) page (updated October 19, 2026). The application opens December 1.\n\nTwo other dates matter:\n- **December 1:** Apply to the University of Utah by this date to be automatically considered for the college's merit scholarships. No separate scholarship application is needed.\n- **February 1:** Also the FAFSA deadline for need-based scholarships.\n\nSome individual scholarships have their own deadlines, so check the listing for any scholarship you want. For questions about your specific situation, contact the college at contact@coe.utah.edu or 801-581-6911.",
+  "sources": [
+   "https://www.price.utah.edu/scholarships"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 4.6
+ },
+ "admissions-costs#2": {
+  "question": "Do I need to take the GRE to apply for the chemical engineering PhD?",
+  "answer": "Yes. According to the Chemical Engineering graduate handbook (2025–2026), GRE scores are required from all applicants, regardless of background or previous degrees, and PhD applicants need a minimum score of 160 on a test taken within the past 24 months. Older scores won't be considered. The handbook also lists a 3.25 minimum undergraduate GPA for the PhD program, and scores must be sent to the U using department code 1001.\n\nYou can read the details in the [Grad Handbook 2025–2026](https://www.che.utah.edu/wp-content/uploads/2025/07/Grad-Handbook-2025-2026.pdf). Requirements can change, so confirm with the Chemical Engineering graduate program or the [University of Utah Graduate School](https://gradschool.utah.edu) before you apply. This is general information, not an admissions decision.",
+  "sources": [
+   "https://www.che.utah.edu/wp-content/uploads/2025/07/Grad-Handbook-2025-2026.pdf",
+   "https://gradschool.utah.edu"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Reading www.che.utah.edu…ds/2025/07/Grad-Handbook-2025-2026.pdf",
+   "Writing an answer"
+  ],
+  "seconds": 5.6
+ },
+ "admissions-costs#1": {
+  "question": "I'm transferring to the U next fall. When do I need to apply to be considered for engineering merit scholarships?",
+  "answer": "For merit scholarships, apply to the U by **December 1**. The [Engineering Scholarships](https://www.price.utah.edu/scholarships) page (updated October 19, 2026) says transfer students who apply for admission by December 1 are automatically considered for the Price College of Engineering merit scholarship, so no separate application is needed. Selected students are notified between April and July.\n\nThe PCE General Scholarships application is a separate step, due **February 1**, and the same page lists February 1 as the FAFSA deadline for need-based scholarships. The page's dates don't list a year, so confirm them for your start term with the college's engineering advisers at contact@coe.utah.edu or 801-581-6911.",
+  "sources": [
+   "https://www.price.utah.edu/scholarships"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 5.9
+ },
+ "admissions-costs#3": {
+  "question": "What Duolingo English test score do I need for the materials science graduate program?",
+  "answer": "For the Materials Science & Engineering graduate program, the minimum Duolingo English Test score is **110**, according to the [MSE Admissions](https://mse.utah.edu/admissions/) page, which was updated October 19, 2026. The department says scores must be less than two years old at admission, and it doesn't make exceptions for scores below the minimum.\n\nThe MSE Graduate Handbook excerpt I found lists 105 for Duolingo. Since the admissions page is more recent, I'd go with 110, but it's worth confirming with the department before you plan around either number. The admissions page also says Duolingo scores must be sent to the University Admissions Office directly from the testing agency.",
+  "sources": [
+   "https://mse.utah.edu/admissions/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 3.7
+ },
+ "admissions-costs#5": {
+  "question": "When are the application deadlines for the Magdiel Financial Relief Fund in mechanical engineering?",
+  "answer": "The Magdiel Student Financial Relief Fund for mechanical engineering lists two application deadlines each year: **August 6 and December 1**. The [Mechanical Engineering Financial Information page](https://www.mech.utah.edu/grads/financial-information/), updated February 2026, gives these dates. An older application page on the same site, last updated December 2025, lists August 1 and December 10, so I went with the newer page.\n\nApplications are accepted year-round, but decisions are made the first week of class and funds are limited. The fund is for mechanical engineering students nearing completion of their degree who face a significant or unforeseen financial hardship. Because the dates conflict across pages, please confirm with the mechanical engineering office before you apply.",
+  "sources": [
+   "https://www.mech.utah.edu/grads/financial-information/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 3.8
+ },
+ "admissions-costs#4": {
+  "question": "What's the minimum GPA to get into the chemical engineering PhD program?",
+  "answer": "The most recently updated source is the Chemical Engineering [Future Graduate Students](https://www.che.utah.edu/future-graduate-students/) page (updated September 24, 2026). It says applicants need a minimum undergraduate GPA of 3.0 for their application to be evaluated, and a GPA of 3.3 is encouraged for PhD applicants.\n\nAn older [2025–2026 Grad Handbook](https://www.che.utah.edu/wp-content/uploads/2025/07/Grad-Handbook-2025-2026.pdf) (July 2025) lists 3.25 as the minimum for the PhD program, so the requirement may have changed. Meeting a minimum doesn't guarantee admission. To confirm the current number, contact the Chemical Engineering graduate program or the college office at contact@coe.utah.edu or 801-581-6911.",
+  "sources": [
+   "https://www.che.utah.edu/future-graduate-students/",
+   "https://www.che.utah.edu/wp-content/uploads/2025/07/Grad-Handbook-2025-2026.pdf"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 4.9
+ },
+ "advising-contacts#0": {
+  "question": "Who is my mechanical engineering academic advisor? My last name is Martinez.",
+  "answer": "For last names in the **Kj–Me** range, like Martinez, the Mechanical Engineering advising page lists **Christine Nguyen** as the contact for questions. The page says students in that range should email her, but should book advising appointments with a different ME advisor.\n\n- **Questions:** Email Christine Nguyen. Her address is on the [ME Undergraduate Advising](https://www.mech.utah.edu/undergraduate-advising/) page.\n- **Appointments:** Book with another ME advisor, such as Ben Danh, Vanessa Pei, Bianca Reyes, Peter Susalla or McKenna Jensen.\n- **Quick questions:** The page also lists virtual drop-ins on Tuesdays from 11:00 am to 1:00 pm.\n\nPlease confirm this with the department, since advisor assignments can change.",
+  "sources": [
+   "https://www.mech.utah.edu/undergraduate-advising/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 5.8
+ },
+ "advising-contacts#2": {
+  "question": "I'm an incoming biomedical engineering freshman, last name Garcia. Who is my advisor and how do I book with them?",
+  "answer": "Your advisor is **Erin Kurth**, BME Academic Advisor for last names A–L. Since \"Garcia\" falls in that range, she's the right person.\n\nTo book, go to the [BME Undergraduate Student Resources page](https://www.bme.utah.edu/undergraduate-current-students/) and click \"Book an appointment\" under Erin Kurth's name (it links to [her booking page](https://www.bme.utah.edu/erin/)). Appointments open two weeks in advance. For quick questions or booking trouble, you can email the BME advising team at bme-advising@utah.edu.\n\nAlso, the BME handbook and four-year flowcharts for 2026–2027 are on that same page, which is a good thing to look at before your first advising meeting.",
+  "sources": [
+   "https://www.bme.utah.edu/undergraduate-current-students/",
+   "https://www.bme.utah.edu/erin/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Reading www.bme.utah.edu/undergraduate-current-students",
+   "Writing an answer"
+  ],
+  "seconds": 4.5
+ },
+ "advising-contacts#4": {
+  "question": "What's the email and office location for the mechanical engineering undergraduate advisors?",
+  "answer": "The current Mechanical Engineering advising page lists advisors by last name, and the email addresses are behind \"Email\" links on the page. The only address shown in the text is for Christine Nguyen, so I'd use the page's links for the others:\n\n- **Last names A–B:** Ben Danh, [ME advising page](https://www.mech.utah.edu/undergraduate-advising/)\n- **Last names C–Fi:** Vanessa Pei\n- **Last names Fj–Ki:** Bianca Reyes\n- **Last names Kj–Me:** Christine Nguyen, u6078074@umail.utah.edu. Students in this range are asked to email Christine, not book an appointment.\n- **Last names Mi–Sc:** Peter Susalla\n- **Last names Se–Z:** McKenna Jensen\n\nOffice locations are less clear. The page doesn't list individual offices, but it says in-person drop-ins are in MEK 1560 on Tuesdays from 11:00 am to 1:00 pm, and virtual drop-ins run on Zoom at the same times. An older college directory lists Ben Danh in MEK 1560A, Vanessa Pei in MEK 1560C and McKenna Jensen in MEK 1550, but that directory was last updated in 2023, so please confirm those rooms with the department.\n\nThe Director of Undergraduate Studies is Dr. Debra Mascaro, MEK 1560B, 801.581.7687. Students should contact her only if an advisor refers them, for issues like academic standards, petitions or dismissal.",
+  "sources": [
+   "https://www.mech.utah.edu/undergraduate-advising/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Reading www.mech.utah.edu/undergraduate-advising",
+   "Writing an answer"
+  ],
+  "seconds": 6.5
+ },
+ "advising-contacts#6": {
+  "question": "Who are the biomedical engineering undergraduate academic advisors?",
+  "answer": "The college's advisor directory lists **Erin Kurth** as the Biomedical Engineering academic advisor. You can reach Erin at erin.kurth@utah.edu or 801-585-3651, in 3222 SMBB. You can also [book an appointment](https://www.price.utah.edu/students/academic-advising) through that directory.\n\nThe directory was last updated in June 2023, and I didn't find a newer BME advising page, so please confirm that Erin is still the BME advisor. The college office at contact@coe.utah.edu or 801-581-6911 can confirm. Prospective students can also ask the engineering advisers at an [info session](https://www.price.utah.edu/future/request-information/info-sessions).",
+  "sources": [
+   "https://www.price.utah.edu/students/academic-advising",
+   "https://www.price.utah.edu/future/request-information/info-sessions"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Searching the site for “biomedical engineering undergraduate advising”",
+   "Writing an answer"
+  ],
+  "seconds": 4.6
+ },
+ "calendar-events#0": {
+  "question": "When is the last day to withdraw from a full-semester class this fall?",
+  "answer": "I couldn't find the exact date for this fall's last day to withdraw from a full-semester class, so I don't want to guess. The Price College [Semester Guidelines](https://www.price.utah.edu/semester-guidelines) explain the rules but point to the University Academic Calendar for the actual dates. The official calendar is at [registrar.utah.edu/academic-calendars](https://registrar.utah.edu/academic-calendars), and the Office of the Registrar can confirm the date.\n\nKeep in mind that withdrawing after the add/drop deadline puts a \"W\" on your transcript and you're still charged tuition. Dropping before the add/drop deadline avoids both. If you're considering withdrawing, talk with your department's academic advisor first.",
+  "sources": [
+   "https://www.price.utah.edu/semester-guidelines",
+   "https://registrar.utah.edu/academic-calendars"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Searching the site for “academic calendar fall 2026 last day to withdraw”",
+   "Writing an answer",
+   "Reading registrar.utah.edu/academic-calendar",
+   "Writing an answer",
+   "Searching the site for “University academic calendar fall semester 2026 withdraw dea”",
+   "Writing an answer"
+  ],
+  "seconds": 7.8
+ },
+ "calendar-events#2": {
+  "question": "I'm a civil engineering grad student. When is the last day to withdraw from classes this fall?",
+  "answer": "For fall 2026, the Civil & Environmental Engineering graduate handbook lists two withdrawal deadlines, depending on your class's schedule:\n\n- **First-half classes:** Friday, September 18. This has passed.\n- **Second-half classes:** Friday, November 13. This is the one to watch if your courses run the second half of the semester.\n\nThe second-half add/drop deadline is Friday, October 23, two days from now, so it's the last day to add or drop those classes without a withdrawal. The [Civil graduate handbook](https://www.civil.utah.edu/wp-content/uploads/2026/10/Graduate_Handbook_2026-2027_0819_-ADA.pdf) (updated October 13, 2026) has the full calendar. Since I can't see your schedule or registration, please confirm your dates with the Registrar or your civil graduate advisor before you act on them.",
+  "sources": [
+   "https://www.civil.utah.edu/wp-content/uploads/2026/10/Graduate_Handbook_2026-2027_0819_-ADA.pdf"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 5.0
+ },
+ "calendar-events#1": {
+  "question": "What's the deadline to change a fall 2026 class to CR/NC?",
+  "answer": "I couldn't confirm the fall 2026 deadline to switch a class to CR/NC. The pages I found don't give a date for that change, and the official academic calendar wasn't available to me.\n\nSome related rules from the college and University pages:\n- Core classes used to compute your Engineering GPA need letter grades, so check with your advisor before choosing CR/NC. See the [Semester Guidelines](https://www.price.utah.edu/semester-guidelines).\n- Students can use the CR/NC option for a maximum of 15 hours as an undergraduate. It isn't allowed in Writing 1010 or 2010, Honors courses, or classes that meet major requirements, per the [Mechanical Engineering undergrad FAQ](https://www.mech.utah.edu/academics/undergraduate/undergrad-faq/).\n- The college's guidelines point to the University Academic Calendar for add, drop and withdrawal dates, so that's where the CR/NC date should be listed.\n\nFor the exact date, check the University Academic Calendar or ask the college office at contact@coe.utah.edu or 801-581-6911. Current students can also ask their department's academic advisor.",
+  "sources": [
+   "https://www.price.utah.edu/semester-guidelines",
+   "https://www.mech.utah.edu/academics/undergraduate/undergrad-faq/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Searching the site for “CR/NC deadline fall 2026 academic calendar”",
+   "Writing an answer",
+   "Reading registrar.utah.edu/academic-calendar",
+   "Writing an answer",
+   "Searching the site for “University of Utah academic calendar fall 2026 last day to c”",
+   "Writing an answer"
+  ],
+  "seconds": 8.2
+ },
+ "calendar-events#4": {
+  "question": "What time does the College of Engineering convocation ceremony start?",
+  "answer": "The College of Engineering convocation for the class of 2027 is scheduled for **8:00 a.m. on Friday, May 7, 2027**, at the Jon Huntsman Event Center, according to the [Engineering Convocation](https://www.price.utah.edu/graduation) page (last updated October 1, 2026). Student check-in and the procession start time are still listed as TBA, so check that page for updates. Older ceremony times you may see online, like the 2021 ceremony at 5:00 p.m., are from past years.",
+  "sources": [
+   "https://www.price.utah.edu/graduation"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 3.5
+ },
+ "calendar-events#3": {
+  "question": "I'm graduating in spring 2027. When do I need to apply for graduation?",
+  "answer": "For the Spring 2027 ceremony, apply for graduation **before March 13, 2027**. The college says this is what gets you listed in the convocation program. The convocation itself is Friday, May 7, 2027, at the Jon Huntsman Event Center, starting at 8:00am.\n\nUndergraduates apply through the [Registrar's undergraduate graduation page](https://registrar.utah.edu/handbook/undergradgraduation.php). Before you apply, check the [Graduation Checklist](https://www.price.utah.edu/wp-content/uploads/2025/03/Applying-to-Graduate_2025.pdf) to confirm your requirements are met and your diploma mailing info is current. If you want your preferred name on your diploma and in the program, notify the Graduation Division in writing by the same March 13 date.\n\nThe [convocation page](https://www.price.utah.edu/graduation) still has some 2026 labels, so confirm the dates with the Registrar or the college office (contact@coe.utah.edu, 801-581-6911) if anything looks off.",
+  "sources": [
+   "https://registrar.utah.edu/handbook/undergradgraduation.php",
+   "https://www.price.utah.edu/wp-content/uploads/2025/03/Applying-to-Graduate_2025.pdf",
+   "https://www.price.utah.edu/graduation"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Reading www.price.utah.edu/graduation",
+   "Writing an answer"
+  ],
+  "seconds": 7.3
+ },
+ "calendar-events#5": {
+  "question": "I'm in materials science. How long do I have to drop a class without getting a W?",
+  "answer": "In Materials Science & Engineering, you can drop a class without a \"W\" and without permission during the **first ten calendar days of the term**, according to the [MSE Policies](https://mse.utah.edu/policies/) page. The [MSE Handbook](https://mse.utah.edu/wp-content/uploads/sites/34/2025/12/MSE-Handbook-2025-Final-v2.pdf) says the same.\n\nThe college's [Semester Guidelines](https://www.price.utah.edu/semester-guidelines) describe the drop period as running up to the published add/drop deadline. Check the [Academic Calendar](https://registrar.utah.edu/academic-calendar/) for this term's exact date, since the ten-day window is counted from the first day of classes.\n\nBefore you drop, talk with your MSE academic advisor, and with a financial aid advisor, because dropping can affect your aid. If you drop below 9 credits, you may lose tuition benefits.",
+  "sources": [
+   "https://mse.utah.edu/policies/",
+   "https://mse.utah.edu/wp-content/uploads/sites/34/2025/12/MSE-Handbook-2025-Final-v2.pdf",
+   "https://www.price.utah.edu/semester-guidelines",
+   "https://registrar.utah.edu/academic-calendar/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 6.1
+ },
+ "policies-requirements#0": {
+  "question": "If I retake a class, which grade counts toward my GPA?",
+  "answer": "For a Price College of Engineering course you repeat on or after August 1, 2026, the **highest** grade you earned is used to compute your GPA. For repeats before that date, the most recent grade counted. Per the [Semester Guidelines](https://www.price.utah.edu/semester-guidelines), updated June 2026, W, I, and V grades also count as having taken the class, and a course taken at another school counts as one attempt, so a second attempt generally has to be at the U.\n\nOlder department pages may describe different rules. The ECE Policy Handbook (last updated 2017) says only the second attempt counts, so check with your department's academic advisor, since that handbook may be out of date. Also, if you repeat a required class and don't earn a satisfactory grade, it could affect your graduation, so confirm your plan with your advisor before you retake.",
+  "sources": [
+   "https://www.price.utah.edu/semester-guidelines"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 5.1
+ },
+ "policies-requirements#2": {
+  "question": "Where can I find the computer engineering degree requirements checklist?",
+  "answer": "The most recent Computer Engineering checklist is the [CE checklist for 2026-2027](https://www.ece.utah.edu/wp-content/uploads/2026/06/CE-checklist_-2026-2027-.docx.pdf), posted by the Electrical & Computer Engineering department. It lists the total degree hours (120 minimum), the 40 upper-division hour minimum, and the GPA requirements.\n\nAn older [BS CE Checklist (updated 2021)](https://www.ece.utah.edu/wp-content/uploads/2021/10/BS-CE-Checklist-Updated-2021.docx.pdf) is also on the department site, but it may not reflect current requirements, so use the 2026-2027 version. For questions about your own plan, ask your department's academic advisors at [ECE advising](https://ece.utah.edu/advising).",
+  "sources": [
+   "https://www.ece.utah.edu/wp-content/uploads/2026/06/CE-checklist_-2026-2027-.docx.pdf",
+   "https://www.ece.utah.edu/wp-content/uploads/2021/10/BS-CE-Checklist-Updated-2021.docx.pdf",
+   "https://ece.utah.edu/advising"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 3.5
+ },
+ "policies-requirements#1": {
+  "question": "How many times can I attempt a required course in chemical engineering?",
+  "answer": "Chemical engineering students can take a required course up to three times, but a third attempt needs approval, and after three unsuccessful attempts you're dismissed from the major.\n\n- **Attempts 1 and 2:** No restrictions under the college's [Semester Guidelines](https://www.price.utah.edu/semester-guidelines).\n- **Attempt 3:** Requires department approval through a petition. The same guidelines say a fourth attempt requires Associate Dean approval.\n- **Dismissal:** The [CH EN Undergraduate Guide & Handbook](https://www.che.utah.edu/wp-content/uploads/2026/08/CH-EN-UG-Guide-Handbook-2025-2026.pdf) (page 10) says that after three unsuccessful attempts of any required math, science or engineering course, you'll be dismissed from the major.\n- **Minimum grade:** A \"C\" is required in required chemical engineering, math, chemistry and physics courses. \"C-\" doesn't count, and a grade below \"C\" stops you from registering for later chemical engineering courses.\n\nBecause the handbook's dismissal rule is specific to your major, talk to a chemical engineering academic advisor before you plan a repeat, especially if you're weighing a third attempt.",
+  "sources": [
+   "https://www.price.utah.edu/semester-guidelines",
+   "https://www.che.utah.edu/wp-content/uploads/2026/08/CH-EN-UG-Guide-Handbook-2025-2026.pdf"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 5.5
+ },
+ "policies-requirements#5": {
+  "question": "What happens if I fail an ECE course twice?",
+  "answer": "If you're an ECE student and have two unsuccessful attempts at a course, the department places you on the **ECE Monitoring List**. Any grade counts as an attempt, including a W.\n\nYou can petition for a third attempt if extenuating circumstances or a non-academic reason kept you from passing within two tries. The petition packet includes a personal statement about your struggles and a plan for success in the third attempt, plus a time audit worksheet. The [ECE 3rd Attempt Petition](https://www.ece.utah.edu/3rd-attempt-petition/) page has the full process. Approval isn't guaranteed, so talk with your ECE academic advisor before you decide on a path.",
+  "sources": [
+   "https://www.ece.utah.edu/3rd-attempt-petition/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking"
+  ],
+  "seconds": 3.3
+ },
+ "policies-requirements#4": {
+  "question": "How many times can I repeat a course in mechanical engineering?",
+  "answer": "I couldn't find a mechanical engineering-specific repeat policy. The college-wide policy likely applies, and it appears to allow **at most two attempts** in a course. The most recent page I found, from the School of Computing (updated August 2026), says any course may be taken at most twice, and any grade, including a W, I or V, counts as an attempt. Two unsuccessful attempts can lead to probation.\n\nThe college's [Repeating Courses](https://www.price.utah.edu/repeating-courses) page (last updated June 2023) describes the rules differently, so the details may have changed. It says only the second attempt's grade counts, and that a course taken at another institution counts as one attempt. It also says courses taken at the U can't be repeated elsewhere, and that a student who takes a required class twice without a satisfactory grade may not be able to graduate.\n\nFor a third attempt in an extenuating case, the School of Computing's policy describes a petition with a formal letter to its Undergraduate Committee. I didn't find a mechanical engineering version of that process. Please confirm with the Mechanical Engineering academic advisors or the college office at contact@coe.utah.edu or 801-581-6911 before you plan a repeat.",
+  "sources": [
+   "https://www.price.utah.edu/repeating-courses"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Searching the site for “mechanical engineering repeat course policy”",
+   "Searching the site for “Price College of Engineering repeating courses policy attemp”",
+   "Writing an answer"
+  ],
+  "seconds": 6.4
+ },
+ "policies-requirements#3": {
+  "question": "What GPA puts a materials science and engineering student on academic probation?",
+  "answer": "Based on the Materials Science & Engineering policies page, the answer depends on which threshold you mean, and the page reads a little inconsistently:\n\n- **Probation:** The page says \"Students below a 3 GPA will be placed on probation.\"\n- **Minimum to stay in the program:** A cumulative GPA of at least 2.3 is required for courses applied to the degree. Students must return to 2.3 or higher within two consecutive semesters or may be removed from the program. Its clarification adds that a student can earn a C in individual courses and still be on probation if the cumulative GPA is below 2.3.\n\nPer the [MSE Policies](https://mse.utah.edu/policies/) page, you need a cumulative GPA of at least 3.0 to avoid probation, and at least 2.3 to stay in good standing with the degree. The page doesn't explain how these two thresholds fit together, so I'd confirm with the MSE academic advisor before relying on either number. The Computer Science and Mechanical Engineering probation rules I found use a 2.5 cutoff, but those don't apply to MSE.",
+  "sources": [
+   "https://mse.utah.edu/policies/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Searching the site for “materials science engineering academic standing probation GP”",
+   "Writing an answer",
+   "Searching the site for “MSE undergraduate department policies Warning Probation Susp”",
+   "Writing an answer",
+   "Reading mse.utah.edu/policies",
+   "Writing an answer"
+  ],
+  "seconds": 10.1
+ },
+ "policies-requirements#6": {
+  "question": "I'm a mechanical engineering major. What are the requirements for a computer science minor?",
+  "answer": "As a mechanical engineering major, you're eligible for the Computer Science minor. Here's what the 2026-27 requirement sheet lists, for 21 to 25 credits:\n\n- **Intro programming:** CS 1400 (4 credits), or CS 1410 (4) or the accelerated CS 1420 (4)\n- **CS 2420** Intro to Algorithms & Data Structures (4 credits). You need a B- or higher.\n- **MATH 1210** Calculus 1 (4 credits). You need a C or higher. Engineering calculus MATH 1310 and 1320 also count.\n- **Three CS courses at the 3000 level or above** (3 credits each, 9 total)\n\nTwo notes from the sheet: CS 2100 can count as one elective if you take it at the U, and you can't hold both the CS minor and the AI minor.\n\nTo declare, meet with a Kahlert School of Computing academic advisor, who can check your eligibility and fit with your mechanical engineering plan. You can reach them at ugrad-help@cs.utah.edu or through the [academic advisor info page](https://www.cs.utah.edu/undergraduate/current-students/academic-advisor-info/). The full requirement sheet is [here](https://www.cs.utah.edu/wp-content/uploads/2026/07/CS-Minor-26-27.pdf), and the [minors page](https://www.cs.utah.edu/minors/) has the course list.",
+  "sources": [
+   "https://www.cs.utah.edu/undergraduate/current-students/academic-advisor-info/",
+   "https://www.cs.utah.edu/wp-content/uploads/2026/07/CS-Minor-26-27.pdf",
+   "https://www.cs.utah.edu/minors/"
+  ],
+  "steps": [
+   "Searching the college websites",
+   "Thinking",
+   "Reading www.cs.utah.edu/minors",
+   "Writing an answer",
+   "Reading www.cs.utah.edu…ent/uploads/2026/07/CS-Minor-26-27.pdf",
+   "Writing an answer"
+  ],
+  "seconds": 7.9
+ }
+}

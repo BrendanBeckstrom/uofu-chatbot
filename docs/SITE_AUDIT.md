@@ -1,7 +1,8 @@
 # Site content audit
 
 A check of the college's own websites for information that is outdated, contradictory, unreachable or unreadable.
-It produces an internal report (`audit/results/<date>/site-content-audit-<date>.pdf`) for the assistant team.
+It produces a report (`audit/results/<date>/site-content-audit-<date>.pdf`) for the assistant team. The first one is
+[October 21, 2026](../audit/results/2026-10-21/site-content-audit-2026-10-21.pdf).
 
 ## Why we run it
 
@@ -66,8 +67,8 @@ same problem, add `"duplicate_of": "<the other finding's title>"` to one of them
 .venv/bin/python -m audit.lookup events --days 60
 ```
 
-Nothing in `audit/results/` is committed: the report names college staff and is for the team. The repository is
-public, so copy a report to `docs/reports/` only if you decide to share it there.
+Commit each run's `audit/results/<date>/` folder, so the next run can be compared with it. The report names college
+staff and their emails; all of it comes from the public pages it checks.
 
 ## How often
 
