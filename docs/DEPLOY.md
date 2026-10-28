@@ -55,7 +55,8 @@ us-central1, about $0.43 a day or $13 a month (Cloud Billing price list, October
 
 ## Deploying a change
 
-Merge the change first, then from `main`:
+Merge the change first. For a prompt change, run the must-pass eval cases three times (about 3 cents) and
+deploy only if they all pass: `.venv/bin/python -m evals.run answers --only gate --reps 3`. Then from `main`:
 
 ```bash
 ./deploy/deploy.sh           # server and pages

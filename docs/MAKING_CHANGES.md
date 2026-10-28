@@ -27,7 +27,13 @@ and review what it proposes.
    ```bash
    .venv/bin/python -m evals.run answers
    ```
-   Compare the pass rate with the last run (each run is saved in `evals/results/`).
+   Read the report's first lines, one per tier (see [Eval tiers](#eval-tiers)):
+   - **Must pass** has to be all ✓. If any case fails, the command exits with an error; fix it before merging.
+   - **Expected to pass** is the number to compare with the last run (each run is saved in `evals/results/`).
+     One pass varies by several points, so read its 95% range, not just the percentage.
+   - **Newly failing** lists cases that passed every time in their last run and failed now. Read those
+     answers: it's either a real regression or ordinary variation, and a second run tells them apart.
+   - **Known gaps** are expected to fail. A gap that passes is good news, not a problem.
 5. **Open a pull request.** GitHub runs the same checks automatically (the "CI" check). If it's red, click
    "Details" to see which check failed and why.
 6. **Get it reviewed.** A pull request can be merged only when CI is green and the code owner listed in
@@ -100,6 +106,7 @@ Add an entry to `evals/questions.json`:
   - `must_not_include`: known-wrong statements
   - `decline: true` or `decline: false`: should it refuse?
   - `time_sensitive: true`
+  - `tier`: `"gate"` or `"gap"` (with a `gap_reason`); see below. Most cases have no tier.
 - Check facts against the live site, never from memory.
 - `origin` (where the question came from) and `evidence` (the page text you checked) are optional notes for
   reviewers; the graders ignore them.
@@ -107,6 +114,30 @@ Add an entry to `evals/questions.json`:
   `.venv/bin/python -m evals.run regrade --dir evals/results/<run>`.
 - Run `.venv/bin/python -m evals.run selftest`. It confirms your reference answer passes the graders and an
   empty answer fails.
+
+#### Eval tiers
+
+The bot doesn't give the same answer twice, so a single failure on an ordinary question isn't a regression.
+The tiers separate the failures that matter from the noise:
+
+| Tier | Which cases | What a failure means |
+| --- | --- | --- |
+| `"gate"`: must pass | Safety (crisis replies), out-of-scope declines, prompt-injection and boundary cases, and the in-scope questions that must not be declined | Something is broken. Every rep has to pass. |
+| no tier: expected to pass | Everything else that normally works | Judged as a pass rate and through the "Newly failing" list, never one case at a time. |
+| `"gap"`: known gap | Cases that fail every run for a known reason, written in `gap_reason` | Expected. Reported apart, so they don't hide changes in the tracked rate. |
+
+- Gate only a check that a correct answer can't miss. A case whose check can fail on a good answer (a
+  different valid page, other wording) stays untiered: `spanish-transfer` checks a cited page and
+  `class-size-gap` checks phrasing, so neither is gated.
+- `gap_reason` starts with the kind of fix it needs: *Not indexed* (add the page or site to the index),
+  *Site content* (the page is wrong or missing something; see [SITE_AUDIT.md](SITE_AUDIT.md)), *Search* (ranking
+  or `ALIASES`) or *Reading* (the bot reads the right document and misses the fact).
+- When a gap passes several runs in a row, remove its tier. When a fix makes one pass, remove it in the same
+  pull request.
+- Before deploying a prompt change, run the gate cases three times (about 3 cents):
+  `.venv/bin/python -m evals.run answers --only gate --reps 3`. `--only` also takes `gap` or a category.
+- Report both rates to other people: "expected to pass" is the regression signal, and "all questions" includes
+  the gaps.
 
 ### Include or leave out a PDF (handbooks, plans, flowcharts)
 

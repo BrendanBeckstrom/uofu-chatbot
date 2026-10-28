@@ -216,7 +216,7 @@ The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md).
 | `python -m tests.test_analytics` | nothing | the usage report's counts; Firestore records and spend, against an in-memory fake |
 | `python -m evals.run selftest` | internet (calendar) | the eval graders accept good answers and reject empty ones |
 | `python -m evals.run retrieval` | the local index | does the first search find the right page? |
-| `python -m evals.run answers` | API key, about $0.12 per pass | the real bot on every question in `evals/questions.json`; writes `summary.json` with 95% ranges |
+| `python -m evals.run answers` | API key, about $0.12 per pass | the real bot on every question in `evals/questions.json`, reported by tier (must pass, expected to pass, known gaps; [MAKING_CHANGES.md](MAKING_CHANGES.md#eval-tiers)); writes `summary.json` with 95% ranges and exits 1 if a must-pass case fails |
 | `python -m evals.run regrade --dir …` | nothing | re-scores a saved run after a case is fixed |
 | `python -m evals.run baseline` | internet, ~12 minutes | price.utah.edu's own search box vs. the assistant's first search |
 | `python -m evals.converse` | API key, about $0.001 a message | multi-turn test conversations against a separate eval server, for people or agents |

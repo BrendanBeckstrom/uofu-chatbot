@@ -16,6 +16,8 @@ Answers are graded with simple, separate checks (no AI judge):
 A case passes when all of its checks pass. API or network failures go to errors.jsonl and are
 never counted as wrong answers. Every run saves full transcripts and summary.json (pass rates with
 95% ranges, per category and per check, cost and speed) under evals/results/<timestamp>/.
+Cases have a tier (docs/MAKING_CHANGES.md): "gate" cases must pass every rep (a failure exits 1),
+"gap" cases are known failures reported apart, and the rest are tracked as a pass rate.
 Exploratory, multi-turn testing uses evals/converse.py instead.
 """
 
@@ -46,6 +48,7 @@ CASE_TIMEOUT = 240  # seconds, hard ceiling per answer
 DECLINE_MARKERS = ["I'm scoped to University of Utah questions"]
 REDIRECT_PHRASES = ["help with", "questions about", "can't", "cannot", "can not", "not able", "unable",
                     "i'm here", "i am here", "happy to help", "instead", "best place", "reach out"]
+TIERS = ("gate", "gap")  # a case without a tier is expected to pass and tracked as a rate
 
 
 def norm(text: str) -> str:
@@ -58,7 +61,7 @@ def load_cases(only: str | None = None) -> list[dict]:
     cases = json.loads(CASES_PATH.read_text())
     if only:
         wanted = {w.strip() for w in only.split(",")}
-        cases = [c for c in cases if c["id"] in wanted or c["category"] in wanted]
+        cases = [c for c in cases if c["id"] in wanted or c["category"] in wanted or c.get("tier") in wanted]
     return cases
 
 
@@ -146,12 +149,33 @@ def wilson(passed: int, n: int, z: float = 1.96) -> list[float]:
     return [round(max(0.0, centre - half), 3), round(min(1.0, centre + half), 3)]
 
 
-def summarize(results: list[dict], errors: list[dict], cases: list[dict]) -> dict:
+def newly_failing(results: list[dict], folder: Path, tiers: dict) -> list[str]:
+    """Cases that passed every rep the last time an earlier run included them, and failed a rep now."""
+    now = {}
+    for r in results:
+        now.setdefault(r["id"], []).append(r["pass"])
+    last = {}
+    for run in sorted(p for p in RESULTS_DIR.iterdir() if re.fullmatch(r"\d{8}-\d{6}", p.name)
+                      and p.name < folder.name and (p / "results.jsonl").exists()):
+        passes = {}
+        for line in (run / "results.jsonl").read_text().splitlines():
+            r = json.loads(line)
+            passes.setdefault(r["id"], []).append(r["pass"])
+        last.update({cid: (run.name, p) for cid, p in passes.items()})
+    return [f"{cid} (passed {len(last[cid][1])}/{len(last[cid][1])} in {last[cid][0]})"
+            for cid, passes in sorted(now.items())
+            if tiers.get(cid) != "gap" and not all(passes) and cid in last and all(last[cid][1])]
+
+
+def summarize(results: list[dict], errors: list[dict], cases: list[dict], folder: Path) -> dict:
     """The numbers the evaluation report uses, saved as summary.json next to each run."""
     def block(rows):
         passed = sum(r["pass"] for r in rows)
         return {"n": len(rows), "passed": passed, "rate": round(passed / len(rows), 3) if rows else None,
                 "range95": wilson(passed, len(rows))}
+    tiers = {c["id"]: c.get("tier") for c in cases}
+    gate = [r for r in results if tiers.get(r["id"]) == "gate"]
+    gaps = [r for r in results if tiers.get(r["id"]) == "gap"]
     costs = [r["cost_usd"] for r in results if r["cost_usd"] is not None]
     secs = sorted(r["seconds"] for r in results)
     try:
@@ -161,6 +185,10 @@ def summarize(results: list[dict], errors: list[dict], cases: list[dict]) -> dic
     return {
         "date": date.today().isoformat(), "model": config.MODEL, "version": version, "cases": len(cases),
         "overall": block(results), "errors_not_scored": len(errors),
+        "gate": {**block(gate), "failed": sorted({r["id"] for r in gate if not r["pass"]})},
+        "tracked": block([r for r in results if tiers.get(r["id"]) not in TIERS]),
+        "gaps": {**block(gaps), "passing": sorted({r["id"] for r in gaps if r["pass"]})},
+        "newly_failing": newly_failing(results, folder, tiers),
         "by_category": {c: block([r for r in results if r["category"] == c])
                         for c in sorted({r["category"] for r in results})},
         "by_check": {k: {"n": len(v), "passed": sum(v)} for k in
@@ -275,17 +303,21 @@ def run_regrade(folder: Path):
             flipped.append(f"{r['id']} (rep {r['rep']}): {'pass' if all(checks.values()) else 'fail'}")
         r["checks"], r["pass"] = checks, all(checks.values())
     (folder / "results.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
-    summary = summarize(rows, errors, [c for c in cases.values() if any(r["id"] == c["id"] for r in rows)])
+    summary = summarize(rows, errors, [c for c in cases.values() if any(r["id"] == c["id"] for r in rows)], folder)
     (folder / "summary.json").write_text(json.dumps(summary, indent=1))
-    o = summary["overall"]
-    print(f"Re-scored {len(rows)} answers: {o['passed']}/{o['n']} pass (95% range "
-          f"{o['range95'][0]:.0%}–{o['range95'][1]:.0%}). Changed: {', '.join(flipped) or 'none'}")
+    print(f"Re-scored {len(rows)} answers. Changed: {', '.join(flipped) or 'none'}")
+    print_report(summary, rows, errors, max((r["rep"] for r in rows), default=0) + 1)
+    if summary["gate"]["failed"]:
+        raise SystemExit(1)
 
 
 async def run_selftest(cases: list[dict]):
     """Known-good answers must pass every check; empty answers must fail. Catches grader bugs."""
     problems = 0
     for c in cases:
+        if c.get("tier") not in (None, *TIERS) or (c.get("tier") == "gap") != bool(c.get("gap_reason")):
+            problems += 1
+            print(f"  ✗ {c['id']}: tier must be \"gate\" or \"gap\", and every gap (only a gap) needs a gap_reason")
         try:
             titles = await event_titles(c["expect_events"]) if c.get("expect_events") is not None else None
         except Exception:  # calendar unreachable (e.g. CI): grade as an empty window
@@ -387,13 +419,35 @@ async def run_answers(cases: list[dict], reps: int, concurrency: int):
             for e in errors:
                 f.write(json.dumps(e) + "\n")
 
+    summary = summarize(results, errors, cases, out_dir)
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
+    print_report(summary, results, errors, reps)
+    print(f"\nSaved to {out_dir.relative_to(Path.cwd()) if out_dir.is_relative_to(Path.cwd()) else out_dir}")
+    if summary["gate"]["failed"]:
+        raise SystemExit(1)
+
+
+def print_report(summary: dict, results: list[dict], errors: list[dict], reps: int):
     def rate(rows):
         return f"{sum(r['pass'] for r in rows)}/{len(rows)} ({sum(r['pass'] for r in rows) / max(len(rows), 1):.0%})"
 
-    summary = summarize(results, errors, cases)
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
-    lo, hi = summary["overall"]["range95"]
-    print(f"\nPassed {rate(results)} (95% range {lo:.0%}–{hi:.0%})   errors (not scored): {len(errors)}")
+    def ranged(block):
+        lo, hi = block["range95"]
+        return f"{block['passed']}/{block['n']} ({block['rate']:.0%}) (95% range {lo:.0%}–{hi:.0%})"
+
+    gate, tracked, gaps = summary["gate"], summary["tracked"], summary["gaps"]
+    print()
+    if gate["n"]:
+        print(f"Must pass:        {gate['passed']}/{gate['n']}"
+              + (f"   ✗ FAILED: {', '.join(gate['failed'])}" if gate["failed"] else " ✓"))
+    if tracked["n"]:
+        print(f"Expected to pass: {ranged(tracked)}")
+    if gaps["n"]:
+        print(f"Known gaps:       {gaps['passed']}/{gaps['n']} pass now"
+              + (f" ({', '.join(gaps['passing'])})" if gaps["passing"] else ""))
+    if summary["newly_failing"]:
+        print("Newly failing (passed every time in its last run):\n    " + "\n    ".join(summary["newly_failing"]))
+    print(f"All questions:    {ranged(summary['overall'])}   errors (not scored): {len(errors)}")
     if reps > 1:
         per_rep = [statistics.mean(r["pass"] for r in results if r["rep"] == k) for k in range(reps)
                    if any(r["rep"] == k for r in results)]
@@ -424,7 +478,6 @@ async def run_answers(cases: list[dict], reps: int, concurrency: int):
         print(f"  cost: ${sum(costs):.2f} total, ${statistics.mean(costs):.3f} per answer")
     if secs:
         print(f"  latency: median {statistics.median(secs):.1f}s, max {max(secs):.1f}s")
-    print(f"\nSaved to {out_dir.relative_to(Path.cwd()) if out_dir.is_relative_to(Path.cwd()) else out_dir}")
 
 
 def main():
