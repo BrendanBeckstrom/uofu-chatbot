@@ -132,6 +132,12 @@ API failures are logged separately and never counted as wrong answers. Results, 
 `origin: persona-…` came from simulated-student testing and track known problems. Add your own
 questions, especially ones the ambassadors hear often.
 
+Each question has a tier ([Eval tiers](docs/MAKING_CHANGES.md#eval-tiers)). **Must-pass** questions (crisis
+replies, out-of-scope declines, prompt injection) have to pass every run. **Known gaps** fail for a recorded
+reason, such as a page that isn't indexed. Everything else is **expected to pass** and is read as a pass rate,
+since one answer can vary from run to run. Run just the must-pass questions with
+`.venv/bin/python -m evals.run answers --only gate --reps 3` (about 3 cents).
+
 ## Testing and refining
 
 - **Feedback.** Thumbs up/down in the widget append to `data/feedback.jsonl` (question, answer, rating).
