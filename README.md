@@ -153,6 +153,7 @@ questions, especially ones the ambassadors hear often.
 | [docs/SECURITY.md](docs/SECURITY.md) | scope, abuse and cost controls, research, open questions for the university |
 | [docs/DATA_PLAN.md](docs/DATA_PLAN.md) | what usage data to save, why, for how long, and how it maps to Firestore or AWS (draft) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | the hosted beta: Cloud Run, Firebase Hosting, the beta password, reading the logs |
+| [docs/SITE_AUDIT.md](docs/SITE_AUDIT.md) | the site content audit: finding outdated or conflicting information on the college's own sites |
 | [docs/reports/](docs/reports/) | evaluation reports to share; the [October 2026 beta evaluation](docs/reports/beta-evaluation-2026-10-21.pdf) opens right in the browser |
 | [CLAUDE.md](CLAUDE.md) | rules and commands for Claude Code sessions in this repo |
 
@@ -247,6 +248,7 @@ web/index.html    demo landing page
 web/designs.html  design concepts
 docs/             ARCHITECTURE, MAKING_CHANGES, SECURITY, DATA_PLAN, DEPLOY
 deploy/           setup, secrets and deploy scripts for the hosted beta
+audit/            read-only scan and lookups for the site content audit (.claude/workflows/site-audit.js)
 Dockerfile        the Cloud Run server image (.gcloudignore picks what's uploaded)
 firebase.json     Firebase Hosting and Firestore rules (firestore.rules)
 tests/            offline tests; tests/fixtures.py is their small made-up corpus
