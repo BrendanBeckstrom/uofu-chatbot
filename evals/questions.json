@@ -1998,5 +1998,34 @@
     ],
     "notes": "Gap-handling case. Passed in p11 turn 1 with no invented numbers. The must_include phrases are acknowledgment phrases, not page text, like the existing club-rush case.",
     "origin": "persona-prospective"
+  },
+  {
+    "id": "cs-first-semester-newest-plan",
+    "category": "planning",
+    "question": "what classes would i take my first semester as a computer science major?",
+    "expect_urls": [
+      "cs.utah.edu/wp-content/uploads/2026/10/CS-Plan-4year.pdf"
+    ],
+    "must_include": [
+      [
+        "CS 1400",
+        "CS 1420"
+      ],
+      [
+        "advisor",
+        "adviser",
+        "advising"
+      ]
+    ],
+    "must_not_include": [
+      "handbook.cs.utah.edu/2024-2025/CS/Academics/Files/Plans/CS-Plan-4year.pdf"
+    ],
+    "reference": "The Kahlert School's suggested 4-year plan (updated May 2026) has two starting points. Starting with CS 1400 and Precalculus, freshman fall is CS 1400 (4), MATH 1080 (5) and two Gen Eds (3 each). Starting with CS 1420 and Calculus I, it's CS 1420 (4), MATH 1210 (4) and two Gen Eds (3 each). Your math placement decides which, so confirm with a CS academic advisor.",
+    "as_of": "2026-10-28",
+    "evidence": [
+      "(index copy) https://www.cs.utah.edu/wp-content/uploads/2026/10/CS-Plan-4year.pdf p.1: \"Students who start with CS 1400 and Precalculus.\" fall \"CS 1400: Intro to Computer Programming | 4\", \"MATH 1080: Precalculus | 5\", \"Gen Ed† | 3\", \"Gen Ed | 3\"; \"Students who start with CS 1420 and Calculus I.\" fall \"CS 1420: Accelerated Object-Oriented Prog | 4\", \"MATH 1210: Calculus I† | 4\", \"Gen Ed† | 3\", \"Gen Ed† | 3\"; \"Updated May 2026\""
+    ],
+    "notes": "Newest-edition case. Search ranks the 2024-2025 handbook's CS-Plan-4year.pdf above this 2026 plan; the Oct 28 pressure test saw the bot cite the 2024-25 plan first.",
+    "origin": "pressure-test-2026-10-28"
   }
 ]

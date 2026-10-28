@@ -11,7 +11,7 @@ This document covers how the Price Engineering Assistant stays on topic, resists
 | Malicious output | Injected text turns an answer into a phishing link | Only `utah.edu` links render; no HTML or images | CSP on host pages |
 | SSRF | The page reader is pointed at internal campus servers | `utah.edu` only, public-IP DNS check, redirect checks, size and time caps | Optionally narrow to the 8 indexed sites |
 | Flooding / "denial of wallet" | A script sends thousands of questions and runs up the bill | Per-browser, per-IP and global limits; concurrency caps; $5/day breaker | Redis-backed limits, Cloudflare rules, Turnstile, workspace spend limit |
-| Runaway cost per question | Long chats or tool loops make each turn expensive | Output cap, 3 tool rounds, 8k-character page reads, 40k-token context cap, 20 turns | Tune from `usage.jsonl` |
+| Runaway cost per question | Long chats or tool loops make each turn expensive | Output cap, 3 tool rounds, 8k-character page reads, 70k-token context cap, 20 turns | Tune from `usage.jsonl` |
 | Student privacy | Students type uNIDs or grades; transcripts are logged | Privacy notice, redaction in logs, no records access | ISO and Privacy Office review; retention policy |
 
 ## 1. Keeping the assistant on topic
@@ -87,7 +87,7 @@ Knobs: `SCOPE_GATE=false` turns the gate off. Anthropic recommends `high` effort
 | **Daily breaker in the app** | `DAILY_BUDGET_USD` (default **$5**), computed from real token usage and Haiku 5.5 prices, and kept across restarts. Each answer reserves $0.015 up front and settles afterward, so parallel answers can't overshoot. When it trips, the bot falls back to **search-only answers** until midnight instead of going dark. |
 | **Upstream limits** | If Anthropic returns its monthly cap error (429 `enforced_spend_limit_reached`, which has no retry-after) or your own spend-limit error (400 "You have reached your specified… usage limits"), the app stops calling the API for the day (both verified [A16]). |
 | **Per-question budget** | `max_tokens` 3,000 per call (thinking counts toward it [A4]), at most 3 tool rounds, page reads trimmed to 8k characters, low effort. |
-| **Conversation caps** | 20 turns, and the chat asks the user to start fresh once a turn's prompt reaches 40k tokens. This matters twice over: every turn resends the history, and Haiku 5.5 bills prompts over 100k tokens at 5× the rate (verified [A8]). Sessions expire after 30 minutes idle. |
+| **Conversation caps** | 20 turns, and the chat asks the user to start fresh once a turn's prompt reaches 70k tokens. This matters twice over: every turn resends the history, and Haiku 5.5 bills prompts over 100k tokens at 5× the rate (verified [A8]). 70k leaves room for one more question's search results and page reads under that line (at 40k, a tester was cut off after three detailed questions). Sessions expire after 30 minutes idle. |
 | **Caching** | Prompt caching on every call; cache reads cost $0.01 per million tokens on Haiku 5.5 [A8]. Repeated *first* questions ("how do I apply?") come from a 6-hour answer cache at no cost. Answers that used the live calendar aren't cached. |
 
 **What abuse would cost.** These are estimates from the research, using Haiku 5.5 prices, with assumptions stated in [R report]:

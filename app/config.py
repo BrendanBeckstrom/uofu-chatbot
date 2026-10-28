@@ -104,7 +104,7 @@ RESERVE_PER_ANSWER_USD = 0.015  # held while an answer runs, so parallel answers
 # Per-question budgets.
 MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "3000"))           # per model call, thinking included
 MAX_TURNS_PER_SESSION = int(os.getenv("MAX_TURNS_PER_SESSION", "20"))
-MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS", "40000"))        # then the chat asks to start fresh
+MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS", "70000"))        # then the chat asks to start fresh
 SESSION_IDLE_MINUTES = float(os.getenv("SESSION_IDLE_MINUTES", "30"))
 MAX_MESSAGE_CHARS = int(os.getenv("MAX_MESSAGE_CHARS", "1000"))
 ANSWER_CACHE_HOURS = float(os.getenv("ANSWER_CACHE_HOURS", "6"))          # repeated first questions; 0 = off

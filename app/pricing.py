@@ -1,7 +1,7 @@
 """Per-model token prices ($ per million tokens), used for cost logging and the daily spend cap."""
 
 # Claude API list prices, October 2026 (platform.claude.com/docs/en/about-claude/pricing).
-# Haiku 5.5's rates are for prompts up to 100k tokens; this bot's prompts stay far below that.
+# Haiku 5.5's rates are for prompts up to 100k tokens; config.MAX_CONTEXT_TOKENS keeps this bot's prompts below that.
 # Cache writes are the 5-minute rate.
 PRICES = {
     "claude-haiku-5-5": {"input": 0.10, "output": 0.50, "cache_read": 0.01, "cache_write": 0.125},
