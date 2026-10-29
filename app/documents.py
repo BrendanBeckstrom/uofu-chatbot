@@ -1,5 +1,6 @@
-"""Planning documents: department PDFs (handbooks, degree plans, flowcharts, checklists) and the
-CS handbook website. See docs/ARCHITECTURE.md, "Planning documents"."""
+"""Planning documents: department PDFs (handbooks, degree plans, flowcharts, checklists), the
+CS handbook website, and a short list of campus office pages. See docs/ARCHITECTURE.md, "Planning
+documents" and "Campus pages"."""
 
 import asyncio
 import hashlib
@@ -38,6 +39,20 @@ MIN_YEAR = date.today().year - 5
 
 HANDBOOK_ROOT = "https://handbook.cs.utah.edu/"
 HANDBOOK_PROGRAMS = {"CS": "Computer Science", "DS": "Data Science", "BSSD": "Software Development"}
+
+# Pages from campus offices that the college sites only link to. A title of None uses the page's own.
+CAMPUS = "campus"
+_BURSAR_PDFS = "https://fbs.admin.utah.edu/download/income/"
+CAMPUS_PAGES = {
+    "https://financialaid.utah.edu/wue/index.php": None,
+    "https://bursar.utah.edu/undergraduate-tuition/": None,
+    _BURSAR_PDFS + "FreshSophRes/FreshSophTuitionFeeRes.pdf": "Undergraduate Tuition and Fees: Freshman and Sophomore, Resident (Bursar)",
+    _BURSAR_PDFS + "FreshSophNRes/FreshSophTuitionFeeNRes.pdf": "Undergraduate Tuition and Fees: Freshman and Sophomore, Non-Resident (Bursar)",
+    _BURSAR_PDFS + "JrSrRes/JrSrTuitionFeeRes.pdf": "Undergraduate Tuition and Fees: Junior and Senior, Resident (Bursar)",
+    _BURSAR_PDFS + "JrSrNRes/JrSrTuitionFeeNRes.pdf": "Undergraduate Tuition and Fees: Junior and Senior, Non-Resident (Bursar)",
+    "https://firstgen.utah.edu/": None,
+    "https://robotics.coe.utah.edu/academics/undergraduate/minor/": None,
+}
 
 HREF_RE = re.compile(r'href=["\']([^"\']+?\.pdf)(?:[?#][^"\']*)?["\']', re.I)
 SHORTCODE_URL_RE = re.compile(r'url:([^"|\]\s]+?\.pdf)', re.I)
@@ -162,6 +177,14 @@ async def discover_handbook(client: PoliteClient) -> dict[str, dict]:
     return pages
 
 
+def campus_pages() -> dict[str, dict]:
+    return {url: {"site": CAMPUS, "title": title, "linked_from": []} for url, title in CAMPUS_PAGES.items()}
+
+
+def _campus_title(title: str) -> str:
+    return re.sub(r"\s*[-|–]\s*The University of Utah\s*$", "", title.replace("\xad", ""))
+
+
 def _http_date(value: str | None) -> str:
     try:
         return parsedate_to_datetime(value).astimezone(timezone.utc).isoformat(timespec="seconds")
@@ -177,6 +200,10 @@ def to_doc(url: str, entry: dict) -> dict:
     kind = entry["kind"]
     context = "; ".join(t for t, _ in entry.get("linked_from", []) if t)
     header = f"Linked from: {context}\n\n" if context else ""
+    if entry["site"] == CAMPUS:  # campus servers send no Last-Modified for HTML, or the time of the request
+        modified = entry.get("last_modified", "") if kind == "pdf" else ""
+    else:
+        modified = entry.get("last_modified") or entry.get("fetched", "")
     return {
         "key": _key(url, kind, entry["site"]),
         "site": entry["site"],
@@ -185,7 +212,7 @@ def to_doc(url: str, entry: dict) -> dict:
         "url": url,
         "title": entry["title"],
         "date": "",
-        "modified": entry.get("last_modified") or entry.get("fetched", ""),
+        "modified": modified,
         "context": context,
         "text": header + entry["text"],
     }
@@ -209,7 +236,7 @@ class DocumentSync:
         meta_title, pages = pdf_pages(path.read_bytes())
         info = {**old, "program": old.get("program"), "year": old.get("year")}
         old.update(text=join_pages(pages), pages=len(pages), extractor=EXTRACTOR_VERSION,
-                   title=doc_title(url, meta_title, info))
+                   title=old["title"] if old.get("site") == CAMPUS else doc_title(url, meta_title, info))
         return True
 
     async def _fetch(self, url: str, info: dict) -> bool:
@@ -224,15 +251,20 @@ class DocumentSync:
                 headers["If-Modified-Since"] = old["last_modified_raw"]
         resp = await self.client.get(url, headers=headers or None)
         if resp.status_code == 304:
-            old.update(linked_from=info["linked_from"], checked=time.time())
-            return False
+            renamed = bool(info.get("title")) and old.get("title") != info["title"]  # a title edited in CAMPUS_PAGES
+            old.update(linked_from=info["linked_from"], checked=time.time(), **({"title": info["title"]} if renamed else {}))
+            return renamed
         ctype = resp.headers.get("content-type", "")
         if url.lower().endswith(".pdf") or "pdf" in ctype:
             PDF_DIR.mkdir(parents=True, exist_ok=True)
             (PDF_DIR / f"{hashlib.sha1(url.encode()).hexdigest()[:12]}.pdf").write_bytes(resp.content)
             meta_title, pages = pdf_pages(resp.content)
             text, kind = join_pages(pages), "pdf"
-            title = doc_title(url, meta_title, info)
+            title = info.get("title") or doc_title(url, meta_title, info)
+        elif info["site"] == CAMPUS:
+            page = rendered_page(resp.text, url)
+            text, kind, pages = page["text"], "page", None
+            title = info["title"] or _campus_title(page["title"])
         else:
             page = rendered_page(resp.text, url)
             text, kind, pages = page["text"], "handbook", None
@@ -251,7 +283,7 @@ class DocumentSync:
 
     async def sync(self, include_handbook: bool = True) -> tuple[int, int]:
         """Returns (changed, removed)."""
-        wanted = select_pdfs(discover_pdfs())
+        wanted = {**select_pdfs(discover_pdfs()), **campus_pages()}
         keep = set()
         if include_handbook:
             try:

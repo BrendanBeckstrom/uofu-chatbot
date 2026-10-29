@@ -23,7 +23,7 @@ ALIASES = {
     "phd": "doctoral graduate", "ms": "master graduate", "ta": "teaching assistant",
     "advisor": "advising", "advisors": "advising", "advising": "advisor", "majors": "degree program",
     "major": "degree program", "apply": "admission", "applying": "admission",
-    "scholarship": "scholarships financial", "tuition": "cost financial", "ambassador": "ambassadors",
+    "scholarship": "scholarships financial", "tuition": "cost financial", "cost": "tuition", "costs": "tuition", "ambassador": "ambassadors",
     "housing": "living learning floor", "dorm": "housing living learning floor", "dorms": "housing living learning floor",
 }
 
