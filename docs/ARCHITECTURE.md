@@ -115,6 +115,30 @@ schedule" questions.
   changed?", which costs one tiny request for an unchanged file. Run it by hand with
   `python -m app.sync documents`.
 
+### Campus pages (`CAMPUS_PAGES` in `app/documents.py`)
+
+Some common questions are answered by campus offices the college sites only link to: the WUE tuition rate
+(Financial Aid), tuition and the engineering differential (the Bursar), first-generation
+support, the robotics minor (the Robotics Center). These come from a fixed list of URLs instead of a whole site,
+because those sites mostly cover the rest of the university and would crowd engineering pages out of search.
+
+- They're fetched and refreshed with the planning documents (`python -m app.sync documents`), one request per
+  URL, with the same per-site spacing. They're stored with `site: "campus"`; HTML pages get the type `page` and
+  PDFs `pdf`, so search treats them like any other page or PDF.
+- A title of `None` uses the page's own `<title>`, minus " - The University of Utah". The Bursar's fee PDFs get
+  a title in the list, because their file names (`FreshSophTuitionFeeRes.pdf`) don't say what they are.
+- **No dates for HTML pages.** These servers send no `Last-Modified`, or one that is just the time of the
+  request, which would make every page look edited today. Search results show no date for them. PDFs keep the
+  file date.
+- Removing a URL from the list removes its page from the index at the next documents sync.
+- **Leave out broad pages that overlap the college's own.** Admissions' university-wide scholarships page
+  was tried and removed: it ranked first for engineering scholarship questions, so the bot answered from it
+  and no longer found price.utah.edu/scholarships. Check the answer eval's scholarship cases after adding a page.
+- **They aren't named in the prompt.** Listing them in `SYSTEM_TEMPLATE` and the `search_site` description cut
+  how often the bot searched again (0.48–0.52 times per answer, against 0.58–0.73 without the list), and the
+  expected-to-pass rate fell from 86–89% to 78–82% in the Oct 29 answer evals. Search ranks them first for
+  their own questions without the hint.
+
 ### Search (`app/index.py`)
 
 The index is a BM25 keyword index over ~1,400-character chunks:

@@ -152,6 +152,15 @@ you change how PDF text is extracted (`app/extract.py`), raise `EXTRACTOR_VERSIO
 re-read.
 `tests/test_documents.py` has examples of what should and shouldn't be picked; add one for your change.
 
+### Add a single page from a campus office
+
+For a page on a non-engineering site (Financial Aid, Admissions, the Bursar…) that answers a common question,
+add its URL to `CAMPUS_PAGES` in `app/documents.py` instead of adding the whole site. Check the site's
+`robots.txt` first. Give PDFs a readable title; HTML pages can use `None` to keep their own. Then run
+`.venv/bin/python -m app.sync documents` and the answer eval. Don't list the pages in `SYSTEM_TEMPLATE` or the
+`search_site` description; search finds them (see ARCHITECTURE.md, "Campus pages"). Don't use `--no-render` with `documents`: it skips the CS handbook, and the sync
+then removes the saved handbook pages.
+
 ### Add another department or college website
 
 Add it to `SITES` in `app/config.py` (it must be a WordPress site, and check its `robots.txt` first), then
