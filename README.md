@@ -69,6 +69,7 @@ server. The header dot turns green.
 | ece, mech, bme, che, civil, mse, cs `.utah.edu` | ~1,170 pages, ~2,300 news posts | same API, same code |
 | Department PDFs (~76) | handbooks, 4-year plans, flowcharts, requirement checklists | found in the saved pages, text extracted page by page |
 | handbook.cs.utah.edu | the CS, Data Science and Software Development handbooks (newest year) | crawled from each handbook's site map |
+| Campus office pages (8) | WUE, the Bursar's undergraduate tuition page and fee PDFs, first-generation support, the robotics minor | a fixed list, `CAMPUS_PAGES` in `app/documents.py` |
 | Trumba `uu-college-of-engineering` | events, seminars, academic deadlines | public JSON feed, live per question |
 | any `*.utah.edu` page or PDF | details the index lacks | live read by the `fetch_page` tool |
 

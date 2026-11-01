@@ -23,7 +23,7 @@ from urllib.parse import urlparse
 import httpx
 
 from . import config
-from .documents import DocumentSync
+from .documents import CAMPUS, DocumentSync
 from .extract import rendered_page, rest_content_to_text
 from .store import Store, doc_key, write_atomic
 from .wp import Blocked, PoliteClient, fetch_all, newest_modified, robots_ok
@@ -232,7 +232,8 @@ class Syncer:
     async def sync_documents(self, include_handbook: bool = True) -> int:
         changed, removed = await DocumentSync(self.client, self.log).sync(include_handbook)
         fresh = {d["key"]: d for d in DocumentSync(self.client).docs()}
-        for key in [k for k, d in self.store.docs.items() if d["type"] in DOC_TYPES and k not in fresh]:
+        for key in [k for k, d in self.store.docs.items()
+                    if (d["type"] in DOC_TYPES or d["site"] == CAMPUS) and k not in fresh]:
             self.store.remove(key)
         n = self._apply(list(fresh.values())) + removed
         self.store.state.setdefault("documents", {})["checked"] = time.time()

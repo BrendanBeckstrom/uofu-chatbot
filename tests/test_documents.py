@@ -73,6 +73,7 @@ def main():
     print("✓ titles and page markers round-trip")
 
     asyncio.run(refresh_cycle())
+    asyncio.run(campus_cycle())
     print("All document checks passed.")
 
 
@@ -92,6 +93,7 @@ async def refresh_cycle():
     tmp = Path(tempfile.mkdtemp())
     documents.STATE_PATH, documents.PDF_DIR = tmp / "documents.json", tmp / "pdfs"
     documents.discover_pdfs = lambda: {url: {"site": "cs", "linked_from": [["Computer Science", "https://x"]]}}
+    documents.CAMPUS_PAGES = {}
     client = PoliteClient(0, transport=httpx.MockTransport(handler))
     try:
         assert await documents.DocumentSync(client).sync(include_handbook=False) == (1, 0)
@@ -109,6 +111,48 @@ async def refresh_cycle():
         await client.aclose()
     assert seen == [None, '"v1"', None], seen
     print("✓ refresh: changed files re-read, unchanged ones cost one 304, extractor upgrades re-read offline")
+
+
+async def campus_cycle():
+    """Campus pages are fetched from the fixed list: HTML pages carry no date, PDFs keep their file date."""
+    buf = io.BytesIO()
+    w = pypdf.PdfWriter(); w.add_blank_page(612, 792); w.write(buf)
+    page_url, pdf_url = "https://robotics.coe.utah.edu/minor/", "https://fbs.admin.utah.edu/Tuition.pdf"
+    stamp = "Thu, 29 Oct 2026 16:03:31 GMT"
+
+    def handler(request):
+        if str(request.url) == pdf_url and request.headers.get("if-modified-since"):
+            return httpx.Response(304)
+        if str(request.url) == pdf_url:
+            return httpx.Response(200, content=buf.getvalue(),
+                                  headers={"content-type": "application/pdf", "last-modified": "Mon, 01 Jun 2026 08:00:00 GMT"})
+        return httpx.Response(200, text="<title>Robotics Minor – Robotics Center - The University of Utah</title>"
+                              "<main><p>Minimum of 16 credits.</p></main>",
+                              headers={"content-type": "text/html", "last-modified": stamp})
+
+    tmp = Path(tempfile.mkdtemp())
+    documents.STATE_PATH, documents.PDF_DIR = tmp / "documents.json", tmp / "pdfs"
+    documents.discover_pdfs = lambda: {}
+    documents.CAMPUS_PAGES = {page_url: None, pdf_url: "Undergraduate Tuition (Bursar)"}
+    client = PoliteClient(0, transport=httpx.MockTransport(handler))
+    try:
+        sync = documents.DocumentSync(client)
+        assert await sync.sync(include_handbook=False) == (2, 0)
+        docs = {d["url"]: d for d in documents.DocumentSync(client).docs()}
+        page = docs[page_url]
+        assert (page["type"], page["site"], page["title"]) == ("page", "campus", "Robotics Minor – Robotics Center"), page
+        assert page["modified"] == "", "a campus page's Last-Modified is the request time, not an edit date"
+        assert "16 credits" in page["text"]
+        # a blank PDF page has no text, so docs() skips it; the saved state still has its title and date
+        assert sync.state[pdf_url]["title"] == "Undergraduate Tuition (Bursar)"
+        assert documents.to_doc(pdf_url, {**sync.state[pdf_url], "text": "x"})["modified"] == "2026-06-01T08:00:00+00:00"
+        documents.CAMPUS_PAGES = {pdf_url: "Undergraduate Tuition and Fees (Bursar)"}
+        renamed = documents.DocumentSync(client)
+        assert await renamed.sync(include_handbook=False) == (1, 1), "unchanged PDF renamed; page dropped from the list"
+        assert renamed.state[pdf_url]["title"] == "Undergraduate Tuition and Fees (Bursar)", "a 304 still applies the new title"
+    finally:
+        await client.aclose()
+    print("✓ campus pages: fetched from the fixed list, no request-time dates, removed when dropped")
 
 
 if __name__ == "__main__":

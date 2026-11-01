@@ -1383,8 +1383,6 @@
   {
     "id": "robotics-minor",
     "category": "programs",
-    "tier": "gap",
-    "gap_reason": "Not indexed: robotics.coe.utah.edu isn't in the index; the bot links the minor page but can't read its requirements.",
     "question": "Is there a robotics minor, and what does it require?",
     "expect_urls": [
       "robotics.coe.utah.edu/academics/undergraduate/minor"
@@ -1406,7 +1404,8 @@
       "https://robotics.coe.utah.edu/academics/undergraduate/minor/: 'Minimum of 16 minimum credits'; foundational pairs 'ME EN 3220 & ME EN 3230', 'ECE 3610 & ECE 5615', 'CS 4300 & CS 3350'; 'ROBOT 5000 | Robotics I: Mechanics'; 'Minimum C grade in all minor courses. Average GPA of 2.5 or higher'; 'PHYS 2210 and MATH 2250 OR 2270 AND 2280'; John Bolke, john.bolke@utah.edu"
     ],
     "seen_in": "c07 turn 3",
-    "origin": "persona-current"
+    "origin": "persona-current",
+    "notes": "Fixed Oct 29: the minor page on robotics.coe.utah.edu is in CAMPUS_PAGES."
   },
   {
     "id": "mse-advising-booking",
@@ -1552,8 +1551,6 @@
   {
     "id": "wue-out-of-state",
     "category": "admissions",
-    "tier": "gap",
-    "gap_reason": "Not indexed: neither WUE page is in the index, so the bot says it couldn't confirm that Utah takes part.",
     "question": "Im from Colorado. does the U do WUE or any tuition discount for out of state students?",
     "expect_urls": [
       "financialaid.utah.edu/wue",
@@ -1577,7 +1574,7 @@
       "https://financialaid.utah.edu/wue/index.php: \"pays no more than 150% of the standard resident tuition rate\"; freshman \"unweighted, cumulative GPA of 3.30 or higher at the time of application\"; eligible states include \"Colorado\"; \"renewable for up to 8 semesters\"",
       "https://admissions.utah.edu/financial-aid-scholarships/scholarships/: \"Students from WUE states are only eligible for the WUE tuition rate if they meet the December 1 priority application deadline and have a minimum unweighted 3.3 GPA at the time of application.\""
     ],
-    "notes": "p04 turns 1 and 4: 'I couldn't confirm whether Utah participates in WUE', while linking the admissions scholarships page that explains it. Neither page is indexed.",
+    "notes": "p04 turns 1 and 4: 'I couldn't confirm whether Utah participates in WUE', while linking the admissions scholarships page that explains it. Fixed Oct 29: the Financial Aid WUE page is in CAMPUS_PAGES (the admissions scholarships page was tried and left out; see docs/ARCHITECTURE.md).",
     "origin": "persona-prospective"
   },
   {
@@ -1640,8 +1637,6 @@
   {
     "id": "engineering-differential-tuition",
     "category": "admissions",
-    "tier": "gap",
-    "gap_reason": "Not indexed: the tuition PDFs aren't in the index; when the bot reads them with fetch_page it misses the differential amount on page 2.",
     "question": "Does it cost more to take engineering classes than other classes at the U? How much extra per credit?",
     "expect_urls": [
       "FreshSophTuitionFeeRes.pdf",
@@ -1659,7 +1654,7 @@
       "https://fbs.admin.utah.edu/download/income/FreshSophRes/FreshSophTuitionFeeRes.pdf (2026-27), page 2: \"Engineering Undergraduate Courses: All students, regardless of class standing, will be charged an additional $71.21 per credit hour for undergraduate courses (1000-5999 level courses) in the College of Engineering.\"",
       "https://bursar.utah.edu/undergraduate-tuition/: \"All students will be charged additional differential tuition per credit hour for undergraduate courses taken in the following colleges and departments\" (lists the College of Engineering) and links the PDFs"
     ],
-    "notes": "Seen on related questions: in p02 turn 1 and p04 turn 3 the bot read these PDFs and said it couldn't find the differential amount (it's on page 2). The tuition PDFs aren't indexed; the bot reaches them with fetch_page.",
+    "notes": "Seen on related questions: in p02 turn 1 and p04 turn 3 the bot read these PDFs and said it couldn't find the differential amount (it's on page 2). Fixed Oct 29: the Bursar's page and the four fee PDFs are in CAMPUS_PAGES, and 'cost' now expands to 'tuition' in search.",
     "origin": "persona-prospective"
   },
   {
@@ -1774,8 +1769,6 @@
   {
     "id": "first-gen-support",
     "category": "student-support",
-    "tier": "gap",
-    "gap_reason": "Not indexed: firstgen.utah.edu isn't in the index.",
     "question": "im first gen. is there any mentoring or support for first-generation engineering students at the U?",
     "expect_urls": [
       "firstgen.utah.edu",
@@ -1794,7 +1787,7 @@
       "https://firstgen.utah.edu/: \"Office for First Generation Success\"; \"Our goal is to foster an inclusive campus culture that supports the academic, personal, and professional success of first-generation students.\"; programs include First-Generation Scholars, First Star, Impact Scholars and TRIO",
       "(index copy) https://www.ece.utah.edu/all-resources/financial-assistance/: \"Alumni Scholarships – For students who had at least one parent or grandparent graduate from the U, or for first-generation college students\""
     ],
-    "notes": "p08 turn 3: 'I couldn't find a first-gen-specific mentoring program'. firstgen.utah.edu isn't indexed.",
+    "notes": "p08 turn 3: 'I couldn't find a first-gen-specific mentoring program'. Fixed Oct 29: firstgen.utah.edu is in CAMPUS_PAGES.",
     "origin": "persona-prospective"
   },
   {
