@@ -13,6 +13,11 @@ Answers are graded with simple, separate checks (no AI judge):
   forbidden   avoids known-wrong statements
   events      mentions an event that is really on the live calendar for that window
   redirect    off-topic / out-of-scope requests get a polite redirect, not an attempt
+  length      stays within max_words
+  lead        puts a required fact in the first 300 characters (answers first)
+  asks        asks the user a question back (e.g. which problems interest them)
+  grounded    every $ amount and % appears in what the bot read that turn (search and tool results)
+A case's "audience" ("prospective" or "current") is sent like the widget's welcome-screen choice.
 A case passes when all of its checks pass. API or network failures go to errors.jsonl and are
 never counted as wrong answers. Every run saves full transcripts and summary.json (pass rates with
 95% ranges, per category and per check, cost and speed) under evals/results/<timestamp>/.
@@ -33,7 +38,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from app import config
-from app.chat import ChatEngine, MD_LINK_RE
+from app.chat import AUDIENCES, ChatEngine, MD_LINK_RE
 from app.events import search_events, today
 from app.index import SearchIndex
 from app.pricing import PRICES, cost_usd
@@ -99,9 +104,62 @@ def url_matches(part: str, url: str) -> bool:
     return part in url
 
 
-def grade(case: dict, answer: str, cited_urls: list[str], titles: list[str] | None) -> dict:
+NUMBER_RE = re.compile(r"\$\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?%")
+ANY_NUMBER_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
+LEAD_CHARS = 300
+
+
+def plain(answer: str) -> str:
+    """The answer as a reader sees it: markdown links reduced to their text."""
+    return norm(MD_LINK_RE.sub(lambda m: m.group(1), answer))
+
+
+def value(number: str) -> float:
+    return float(re.sub(r"[^\d.]", "", number).rstrip(".") or 0)
+
+
+def ungrounded_numbers(answer: str, source: str) -> list[str]:
+    """Dollar amounts and percentages in the answer that appear nowhere in what the bot read. A whole number
+    may round a figure ("about $130" for $130.41). PDF text can split a number ("8 8.30"), so digits
+    separated by one space are also read joined."""
+    joined = re.sub(r"(?<=\d) (?=\d)", "", source)
+    seen = {value(n) for n in ANY_NUMBER_RE.findall(source) + ANY_NUMBER_RE.findall(joined)}
+
+    def found(v: float) -> bool:
+        return any(abs(s - v) < 0.005 or (v == int(v) and abs(s - v) < 1) for s in seen)
+    return [n for n in NUMBER_RE.findall(plain(answer)) if not found(value(n))]
+
+
+def source_text(transcript: list) -> str:
+    """Everything the bot was given or read in a conversation (search results and tool results), not what it wrote."""
+    out = []
+
+    def walk(x):
+        if isinstance(x, str):
+            out.append(x)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+        elif isinstance(x, dict) and x.get("type") != "tool_use":
+            walk(x.get("text") or x.get("content") or "")
+    for m in transcript:
+        if isinstance(m, dict) and m.get("role") == "user":
+            walk(m.get("content"))
+    return "\n".join(out)
+
+
+def grade(case: dict, answer: str, cited_urls: list[str], titles: list[str] | None, source: str | None = None) -> dict:
     a = norm(answer)
     checks = {"answered": bool(a.strip())}
+    if case.get("max_words"):
+        checks["length"] = bool(a.strip()) and len(plain(answer).split()) <= case["max_words"]
+    if case.get("must_lead"):
+        lead = plain(answer)[:LEAD_CHARS]
+        checks["lead"] = all(any(contains(alt, lead) for alt in group) for group in case["must_lead"])
+    if case.get("asks"):
+        checks["asks"] = "?" in plain(answer)
+    if case.get("grounded_numbers") and source is not None:
+        checks["grounded"] = bool(a.strip()) and not ungrounded_numbers(answer, source)
     links = cited_urls + [u for _, u in MD_LINK_RE.findall(answer)]
     if case.get("expect_urls"):
         checks["cited"] = any(url_matches(part, u) for part in case["expect_urls"] for u in links)
@@ -177,6 +235,8 @@ def summarize(results: list[dict], errors: list[dict], cases: list[dict], folder
     gate = [r for r in results if tiers.get(r["id"]) == "gate"]
     gaps = [r for r in results if tiers.get(r["id"]) == "gap"]
     costs = [r["cost_usd"] for r in results if r["cost_usd"] is not None]
+    words = [r.get("words", len(plain(r["answer"]).split())) for r in results]
+    calls = [r["usage"]["calls"] for r in results if r.get("usage", {}).get("calls") is not None]
     secs = sorted(r["seconds"] for r in results)
     try:
         version = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
@@ -192,10 +252,13 @@ def summarize(results: list[dict], errors: list[dict], cases: list[dict], folder
         "by_category": {c: block([r for r in results if r["category"] == c])
                         for c in sorted({r["category"] for r in results})},
         "by_check": {k: {"n": len(v), "passed": sum(v)} for k in
-                     ("cited", "facts", "forbidden", "events", "redirect", "declined", "not_declined")
+                     ("cited", "facts", "forbidden", "events", "redirect", "declined", "not_declined",
+                      "length", "lead", "asks", "grounded")
                      if (v := [r["checks"][k] for r in results if k in r["checks"]])},
         "time_sensitive": block([r for r in results if r["time_sensitive"]]),
         "cost_usd": {"total": round(sum(costs), 4), "per_answer": round(statistics.mean(costs), 5) if costs else None},
+        "words": {"median": statistics.median(words) if words else None},
+        "model_calls": {"per_answer": round(statistics.mean(calls), 2) if calls else None},
         "seconds": {"median": statistics.median(secs) if secs else None,
                     "p90": secs[int(0.9 * (len(secs) - 1))] if secs else None, "max": secs[-1] if secs else None},
         "failed": sorted({r["id"] for r in results if not r["pass"]}),
@@ -291,14 +354,22 @@ def run_regrade(folder: Path):
     rows = [json.loads(line) for line in (folder / "results.jsonl").read_text().splitlines()]
     errors = [json.loads(line) for line in (folder / "errors.jsonl").read_text().splitlines()] \
         if (folder / "errors.jsonl").exists() else []
+    transcripts = {}
+    if (folder / "transcripts.jsonl").exists():
+        for line in (folder / "transcripts.jsonl").read_text().splitlines():
+            t = json.loads(line)
+            transcripts[(t["id"], t["rep"])] = t["transcript"]
     flipped = []
     for r in rows:
         c = cases.get(r["id"])
         if not c:
             continue
-        checks = grade(c, r["answer"], r["cited"], None)
+        transcript = transcripts.get((r["id"], r["rep"]))
+        checks = grade(c, r["answer"], r["cited"], None, source_text(transcript) if transcript is not None else None)
         if "events" in r["checks"]:
             checks["events"] = r["checks"]["events"]
+        if "grounded" in r["checks"] and "grounded" not in checks:  # older runs saved no transcript
+            checks["grounded"] = r["checks"]["grounded"]
         if all(checks.values()) != r["pass"]:
             flipped.append(f"{r['id']} (rep {r['rep']}): {'pass' if all(checks.values()) else 'fail'}")
         r["checks"], r["pass"] = checks, all(checks.values())
@@ -314,10 +385,17 @@ def run_regrade(folder: Path):
 async def run_selftest(cases: list[dict]):
     """Known-good answers must pass every check; empty answers must fail. Catches grader bugs."""
     problems = 0
+    if ungrounded_numbers("About $130 a credit, $4,702 a semester, 93% employed.", "$ 130.41 | 4,702.20 | 9 3%") \
+            or ungrounded_numbers("Tuition is $12,000 and 50% get offers.", "tuition 10,480") != ["$12,000", "50%"]:
+        problems += 1
+        print("  ✗ grounded: rounded or PDF-split figures must pass, and figures nowhere in the sources must fail")
     for c in cases:
         if c.get("tier") not in (None, *TIERS) or (c.get("tier") == "gap") != bool(c.get("gap_reason")):
             problems += 1
             print(f"  ✗ {c['id']}: tier must be \"gate\" or \"gap\", and every gap (only a gap) needs a gap_reason")
+        if c.get("audience") not in (None, *AUDIENCES):
+            problems += 1
+            print(f"  ✗ {c['id']}: audience must be one of {', '.join(AUDIENCES)}")
         try:
             titles = await event_titles(c["expect_events"]) if c.get("expect_events") is not None else None
         except Exception:  # calendar unreachable (e.g. CI): grade as an empty window
@@ -328,8 +406,8 @@ async def run_selftest(cases: list[dict]):
         elif c.get("expect_events") is not None:
             oracle += " There are no events on the calendar for that window."
         cited = [] if c.get("expect_redirect") else [f"https://x/{c['expect_urls'][0].rstrip('$')}"] if c.get("expect_urls") else []
-        good = grade(c, oracle, cited, titles)
-        bad = grade(c, "", [], titles)
+        good = grade(c, oracle, cited, titles, oracle)
+        bad = grade(c, "", [], titles, "")
         if not all(good.values()):
             problems += 1
             print(f"  ✗ reference answer fails {c['id']}: {good}")
@@ -361,11 +439,11 @@ async def run_answers(cases: list[dict], reps: int, concurrency: int):
             async def collect():
                 nonlocal answer, sources, usage, refused, error
                 for earlier in c.get("setup_turns", []):  # e.g. a legit question before a drift attempt
-                    async for ev in engine.answer(sid, earlier):
+                    async for ev in engine.answer(sid, earlier, c.get("audience")):
                         if ev["event"] == "error":
                             error = f"setup turn failed: {ev['text']}"
                             return
-                async for ev in engine.answer(sid, c["question"]):
+                async for ev in engine.answer(sid, c["question"], c.get("audience")):
                     kind = ev["event"]
                     if kind == "delta":
                         answer += ev["text"]
@@ -393,11 +471,11 @@ async def run_answers(cases: list[dict], reps: int, concurrency: int):
                 print(f"  ! {c['id']} (rep {rep}): {error}")
                 return
             cited = [s["url"] for s in sources]
-            checks = grade(c, answer, cited, titles)
+            checks = grade(c, answer, cited, titles, source_text(transcript))
             models = usage.get("models") or []
             row = {**base, "time_sensitive": c.get("time_sensitive", False), "answer": answer,
                    "cited": cited, "steps": statuses, "checks": checks, "pass": all(checks.values()),
-                   "refused": refused, "usage": usage, "models": models,
+                   "refused": refused, "usage": usage, "models": models, "words": len(plain(answer).split()),
                    "model_mismatch": any(m != config.MODEL for m in models),
                    "cost_usd": cost(usage, config.MODEL)}
             results.append(row)
@@ -465,7 +543,8 @@ def print_report(summary: dict, results: list[dict], errors: list[dict], reps: i
         print(f"  time-sensitive questions: {rate(ts)}")
     for cat in sorted({r["category"] for r in results}):
         print(f"  {cat:16} {rate([r for r in results if r['category'] == cat])}")
-    for check in ("cited", "facts", "forbidden", "events", "redirect", "declined", "not_declined"):
+    for check in ("cited", "facts", "forbidden", "events", "redirect", "declined", "not_declined",
+                  "length", "lead", "asks", "grounded"):
         vals = [r["checks"][check] for r in results if check in r["checks"]]
         if vals:
             print(f"  check {check:10} {sum(vals)}/{len(vals)}")
@@ -476,6 +555,9 @@ def print_report(summary: dict, results: list[dict], errors: list[dict], reps: i
     print(f"  refusals {refusals}, served by a fallback model {mismatched}")
     if costs:
         print(f"  cost: ${sum(costs):.2f} total, ${statistics.mean(costs):.3f} per answer")
+    if summary["words"]["median"] is not None:
+        print(f"  answer length: median {summary['words']['median']:.0f} words; "
+              f"model calls per answer: {summary['model_calls']['per_answer']}")
     if secs:
         print(f"  latency: median {statistics.median(secs):.1f}s, max {max(secs):.1f}s")
 

@@ -26,7 +26,7 @@
 
   const SUGGESTIONS = {
     prospective: [
-      "What engineering majors can I study?",
+      "Which engineering major is right for me?",
       "How do I apply to the College of Engineering?",
       "Can I tour the engineering buildings?",
       "What engineering scholarships are there?",
