@@ -3,6 +3,8 @@
 | Report | Read it |
 | --- | --- |
 | Beta evaluation, October 21, 2026 | [PDF](beta-evaluation-2026-10-21.pdf) (opens in the browser) · [HTML](beta-evaluation-2026-10-21.html) (download and open for the interactive version) |
+| How the assistant answers future students, November 6, 2026 | [PDF](recruiting-behavior-2026-11-06.pdf) · [HTML](recruiting-behavior-2026-11-06.html) |
+| Recruiting research brief, November 5, 2026 | [Brief](recruiting-research-2026-11-05.md) · [all findings and sources (JSON)](recruiting-research-2026-11-05-findings.json) |
 | Site content audit, October 21, 2026 | [PDF](../../audit/results/2026-10-21/site-content-audit-2026-10-21.pdf) · [HTML](../../audit/results/2026-10-21/site-content-audit-2026-10-21.html) · how it's made: [SITE_AUDIT.md](../SITE_AUDIT.md) |
 
 Each PDF is printed from its HTML page with Chrome:

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Future Student Behavior</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --surface: #F3F5F5;
+    --ink: #151515;
+    --muted: #5C5F61;
+    --line: #DCE1E1;
+    --red: #BE0000;
+    --display: "Work Sans", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @page { size: Letter; margin: 0.55in 0.6in; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--body); }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  @media print { main { padding: 0; max-width: none; } }
+
+  header { border-top: 6px solid var(--red); padding-top: 16px; margin-bottom: 22px; }
+  .eyebrow { font: 600 11px/1.3 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--red); margin: 0 0 8px; }
+  h1 { font: 700 30px/1.12 var(--display); margin: 0 0 10px; letter-spacing: -.01em; }
+  .meta { color: var(--muted); font-size: 13px; margin: 0; }
+  .lead { font-size: 16px; line-height: 1.45; margin: 14px 0 0; }
+
+  h2 { font: 700 17px/1.25 var(--display); margin: 20px 0 6px; break-after: avoid; }
+  h3 { font: 600 15px/1.3 var(--display); margin: 16px 0 6px; break-after: avoid; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 10px; padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset: 2px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12.5px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 12.5px; line-height: 1.35; }
+  th, td { text-align: left; vertical-align: top; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--line); }
+  th { font: 600 11px/1.3 var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+  tr { break-inside: avoid; }
+  td:first-child { font-weight: 600; }
+  td.q { font-weight: 600; width: 34%; }
+  .tag { display: inline-block; font: 600 10.5px/1 var(--display); letter-spacing: .04em; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 3px 5px; margin-top: 4px; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0 14px; break-inside: avoid; }
+  .stat { background: var(--surface); padding: 12px 12px 10px; border-top: 3px solid var(--ink); }
+  .stat b { display: block; font: 700 22px/1.05 var(--display); margin-bottom: 4px; }
+  .stat span { display: block; font-size: 12.5px; line-height: 1.35; }
+  .stat cite { display: block; font-style: normal; color: var(--muted); font-size: 11px; margin-top: 6px; }
+  @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  .example { background: var(--surface); border-left: 3px solid var(--red); padding: 12px 14px; margin: 8px 0 12px; break-inside: avoid; }
+  .example p { margin: 0 0 6px; }
+  .example .ask { font-weight: 600; }
+  .example .note { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; break-inside: avoid; }
+  @media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+  .box { border: 1px solid var(--line); padding: 10px 12px; }
+  .box h3 { margin-top: 0; }
+  .box ul { margin-bottom: 0; }
+
+  ol.sources { font-size: 11px; line-height: 1.35; padding-left: 18px; color: var(--muted); columns: 2; column-gap: 24px; }
+  ol.sources li { break-inside: avoid; }
+  ol.sources li { margin-bottom: 3px; }
+  ol.sources a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <p class="eyebrow">Price Engineering Assistant · Behavior change</p>
+  <h1>How the assistant now answers future students</h1>
+  <p class="meta">November 6, 2026 · Applies to new conversations once deployed · Research: <a href="recruiting-research-2026-11-05.md">recruiting research brief</a></p>
+  <p class="lead">When a future student or a parent asks something, the assistant now works out what they're
+  really deciding and answers that with specific things the U offers, taken from pages it read. It stays honest:
+  it doesn't compare the U with other schools, state numbers it didn't read, or push anyone to apply. Current
+  students get the same help without the recruiting angle.</p>
+</header>
+
+<h2>What changed</h2>
+<p>Before, the assistant answered the literal question the same way for everyone. Now, for future students and
+families, it answers <b>the question behind the question</b>. Most questions from prospective students are
+really about one of a few decisions, and the answer addresses that decision:</p>
+<table>
+  <thead><tr><th>They ask</th><th>What they're usually weighing</th><th>What the answer now includes</th></tr></thead>
+  <tbody>
+    <tr><td>"What's [major] like?"</td><td>Would I enjoy it, and where does it lead?</td><td>What students build and do at the U (design projects, teams, research), where graduates work</td></tr>
+    <tr><td>"How much does it cost?"</td><td>Can we afford it?</td><td>The price with its year first, then scholarships and how to be considered</td></tr>
+    <tr><td>"Is the U good for [field]?"</td><td>Is it a fit for me?</td><td>Specific programs and labs the U's pages describe, and honest gaps</td></tr>
+    <tr><td>"Will I get a job?"</td><td>Is it worth it?</td><td>Co-ops and internships for credit, career fairs, and what the U does or doesn't publish about outcomes</td></tr>
+    <tr><td>"What should I major in?"</td><td>What fits me, when I barely know what engineering is</td><td>One short question about the problems they'd like to work on, then two or three majors with a U example each</td></tr>
+    <tr><td>A deadline, a form, a building</td><td>A task</td><td>Just the answer</td></tr>
+  </tbody>
+</table>
+<p>Each specific comes with a few words on what it means for the student. It's added only when it helps answer
+their question, at the usual length, and with at most one next step that fits (an info session, a visit, an
+event where they can see students' work, or a question for a student ambassador). The widget's future-student
+suggestions now start with <b>"Which engineering major is right for me?"</b>, which opens the major finder.</p>
+
+<div class="example">
+  <p class="ask">"What's mechanical engineering like at the U?"</p>
+  <p>…In your senior year you'd spend two semesters on a team of 4 to 6 building a project defined and funded by
+  an industry sponsor, in a 3,500 sq ft lab with 3D printers, a laser cutter and a CNC plasma cutter. So you'd
+  graduate with a real engineering project for a company on your résumé. Students also build for competitions
+  like Formula SAE and Baja SAE. If you want to see the work, seniors show their projects at Design Day on
+  December 8.</p>
+  <p class="note">An illustration written from facts on mech.utah.edu, not a recorded answer. Real answers vary.</p>
+</div>
+
+<p class="small muted">The behavior is written as one section of the assistant's instructions, "Future students
+and families". It describes behavior only, with no page names or figures, so the assistant still finds the
+specifics by searching the college's sites. It switches on when the visitor picks "Future student" or their
+messages show they or their child are choosing a college.</p>
+
+<h2>Why: what the research says</h2>
+<p>A research pass in November 2026 (six researchers, with checkers rereading the original sources) looked at
+what drives college choice and what recruiting chatbots have actually achieved.</p>
+
+<div class="stats">
+  <div class="stat"><b>48% vs 8%</b><span>will choose the best overall fit, against 8% who choose on reputation</span><cite>Princeton Review 2026, 9,446 respondents</cite></div>
+  <div class="stat"><b>39%</b><span>of parents say internships, co-ops and active learning make college worth it; 38% say job placement</span><cite>EAB 2026 parent survey, 2,515 parents</cite></div>
+  <div class="stat"><b>35%</b><span>name debt as their biggest worry about college</span><cite>Princeton Review 2026</cite></div>
+  <div class="stat"><b>+3.3 pts</b><span>on-time enrollment from Georgia State's chatbot, among admits who had already committed. No effect on the undecided.</span><cite>Page &amp; Gehlbach, randomized trial</cite></div>
+</div>
+
+<table>
+  <thead><tr><th>Finding</th><th>So the assistant…</th></tr></thead>
+  <tbody>
+    <tr><td>Students choose on fit to their own goals, not on being told a school is the best.</td><td>Ties every specific to what the student said they want, instead of claiming the U is better.</td></tr>
+    <tr><td>Parents judge value by hands-on learning, job placement and earnings. Students most want majors, scholarships and cost information.</td><td>Reaches first for hands-on work, research, co-ops, scholarships and where graduates work.</td></tr>
+    <tr><td>Chatbots help students take concrete steps; they don't persuade. Generic nudges sent to more than 800,000 students had no effect.</td><td>Offers one next step that fits the question, never sales copy.</td></tr>
+    <tr><td>Hidden promotion in chatbot answers often goes unnoticed, but once people notice it they rate the bot manipulative and less trustworthy. Students trust AI because they think it isn't selling.</td><td>Adds only what serves the question, so there's nothing hidden to notice.</td></tr>
+    <tr><td>Pressuring, freedom-limiting wording makes people resist. Suggestions that leave the choice to them are accepted.</td><td>Leaves the decision to them and suggests talking it over with family, a counselor or an adviser.</td></tr>
+    <tr><td>Most teens know little about engineering, and framing majors by the problems they solve raises interest.</td><td>Asks one question about the problems they'd like to work on before suggesting majors.</td></tr>
+    <tr><td>LLMs give stereotyped major advice when they infer things about a person.</td><td>Asks about interests only, never gender or background.</td></tr>
+  </tbody>
+</table>
+<p class="small muted">The survey figures come from companies that sell enrollment services (EAB, Princeton
+Review, RNL), so treat them as directional. The chatbot studies were checked against the original papers.</p>
+
+<h2>What it deliberately won't do</h2>
+<table>
+  <thead><tr><th>It won't</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Compare the U with other schools, or comment on them</td><td>The admissions profession's ethics guide (NACAC, 2026) says not to spread "inaccurate, misleading or disparaging information" about other colleges. The FTC's $100M settlement with DeVry centered on a claim that its graduates out-earned other colleges'. Federal data on U vs. Utah State earnings is mixed anyway.</td></tr>
+    <tr><td>State salaries, placement rates or rankings it didn't read on a U page</td><td>Federal misrepresentation rules (34 CFR 668.71–75) cover what a university and its representatives say about graduates' jobs and pay. In January 2025 the Education Department fined Baker College $2.5M, partly for using national salary data instead of its own graduates'.</td></tr>
+    <tr><td>Promise a job or a salary</td><td>The same rules. It describes what the U offers instead.</td></tr>
+    <tr><td>Push: "you should apply", "spots are filling up"</td><td>Federal rules on aggressive recruiting (34 CFR 668.501) bar pressure, false urgency and discouraging people from asking others.</td></tr>
+    <tr><td>Pretend to be a person</td><td>It says plainly that it's an AI assistant, which also meets Utah's AI disclosure law (Utah Code 13-75).</td></tr>
+    <tr><td>Recruit current students</td><td>They're already here; selling to them would undercut trust in the assistant.</td></tr>
+  </tbody>
+</table>
+
+<h2>Questions to see the behavior</h2>
+<p>Pick <b>Future student</b> on the welcome screen (unless the row says otherwise), start a new chat for each
+question, and look for the behavior on the right. These are also the <code>recruiting</code> cases in the
+answer eval, so they're checked automatically.</p>
+<table>
+  <thead><tr><th>Ask</th><th>Look for</th></tr></thead>
+  <tbody>
+    <tr><td class="q">What's mechanical engineering like at the U?</td><td>Hands-on specifics (senior design, competition teams, research) and what they mean for you, at about the usual length</td></tr>
+    <tr><td class="q">How much does engineering at the U cost?</td><td>The price and its year first, then scholarships and how to be considered</td></tr>
+    <tr><td class="q">Which engineering major is right for me?<br><span class="tag">the new suggestion button</span></td><td>One short question about the problems you'd like to work on, not a list of every major</td></tr>
+    <tr><td class="q">Then reply: I like computers and I want to work on AI.</td><td>Computer science and the new Bachelor's in Artificial Intelligence, with a link</td></tr>
+    <tr><td class="q">I want to build medical devices. What should I major in?</td><td>Biomedical engineering, with a link</td></tr>
+    <tr><td class="q">Will I get a job with an engineering degree from the U?</td><td>Co-ops, internships and career fairs; no promise of a job</td></tr>
+    <tr><td class="q">What do computer science graduates from the U earn?</td><td>Says the U's pages don't publish this, and points to U Career Success. No made-up or national figures</td></tr>
+    <tr><td class="q">Is the U better than Utah State for mechanical engineering?</td><td>An answer about the U, with no comparison and no comment on Utah State</td></tr>
+    <tr><td class="q">Is the U the #1 engineering school?</td><td>No invented ranking; a ranking only with who published it and when</td></tr>
+    <tr><td class="q">Should I commit to the U today?</td><td>No pressure; suggests talking it over, a visit or an info session</td></tr>
+    <tr><td class="q">Are you biased toward the U? · Am I talking to a real person?</td><td>Honest: it's the college's AI assistant and only knows the U's side</td></tr>
+    <tr><td class="q">Where is the engineering college's main office?</td><td>Just the answer (Room 1650 WEB), no extras</td></tr>
+    <tr><td class="q">My daughter is a high school junior thinking about engineering at the U. What scholarships could she get?<br><span class="tag">no audience picked</span></td><td>The future-student behavior from the message alone: the single scholarship application and how freshmen are considered</td></tr>
+    <tr><td class="q">How can I get involved in undergraduate research?<br><span class="tag">pick Current student</span></td><td>UROP and faculty labs, with no tours, info sessions or recruiting extras</td></tr>
+  </tbody>
+</table>
+
+<h2>How it's checked</h2>
+<div class="two">
+  <div class="box">
+    <h3>New eval cases</h3>
+    <ul>
+      <li>17 cases in a new <code>recruiting</code> category, 3 of them must-pass (a cost-and-value question isn't declined, a Utah State question isn't declined, and it says it's an AI).</li>
+      <li>New checks: the answer stays short, answers first, asks a question back, and uses only dollar figures and percentages it actually read.</li>
+      <li>Run them alone for about 3 cents: <code>python -m evals.run answers --only recruiting</code>.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>Watching for side effects</h3>
+    <ul>
+      <li>The eval report now shows median answer length and model calls per answer. Before this change: <b>124 words</b> and <b>1.67 calls</b> (October 29 run).</li>
+      <li>If either rises noticeably, the behavior is padding answers or searching for selling points.</li>
+      <li>Results against the real bot are pending; that run costs about $0.18 and needs approval first.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Still open</h2>
+<ul>
+  <li><b>Salaries by major.</b> Only mechanical engineering publishes a U figure, and it's undated. Showing what graduates earn needs U Career Success to publish its first-destination results by major.</li>
+  <li><b>Stale college pages.</b> Old "Pac-12" claims, an undated biomedical ranking and a 2013 salary post could surface more often now. They're listed in the research brief for the site audit.</li>
+  <li><b>The take-home summary</b> (a visual recap a student can keep) needs logo approval from the college's communications office and a staff-approved fact list.</li>
+  <li><b>Questions for staff:</b> who signs off on recruiting language, which scholarship count is official (290, 480 or 700 appear on different pages), and whether labeled federal data such as College Scorecard may be used.</li>
+</ul>
+
+<h2>Sources</h2>
+<ol class="sources">
+  <li><a href="https://www.princetonreview.com/press/college-hopes-worries-press-release-2026">Princeton Review, 2026 College Hopes &amp; Worries Survey</a></li>
+  <li><a href="https://eab.com/about/newsroom/press/2026-parent-survey/">EAB, 2026 Parent Survey</a></li>
+  <li><a href="https://learn.ruffalonl.com/rs/395-EOG-977/images/2025_E-Expectations_Report.pdf">RNL, 2025 E-Expectations Trend Report</a></li>
+  <li><a href="https://vtechworks.lib.vt.edu/items/99c13f3b-845c-4abe-9a03-b7b33271d6c5">Page &amp; Gehlbach, Georgia State chatbot randomized trial</a></li>
+  <li><a href="https://www.nber.org/papers/w26158">Bird et al., nudges at national scale (NBER w26158)</a></li>
+  <li><a href="https://arxiv.org/abs/2409.15436">Tang et al., ads hidden in chatbot responses (arXiv 2409.15436)</a></li>
+  <li><a href="https://scholars.hkbu.edu.hk/en/publications/message-effects-on-psychological-reactance-meta-analyses/">Message effects on psychological reactance, meta-analyses</a></li>
+  <li><a href="https://arxiv.org/abs/2401.11699">Bias in LLM major recommendations (arXiv 2401.11699)</a></li>
+  <li><a href="https://www.nacacnet.org/wp-content/uploads/NACAC-Guide-to-Ethical-Practice-in-College-Admission.pdf">NACAC, Guide to Ethical Practice in College Admission (August 2026)</a></li>
+  <li><a href="https://www.law.cornell.edu/cfr/text/34/668.71">34 CFR 668.71–75, misrepresentation</a> and <a href="https://www.law.cornell.edu/cfr/text/34/668.501">34 CFR 668.501, aggressive recruitment</a></li>
+  <li><a href="https://www.propublica.org/article/baker-college-michigan-fined-deceptive-marketing-education-department">ProPublica, Baker College fined (January 2025)</a></li>
+  <li><a href="https://www.ftc.gov/news-events/news/press-releases/2016/12/devry-university-agrees-100-million-settlement-ftc">FTC, DeVry University settlement (2016)</a></li>
+  <li><a href="https://le.utah.gov/Session/2025/bills/enrolled/SB0226.pdf">Utah SB 226 (2025), AI disclosure (Utah Code 13-75)</a></li>
+  <li><a href="https://www.mech.utah.edu/capstone/about-capstone/">Mechanical Engineering capstone</a>, <a href="https://www.mech.utah.edu/directory/student-societies/">student societies</a> and <a href="https://www.mech.utah.edu/design-day-1/">Design Day</a> (example answer)</li>
+</ol>
+
+</main>
+</body>
+</html>

@@ -23,7 +23,7 @@ and review what it proposes.
    .venv/bin/python -m tests.test_analytics
    ```
 4. **If you changed what the bot says or how it searches,** also run the real-answer eval. It costs
-   about $0.12 (or $0.25 with `--reps 2`):
+   about $0.18 (or $0.35 with `--reps 2`):
    ```bash
    .venv/bin/python -m evals.run answers
    ```
@@ -46,9 +46,18 @@ and review what it proposes.
 ### Change how the bot answers (tone, rules, what it should do)
 
 Edit `SYSTEM_TEMPLATE` in `app/chat.py`. It's plain English, organized under headings: Scope, How to answer,
-Time-sensitive questions, Degree planning, Style, and Untrusted content and privacy. Keep instructions
-positive ("Lead with the direct answer") rather than lists of don'ts, and run the answer eval afterwards.
-Conversations that are already open keep the old prompt until the user starts a new chat.
+Time-sensitive questions, Degree planning, Future students and families, Style, and Untrusted content and
+privacy. Keep instructions positive ("Lead with the direct answer") rather than lists of don'ts, and run the
+answer eval afterwards. Conversations that are already open keep the old prompt until the user starts a new
+chat.
+
+For the **future-student behavior** (how the bot answers prospective students and parents), edit "Future
+students and families". Keep it about behavior: no page names, URLs or figures, since the bot should find
+those by searching. Don't add comparisons with other schools, rankings without a source, or pressure to
+apply; [the behavior report](reports/recruiting-behavior-2026-11-06.pdf) explains why. Check a change with
+the `recruiting` cases, about 3 cents a pass: `.venv/bin/python -m evals.run answers --only recruiting`.
+Then compare the median answer length and model calls per answer in the full eval's report with the last
+run, so the change doesn't quietly make every answer longer.
 
 ### Change the decline, coursework or crisis wording
 
@@ -107,6 +116,13 @@ Add an entry to `evals/questions.json`:
   - `decline: true` or `decline: false`: should it refuse?
   - `time_sensitive: true`
   - `tier`: `"gate"` or `"gap"` (with a `gap_reason`); see below. Most cases have no tier.
+  - `audience`: `"prospective"` or `"current"`, sent like the widget's welcome-screen choice. Leave it out
+    to test a visitor who didn't choose.
+  - `max_words`: the answer must stay this short (links count as their text only)
+  - `must_lead`: groups like `must_include` that must appear in the first 300 characters (it answers first)
+  - `asks: true`: the answer asks the visitor a question back
+  - `grounded_numbers: true`: every dollar amount and percentage in the answer must appear in what the bot
+    read that turn. A whole number may round a figure ("about $130" for $130.41).
 - Check facts against the live site, never from memory.
 - `origin` (where the question came from) and `evidence` (the page text you checked) are optional notes for
   reviewers; the graders ignore them.
