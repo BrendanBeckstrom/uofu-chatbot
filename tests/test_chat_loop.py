@@ -254,6 +254,40 @@ async def main():
     assert index.search(index.docs[removed]["title"], k=20), "the old index still answers until it's rebuilt"
     print("✓ search keeps working while a sync removes pages from the store")
 
+    # ---- old sources ------------------------------------------------------------------------------
+    from datetime import date, timedelta
+    from app.index import years_old
+    from tests.fixtures import page
+    recent = (date.today() - timedelta(days=30)).isoformat()
+    pair = {d["key"]: d for d in [
+        page(90, "/solar-car-old", "Solar car team", "The solar car team races every summer.", site="mech",
+             base="https://www.mech.utah.edu", modified="2019-03-01T10:00:00"),
+        page(91, "/solar-car", "Solar car team", "The solar car team races every summer.", site="mech",
+             base="https://www.mech.utah.edu", modified=recent + "T10:00:00"),
+        page(92, "/top_salary", "Starting salary", "Starting salary for graduating seniors.", kind="post",
+             site="mech", base="https://www.mech.utah.edu", date="2013-05-06T10:00:00"),
+    ]}
+    aged = SearchIndex(pair)
+    hits = aged.search("solar car team")
+    assert [h["url"].rsplit("/", 1)[-1] for h in hits] == ["solar-car", "solar-car-old"], hits
+    assert not aged.search("starting salary graduating seniors"), "pages in config.NOT_INDEXED stay out"
+    listed = chat_module.format_hits(hits)
+    assert f"last updated {recent})" in listed, "a recent page shows no age"
+    assert f"last updated 2019-03-01, {years_old('2019-03-01')} years old" in listed
+    assert "- [2]: the Mechanical Engineering office, 801-581-6441" in listed, listed
+    assert "Who has current information" not in chat_module.format_hits(hits[:1])
+
+    async def old_page(url):
+        return {"title": "Old page", "url": url, "links": [], "text": "Office hours are 9 to 5.",
+                "published": "", "updated": "2020-01-02"}
+    chat_module.fetch_page = old_page
+    result, _ = await engine.run_tool(engine.sessions.get("loop-test-4"), "fetch_page",
+                                      {"url": "https://www.ece.utah.edu/old-page/"})
+    chat_module.fetch_page = real_fetch
+    assert f"Last updated 2020-01-02, {years_old('2020-01-02')} years old." in result, result
+    assert "info@ece.utah.edu" in result, result
+    print("✓ old sources rank below newer ones and come with their age and who to contact")
+
     # ---- planning documents ---------------------------------------------------------------------
     hits = engine.index.search("computer science 4 year plan", k=3)
     assert hits[0]["url"] == CS_PLAN and hits[0]["text"].startswith("[Page "), hits[:1]

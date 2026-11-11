@@ -46,7 +46,7 @@ and review what it proposes.
 ### Change how the bot answers (tone, rules, what it should do)
 
 Edit `SYSTEM_TEMPLATE` in `app/chat.py`. It's plain English, organized under headings: Scope, How to answer,
-Time-sensitive questions, Degree planning, Future students and families, Style, and Untrusted content and
+Dates and old information, Degree planning, Future students and families, Style, and Untrusted content and
 privacy. Keep instructions positive ("Lead with the direct answer") rather than lists of don'ts, and run the
 answer eval afterwards. Conversations that are already open keep the old prompt until the user starts a new
 chat.
@@ -181,7 +181,17 @@ then removes the saved handbook pages.
 
 Add it to `SITES` in `app/config.py` (it must be a WordPress site, and check its `robots.txt` first), then
 run `.venv/bin/python -m app.sync build --site newkey`. Mention it in `SYSTEM_TEMPLATE`, where the sites are
-listed.
+listed. Give it an `office`: the phone and general email from the site's own contact page or footer, read
+live. The bot names it when one of the site's pages is old.
+
+### Change what counts as old, or who the bot names for current information
+
+- The age limit is `OLD_AFTER_YEARS` in `app/config.py` (2 years). The prompt reads it from there.
+- Each site's contact is its `office` in `SITES`. Check it on the live site when a department's office
+  changes, and keep general addresses (`info@…`, a front desk) over a person's own email.
+- To leave a page out of search entirely, add its URL (no trailing slash) to `NOT_INDEXED`. Prefer the
+  age note: a missing page leaves a gap, an old one comes with who to ask.
+- Run the tests, the retrieval eval and `.venv/bin/python -m evals.run answers --only old-info`.
 
 ### Change rate limits, the daily budget or the model
 

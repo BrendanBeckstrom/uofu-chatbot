@@ -95,7 +95,8 @@ re-crawls.
 3. **Live sources for "now."** Claude calls `get_events` for anything about events or upcoming dates, and
    re-reads a page live when its source is old or lists dates that have passed. Every search result and
    source chip shows the page's last-updated date, so stale content is visible to both Claude and the
-   reader.
+   reader. Anything over 2 years old ranks lower, and when the bot still relies on it, it says so and names
+   the department office to ask (docs/ARCHITECTURE.md, "Old sources").
 
 Manual control:
 

@@ -148,11 +148,35 @@ The index is a BM25 keyword index over ~1,400-character chunks:
 
 - A match in a page's title or URL counts extra.
 - News posts are weighted a little below evergreen pages.
+- Anything older than `OLD_AFTER_YEARS` (2, in `app/config.py`) scores three quarters as much, so a newer
+  page on the same topic comes first. Age means a post's publication date, or a page's or PDF's last update.
+  This moved the retrieval eval from 60 to 61 of 77 on Nov 11, 2026.
+- URLs in `NOT_INDEXED` (`app/config.py`) are left out entirely: two national salary news posts from 2013
+  and 2017 that read like current U figures.
 - At most 2 results come from the same folder, so a dozen near-empty sibling pages can't crowd out the
   overview page.
 - `ALIASES` expands shorthand like "ECE" or "dorm".
 
 The server rebuilds the index when `data/docs.json` changes on disk.
+
+### Old sources
+
+Much of the sites' content is old. On Nov 11, 2026, 45% of pages, 86% of news posts and 35% of PDFs were more
+than 2 years old, and the top search result was that old for 44% of the eval questions. The bot flags old
+sources rather than hiding them:
+
+- Search results and page reads show each source's date, and once it's past 2 years, its age ("7 years
+  old"). The code works this out, because Haiku is unreliable at date arithmetic.
+- Under the results comes "Who has current information about the older sources": the office of the site each
+  old result came from. The offices, with phone and general email, are the `office` entries in
+  `config.SITES`, taken from each department's contact page or footer. Campus pages get the college office.
+- The prompt's "Dates and old information" section has the bot look for something newer first (a newer
+  result, one more search, or the live page). If nothing newer turns up, it gives what it found with its date,
+  one sentence saying it's over 2 years old and may be out of date (for salaries, costs, statistics and
+  rankings, too old to rely on), and that office. It leaves the note out for recent sources and for questions
+  about past events.
+- The `old-info` eval cases check both sides: an old salary page gets the note and the office, a fresh
+  contact page and a past news story get none.
 
 ### Live reads (`app/live.py`) and events (`app/events.py`)
 
@@ -264,6 +288,9 @@ The tests use `tests/fixtures.py`, a handful of made-up documents, so they run a
   The research behind it, and what it deliberately avoids (comparisons with other schools, unsourced
   salaries, pressure), is in [the behavior report](reports/recruiting-behavior-2026-11-06.pdf) and
   [the research brief](reports/recruiting-research-2026-11-05.md). The `recruiting` eval category tests it.
+- **Old sources are flagged, not hidden.** Anything over 2 years old still gets used, with its date, a short
+  "may be out of date" note and who to ask. Dropping old pages would leave gaps where the sites have nothing
+  newer; the assistant is a helper, and the office has the current answer. See "Old sources" above.
 - **Empty replies.** With tools switched off on the last round, Haiku 5.5 sometimes ends without writing
   anything. The loop sends a "write your answer now" nudge (`FINAL_NUDGE`) and retries once. If it's still
   empty, the visitor gets search results instead of a blank bubble.

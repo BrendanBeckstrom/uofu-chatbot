@@ -2419,5 +2419,112 @@
     "max_words": 90,
     "reference": "The college office is in Room 1650 WEB at 72 Central Campus Dr., Salt Lake City. You can also reach it at contact@coe.utah.edu or 801-581-6911.",
     "notes": "A task question gets just the answer, with no recruiting extras."
+  },
+  {
+    "id": "me-salary-old",
+    "category": "old-info",
+    "audience": "prospective",
+    "question": "What's the starting salary for mechanical engineering graduates from the U?",
+    "expect_urls": [
+      "mech.utah.edu/department/about-mechanical-engineering/employment-outlook"
+    ],
+    "must_include": [
+      [
+        "$64,488"
+      ],
+      [
+        "out of date",
+        "outdated",
+        "too old",
+        "years old",
+        "not current",
+        "may have changed",
+        "older"
+      ],
+      [
+        "801-581-6441",
+        "801.581.6441",
+        "(801) 581-6441"
+      ]
+    ],
+    "must_not_include": [
+      "kiplinger",
+      "wall street journal"
+    ],
+    "grounded_numbers": true,
+    "reference": "The Mechanical Engineering department's [Employment Outlook](https://www.mech.utah.edu/department/about-mechanical-engineering/employment-outlook/) page lists an average starting salary of $64,488 for ME bachelor's graduates. That page was last updated in September 2023, so it's over 2 years old and too old to rely on. For current numbers, call the Mechanical Engineering office at 801-581-6441.",
+    "as_of": "2026-11-11",
+    "evidence": "Employment Outlook page, last updated 2023-09-28, read live 2026-11-11: 'Average Starting Salary (ME BS): $64,488'. Office phone from the mech.utah.edu footer: 801.581.6441."
+  },
+  {
+    "id": "me-honors-newer-page",
+    "category": "old-info",
+    "question": "How do I get an honors degree in mechanical engineering?",
+    "expect_urls": [
+      "mech.utah.edu/academics/undergraduate/current-students/academic-opportunities",
+      "mech.utah.edu/academics/undergraduate/current-students/mechanical-engineering-honors-b-s-program",
+      "Honors-4Y"
+    ],
+    "must_include": [
+      [
+        "Honors College"
+      ],
+      [
+        "s.whipple-padgen@utah.edu",
+        "581-8954",
+        "581-6441"
+      ]
+    ],
+    "reference": "Through the Honors in Engineering path. First you need to be admitted to the University Honors College; there's no separate application for Honors in Engineering. You're advised on honors courses in the college and get a faculty mentor for your honors thesis ([Academic Opportunities](https://www.mech.utah.edu/academics/undergraduate/current-students/academic-opportunities/)). For details, contact Sierra Whipple-Padgen at s.whipple-padgen@utah.edu or (801) 581-8954.",
+    "as_of": "2026-11-11",
+    "evidence": "Academic Opportunities page (updated 2026-10-27, read live 2026-11-11) describes Honors in Engineering and gives s.whipple-padgen@utah.edu or (801) 581-8954. The older HBS page dates from 2017-05-17, so an answer should prefer the newer page or flag the old one."
+  },
+  {
+    "id": "ece-office-phone-fresh",
+    "category": "old-info",
+    "question": "What's the phone number for the Electrical & Computer Engineering department office?",
+    "expect_urls": [
+      "ece.utah.edu"
+    ],
+    "must_include": [
+      [
+        "801-581-6941",
+        "(801) 581-6941",
+        "801.581.6941",
+        "(801)-581-6941"
+      ]
+    ],
+    "must_not_include": [
+      "out of date",
+      "outdated",
+      "too old",
+      "years old"
+    ],
+    "max_words": 90,
+    "reference": "The Electrical & Computer Engineering office is at 801-581-6941, in Room 2110 of the Merrill Engineering Building, weekdays 8 AM to 5 PM. You can also email info@ece.utah.edu ([Contact Us](https://www.ece.utah.edu/contact-us/)).",
+    "as_of": "2026-11-11",
+    "evidence": "ECE Contact Us page, read live 2026-11-11 (modified that day): Phone (801)-581-6941, info@ece.utah.edu, MEB RM 2110, weekdays 8 AM - 5 PM."
+  },
+  {
+    "id": "ece-career-awards-2022",
+    "category": "old-info",
+    "question": "How many ECE faculty won NSF CAREER awards in 2022?",
+    "expect_urls": [
+      "ece.utah.edu/2022/03/07/ece-celebrates-highest-number-of-nsf-career-award-recipients"
+    ],
+    "must_include": [
+      [
+        "four",
+        "4"
+      ]
+    ],
+    "must_not_include": [
+      "out of date",
+      "outdated",
+      "too old"
+    ],
+    "reference": "Four. In 2022, four ECE faculty members received the National Science Foundation CAREER Award, the most the department had received in a single year ([ECE news, March 7, 2022](https://www.ece.utah.edu/2022/03/07/ece-celebrates-highest-number-of-nsf-career-award-recipients/)).",
+    "as_of": "2026-11-11",
+    "evidence": "ECE news post published 2022-03-07, read live 2026-11-11: 'four ECE faculty members have received the 2022 National Science Foundation Faculty Early Career Development Program (CAREER) Award. This is the highest number of CAREER awards obtained in a single year by the department.' A past event, so no out-of-date note is expected."
   }
 ]

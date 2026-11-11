@@ -73,6 +73,8 @@ def rendered_page(page_html: str, base_url: str, max_links: int = 40) -> dict:
     """Extract title, main text and in-content links from a fully rendered page."""
     soup = BeautifulSoup(page_html, "lxml")
     title = soup.title.get_text(strip=True) if soup.title else base_url
+    # WordPress puts a published time on posts only; pages have just a modified time.
+    meta = {m.get("property"): (m.get("content") or "")[:10] for m in soup.select('meta[property^="article:"]')}
     title = re.sub(r"\s*[|–-]\s*(The )?John and Marcia Price College of Engineering.*$", "", title) or title
 
     main = (soup.select_one(".post-content") or soup.select_one(".main-container")
@@ -92,7 +94,8 @@ def rendered_page(page_html: str, base_url: str, max_links: int = 40) -> dict:
         if len(links) >= max_links:
             break
 
-    return {"title": title, "text": _soup_to_text(main), "links": links}
+    return {"title": title, "text": _soup_to_text(main), "links": links,
+            "published": meta.get("article:published_time", ""), "updated": meta.get("article:modified_time", "")}
 
 
 def chunk_text(text: str, size: int = 1400, overlap: int = 200) -> list[str]:
