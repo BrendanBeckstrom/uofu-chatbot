@@ -2,7 +2,7 @@
 
 LOG_BACKEND=files (the default) appends to data/usage.jsonl and data/feedback.jsonl, and keeps the day's
 spend in data/spend.json. LOG_BACKEND=firestore (the hosted beta) writes the same fields to the Firestore
-collections `questions`, `feedback` and `spend`. docs/DATA_PLAN.md lists the fields.
+collections `questions`, `feedback` and `spend`. docs/ARCHITECTURE.md lists the fields.
 
 Firestore writes go through one background thread, so a slow write never delays an answer. The server
 calls flush() before closing each response, because Cloud Run pauses the CPU once a response ends.

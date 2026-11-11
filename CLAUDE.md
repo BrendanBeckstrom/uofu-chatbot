@@ -5,9 +5,12 @@ answers from the college's and departments' public web content, handbooks and ev
 sources. FastAPI backend, Claude Haiku 5.5 through the official `anthropic` SDK, and an embeddable
 vanilla-JS widget.
 
-How it works: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Auditing the college's own pages: [docs/SITE_AUDIT.md](docs/SITE_AUDIT.md). Change recipes:
-[docs/MAKING_CHANGES.md](docs/MAKING_CHANGES.md). Security and cost: [docs/SECURITY.md](docs/SECURITY.md).
-The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs/DEPLOY.md](docs/DEPLOY.md).
+Where to read:
+- Change recipes, including rebuilding `data/`: [docs/MAKING_CHANGES.md](docs/MAKING_CHANGES.md)
+- How it works, and the protections (rate limits, spending cap, scope gate): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs/DEPLOY.md](docs/DEPLOY.md)
+- What's beta-only, open decisions and hosting research for going public: [docs/GOING_LIVE.md](docs/GOING_LIVE.md)
+- Auditing the college's own pages: [docs/SITE_AUDIT.md](docs/SITE_AUDIT.md)
 
 ## Commands
 
@@ -47,19 +50,29 @@ The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs
   nothing.
 - **Be polite to the university's servers.** Keep the 10-second per-site delay (from `robots.txt`) and make
   requests one at a time per site. Several department sites share a backend, and heavy parallel API queries
-  returned 504s.
+  returned 504s. Long crawls (`app.sync build` or `documents`, `audit.scan --links`, `evals.run baseline`) run
+  for 10 minutes or more against those sites: say how long and ask first. The site-audit workflow
+  (`.claude/workflows/site-audit.js`) also starts many agents.
 - **Changes go through pull requests.** `main` rejects direct pushes; merging needs green CI and the code
-  owner's approval (`.github/CODEOWNERS`).
+  owner's approval (`.github/CODEOWNERS`, to be removed when the project moves to the university). The
+  maintainer merges; don't merge or bypass the rule yourself.
 - **Deploying changes what testers see.** Run `deploy/deploy.sh` only when asked, from merged code.
   `deploy/secrets.sh` is for the maintainer to run in their own terminal; never read or print secrets.
 - **Never commit** `.env` or `data/`. The API key exists only in `.env` and the host's secret settings.
 - **Model:** `claude-haiku-5-5` unless the maintainers decide otherwise. A model change needs a `PRICES`
   entry in `app/pricing.py` and an answer-eval run.
+- **Beta-only settings are deliberate.** The beta password, the combined rate limit, the $5 daily cap and the
+  sleeping server, among others (full list in `docs/GOING_LIVE.md`), are for internal testing. Leave them as
+  they are unless asked. When something becomes beta-only or a decision is put off, add it to
+  `docs/GOING_LIVE.md`.
+- **Don't write code for an undecided host.** Where the public version runs (AWS or elsewhere) isn't decided.
+  The migration notes are in `docs/GOING_LIVE.md`.
 
 ## Gotchas
 
-- The effort setting is `CHATBOT_EFFORT`. Never read generic `CLAUDE_*` environment names: a shell-wide
-  `CLAUDE_EFFORT` once silently overrode the app's setting.
+- The effort setting is `CHATBOT_EFFORT`. Never add generic `CLAUDE_*` environment names: a shell-wide
+  `CLAUDE_EFFORT` once silently overrode the app's setting. `CLAUDE_MODEL` predates this rule and is the one
+  exception still in use.
 - With `tool_choice: none` and no instruction, Haiku 5.5 can end a turn with no text. The loop adds
   `FINAL_NUDGE` and retries once (`app/chat.py`). Keep that when editing the loop.
 - `SYSTEM_TEMPLATE` is frozen per session. Conversation history only grows; failed turns are removed whole,
@@ -77,5 +90,8 @@ The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs
   (`records.flush()`) before each response closes; keep that when adding endpoints that write records.
 - `.gcloudignore` decides what's uploaded to Cloud Build. It must keep excluding `.env` and everything in
   `data/` except `docs.json`. Check with `gcloud meta list-files-for-upload .`.
+- Automatic content checks (`AUTO_SYNC`) need all of `data/`, not just `docs.json`. With only `docs.json`
+  the server never checks for edits. With `sync_state.json` but no `raw/`, the PDF refresh drops every PDF
+  (docs/ARCHITECTURE.md, "Keeping content current on a server").
 - `tests/fixtures.py` is the test corpus. Tests must not depend on `data/` or the network, because CI has
   neither.

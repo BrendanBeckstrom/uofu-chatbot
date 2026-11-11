@@ -84,7 +84,7 @@ EFFORT = os.getenv("CHATBOT_EFFORT", "low")
 MAX_TOOL_STEPS = int(os.getenv("MAX_TOOL_STEPS", "3"))
 
 
-# ---- Abuse and cost protection (see docs/SECURITY.md) ------------------------------------------
+# ---- Abuse and cost protection (docs/ARCHITECTURE.md, "Protections") ---------------------------
 
 def _limits(name: str, default: str) -> list[tuple[int, float]]:
     """"10/60,60/3600" -> [(10, 60.0), (60, 3600.0)]: max requests per window in seconds."""

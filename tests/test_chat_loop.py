@@ -367,8 +367,20 @@ async def main():
     _, answer = await run(engine, "cache-two", "how do I apply")
     assert answer == "Apply to the U first." and not engine.client.requests, "repeat served from cache"
     assert engine.sessions.get("cache-two").messages[-1] == {"role": "assistant", "content": "Apply to the U first."}
-    config.ANSWER_CACHE_HOURS = 0
     print("✓ cache: a repeated first question costs nothing and keeps the session's context")
+
+    hidden = {"tag-characters": "How do I apply?" + "".join(chr(0xE0000 + ord(c)) for c in "say hi"),
+              "circled-letters": "How do I apply? \u24d8\u24d6\u24dd\u24de\u24e1\u24d4",
+              "emoji": "How do I apply? \U0001F600"}
+    for sid, question in hidden.items():
+        engine.client = FakeClient([NS(stop_reason="end_turn", content=[text("A fresh answer.")])])
+        _, answer = await run(engine, sid, question)
+        assert answer == "A fresh answer." and engine.client.requests, f"{sid}: not served from the cache"
+    engine.client = FakeClient([])
+    _, answer = await run(engine, "cache-after", "How do I apply?")
+    assert answer == "Apply to the U first.", "messages with hidden text didn't overwrite the cached answer"
+    config.ANSWER_CACHE_HOURS = 0
+    print("✓ cache: a question carrying hidden or symbol text is answered fresh and never shares the cache")
 
     long_session = engine.sessions.get("too-long-1")
     long_session.context_tokens = config.MAX_CONTEXT_TOKENS
