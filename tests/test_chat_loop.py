@@ -233,6 +233,14 @@ async def main():
     assert all(h["url"] != some_page for h in engine.index.search(engine.index.lookup(some_page)["title"], k=20))
     print("✓ 404 on an indexed page removes it from results")
 
+    # A sync removing a page from the store mid-way must not break search with the index built before it.
+    store_docs = fixture_docs()
+    index = SearchIndex(store_docs)
+    removed = next(k for k, d in store_docs.items() if d["type"] == "page")
+    del store_docs[removed]
+    assert index.search(index.docs[removed]["title"], k=20), "the old index still answers until it's rebuilt"
+    print("✓ search keeps working while a sync removes pages from the store")
+
     # ---- planning documents ---------------------------------------------------------------------
     hits = engine.index.search("computer science 4 year plan", k=3)
     assert hits[0]["url"] == CS_PLAN and hits[0]["text"].startswith("[Page "), hits[:1]
