@@ -1216,7 +1216,9 @@
     ],
     "must_include": [
       [
-        "21-25"
+        "21-25",
+        "21 to 25",
+        "21–25"
       ],
       [
         "B-"
@@ -1940,21 +1942,21 @@
     ],
     "must_include": [
       [
-        "8-week",
-        "8 week",
-        "eight-week",
-        "eight week"
+        "9-week",
+        "9 week",
+        "nine-week",
+        "nine week",
+        "nine weeks",
+        "9 weeks"
       ],
       [
         "senior",
         "seniors"
       ]
     ],
-    "reference": "Yes. The High School Summer Research Internship is an 8-week, 30-hours-a-week lab program at no cost, open to students who will be seniors next year (graduating in 2028). Registration for the last cycle is closed. Younger students can look at the Summer Research Boot Camp.",
-    "as_of": "2026-10-21",
-    "evidence": [
-      "https://www.price.utah.edu/k12/high-school-summer-research-internship: \"Duration: 8-week program | 30 hours per week of research\"; \"There is NO COST to participate in the program\"; \"Anyone who will be a senior next year (graduating in 2028) can apply to the program.\"; \"Registration is closed!\""
-    ],
+    "reference": "Yes. The High School Summer Research Internship is a 9-week, 30-hours-a-week lab program at no cost, open to students who will be seniors next year (graduating in 2028). Registration for the last cycle is closed. Younger students can look at the Summer Research Boot Camp.",
+    "as_of": "2026-11-11",
+    "evidence": "Live page read 2026-11-11 (updated 2026-11-02): 'Duration: 9-week program | 30 hours per week of research'; 'senior next year (graduating in 2028) can apply'.",
     "notes": "Passed in p09 turn 3 (minor slip: it attributed the lab-matching FAQ to the Boot Camp).",
     "origin": "persona-prospective"
   },
