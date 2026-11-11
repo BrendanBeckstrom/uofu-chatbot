@@ -68,6 +68,7 @@
     page: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    download: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
 
   // ---------------------------------------------------------------- styles
@@ -145,6 +146,7 @@ svg { width: 100%; height: 100%; display: block; }
 .dot.off { background: var(--warn); }
 .icon-btn { width: 34px; height: 34px; padding: 8px; border-radius: 8px; color: #fff; opacity: .92; flex: none; }
 .icon-btn:hover { background: rgba(255,255,255,.16); opacity: 1; }
+.icon-btn + .icon-btn { margin-left: -8px; }
 
 .banner { background: var(--surface); color: var(--ink); font-size: 12.5px; padding: 8px 16px 8px 12px; border-left: 4px solid var(--warn); border-bottom: 1px solid var(--line); }
 
@@ -252,10 +254,14 @@ textarea::placeholder { color: var(--muted); }
 .send:hover { background: var(--red-dark); }
 .send:disabled { opacity: .35; cursor: default; }
 .foot { font-size: 11px; color: var(--muted); text-align: center; padding: 4px 16px 10px; background: var(--bg); }
+.save-btn:disabled { opacity: .5; cursor: default; }
+.save-btn[aria-busy="true"] svg { animation: bob 1s ease-in-out infinite; }
+.save-status { background: var(--surface); color: var(--ink); font-size: 12.5px; padding: 7px 16px; border-bottom: 1px solid var(--line); text-align: center; }
 
 @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes bob { 50% { transform: translateY(2px); } }
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
 
@@ -316,7 +322,7 @@ textarea::placeholder { color: var(--muted); }
   const save = () => {
     try { sessionStorage.setItem(STORE_KEY, JSON.stringify({ ...state, messages: state.messages.slice(-40) })); } catch (_) {}
   };
-  let busy = false;
+  let busy = false, saving = false;
   let aiEnabled = true;
 
   // The hosted beta's server sleeps when idle and takes up to about two minutes to start (docs/DEPLOY.md). Requests
@@ -391,6 +397,7 @@ textarea::placeholder { color: var(--muted); }
         <div class="title">Price Assistant</div>
         <div class="sub"><span class="dot"></span><span class="sub-txt">Answers from college sites</span></div>
       </div>
+      <button class="icon-btn save-btn" title="Save chat summary (PDF)" aria-label="Save a summary of this chat as a PDF" hidden>${ICON.download}</button>
       <button class="icon-btn new-btn" title="New conversation" aria-label="Start a new conversation">${ICON.refresh}</button>
       <button class="icon-btn expand-btn" title="Expand" aria-label="Expand chat">${ICON.expand}</button>
       <button class="icon-btn close-btn" title="Close" aria-label="Close chat">${ICON.close}</button>
@@ -400,6 +407,7 @@ textarea::placeholder { color: var(--muted); }
       <button class="tab" role="tab" id="tab-contact" aria-selected="false" aria-controls="view-contact" data-tab="contact" tabindex="-1">Contact</button>
     </nav>
     <div class="banner" hidden></div>
+    <div class="save-status" role="status" aria-live="polite" hidden></div>
     <div class="log" id="view-chat" role="log" aria-live="polite" aria-labelledby="tab-chat"></div>
     <div class="contact" id="view-contact" role="tabpanel" aria-labelledby="tab-contact" hidden></div>
     <form class="compose">
@@ -661,10 +669,59 @@ textarea::placeholder { color: var(--muted); }
     };
   }
 
+  // A take-home PDF of the chat: an AI summary, then highlights about the college (POST /api/summary).
+  let statusTimer = 0;
+  function updateSave() {
+    const answered = state.messages.some((m) => m.role === "bot" && m.text && !m.error);
+    const btn = $(".save-btn");
+    btn.hidden = !(state.sessionId && answered);
+    btn.disabled = busy || saving;
+    btn.setAttribute("aria-busy", String(saving));
+  }
+
+  function saveStatus(text, ms) {
+    const el = $(".save-status");
+    clearTimeout(statusTimer);
+    el.textContent = text || ""; el.hidden = !text;
+    if (text && ms) statusTimer = setTimeout(() => { el.hidden = true; }, ms);
+  }
+
+  async function saveSummary() {
+    if (busy || saving || !state.sessionId) return;
+    saving = true; updateSave();
+    saveStatus("Making your chat summary (PDF)…");
+    try {
+      const send = async (fresh) => fetch(`${API}/api/summary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Chat-Token": await getToken(fresh) },
+        body: JSON.stringify({ session_id: state.sessionId }),
+      });
+      let r = await send(false);
+      if (r.status === 401) r = await send(true);
+      if (!r.ok) {
+        let detail = "";
+        try { detail = (await r.json()).detail; } catch (_) {}
+        saveStatus(typeof detail === "string" && detail ? detail : "The summary couldn't be made. Please try again.", 8000);
+        return;
+      }
+      const url = URL.createObjectURL(await r.blob());
+      const a = document.createElement("a");
+      a.href = url; a.download = `price-engineering-chat-${new Date().toLocaleDateString("en-CA")}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      saveStatus("Chat summary saved to your downloads.", 4000);
+    } catch (_) {
+      saveStatus("The summary couldn't be made. Please try again.", 8000);
+    } finally {
+      saving = false; updateSave();
+    }
+  }
+
   function renderAll() {
     log.innerHTML = "";
     if (!state.messages.length) renderWelcome();
     for (const m of state.messages) m.role === "user" ? renderUser(m.text) : renderBot(m);
+    updateSave();
     scrollDown();
   }
 
@@ -672,7 +729,8 @@ textarea::placeholder { color: var(--muted); }
   async function ask(question) {
     question = question.trim().slice(0, MAX_LEN);
     if (!question || busy) return;
-    busy = true; updateSend();
+    busy = true; updateSend(); updateSave();
+    if (!saving) saveStatus("");
     if (log.hidden) setTab("chat");
     const w = log.querySelector(".welcome"); if (w) w.remove();
 
@@ -767,7 +825,7 @@ textarea::placeholder { color: var(--muted); }
     if (!msg.text && !msg.error) { msg.error = "No answer came back. Please try again."; fillBot(view, msg); }
     state.messages.push(msg); save();
     log.setAttribute("aria-busy", "false");
-    busy = false; updateSend();
+    busy = false; updateSend(); updateSave();
     scrollDown();
     input.focus();
   }
@@ -787,8 +845,10 @@ textarea::placeholder { color: var(--muted); }
       fetch(`${API}/api/reset`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: state.sessionId }) }).catch(() => {});
     }
     state.sessionId = null; state.messages = []; save();
+    saveStatus("");
     renderAll(); input.focus();
   });
+  $(".save-btn").addEventListener("click", saveSummary);
   shadow.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => setTab(t.dataset.tab)));
   $(".tabs").addEventListener("keydown", (e) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;

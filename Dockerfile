@@ -2,7 +2,10 @@
 FROM python:3.14-slim
 
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 TZ=America/Denver
-RUN apt-get update && apt-get install -y --no-install-recommends tzdata && rm -rf /var/lib/apt/lists/*
+# Pango and HarfBuzz are what WeasyPrint needs to draw the chat-summary PDF; DejaVu covers characters the
+# bundled fonts don't (arrows, symbols).
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata \
+    libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv
 COPY requirements.txt .

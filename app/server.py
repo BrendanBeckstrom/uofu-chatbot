@@ -6,8 +6,12 @@ Hosted, it runs on Cloud Run (docs/DEPLOY.md).
 
 import asyncio
 import json
+import time
 from contextlib import asynccontextmanager
+from datetime import date
 from typing import Literal
+
+import anthropic
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +19,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, guard, records
+from . import config, guard, records, summary
 from .chat import ChatEngine, anon_user, log_usage
 from .events import search_events, today
 from .index import SearchIndex
@@ -125,6 +129,10 @@ class ChatIn(BaseModel):
     audience: Literal["prospective", "current"] | None = None
 
 
+class SummaryIn(BaseModel):
+    session_id: str = Field(min_length=8, max_length=64)
+
+
 class FeedbackIn(BaseModel):
     session_id: str | None = Field(default=None, max_length=64)
     question_id: str = Field(default="", max_length=40)
@@ -210,6 +218,51 @@ async def chat(body: ChatIn, request: Request):
 async def reset(body: dict):
     engine.sessions.reset(str(body.get("session_id", "")))
     return {"ok": True}
+
+
+@app.post("/api/summary")
+async def chat_summary(body: SummaryIn, request: Request):
+    """The chat as a take-home PDF: an AI summary of the conversation, then highlights about the college."""
+    tid = guard.verify_token(request.headers.get("x-chat-token"))
+    if not tid:
+        return JSONResponse({"detail": "token_required"}, status_code=401, headers={"Cache-Control": "no-store"})
+    sess = engine.sessions.peek(body.session_id)
+    if not sess or sess.user != anon_user(tid):
+        return JSONResponse({"detail": f"This chat has ended. A summary can be saved up to "
+                                       f"{config.SESSION_IDLE_MINUTES:.0f} minutes after your last message."},
+                            status_code=404, headers={"Cache-Control": "no-store"})
+    headers = {"Content-Disposition": f'attachment; filename="price-engineering-chat-{date.today()}.pdf"',
+               "Cache-Control": "no-store"}
+    if sess.summary_pdf and sess.summary_pdf[0] == len(sess.transcript):
+        return Response(sess.summary_pdf[1], media_type="application/pdf", headers=headers)
+    wait = guard.summary_limiter.check(tid)
+    if wait:
+        return too_many(f"You've saved a few summaries already. Please try again in {wait_text(wait)}.", wait)
+    if not engine.client or not guard.spend.reserve():
+        return JSONResponse({"detail": "Summaries aren't available right now."}, status_code=503,
+                            headers={"Cache-Control": "no-store"})
+    started, usage = time.time(), None
+    try:
+        async with asyncio.timeout(60):
+            result, usage = await summary.build(engine.client, engine.index, list(sess.transcript),
+                                                 dict(sess.titles), sess.audience)
+    except summary.NothingToSummarize:
+        result = None
+    except (anthropic.APIError, TimeoutError) as e:
+        print(f"[summary] failed: {type(e).__name__}", flush=True)
+        return JSONResponse({"detail": "The summary couldn't be made right now. Please try again."},
+                            status_code=503, headers={"Cache-Control": "no-store"})
+    finally:
+        guard.spend.release()
+        if usage:
+            dollars = guard.spend.record(usage, config.MODEL)
+            print(f"[summary] {time.time() - started:.1f}s ${dollars:.4f}", flush=True)
+    if not result:
+        return JSONResponse({"detail": "Ask a question first, then save the summary."}, status_code=422,
+                            headers={"Cache-Control": "no-store"})
+    pdf = await asyncio.to_thread(summary.render, result)
+    sess.summary_pdf = (len(sess.transcript), pdf)
+    return Response(pdf, media_type="application/pdf", headers=headers)
 
 
 @app.post("/api/feedback")

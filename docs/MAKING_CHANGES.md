@@ -21,6 +21,7 @@ and review what it proposes.
    .venv/bin/python -m tests.test_sync
    .venv/bin/python -m tests.test_guard
    .venv/bin/python -m tests.test_analytics
+   .venv/bin/python -m tests.test_summary
    ```
 4. **If you changed what the bot says or how it searches,** also run the real-answer eval. It costs
    about $0.18 (or $0.35 with `--reps 2`):
@@ -46,7 +47,7 @@ and review what it proposes.
 ### Change how the bot answers (tone, rules, what it should do)
 
 Edit `SYSTEM_TEMPLATE` in `app/chat.py`. It's plain English, organized under headings: Scope, How to answer,
-Time-sensitive questions, Degree planning, Future students and families, Style, and Untrusted content and
+Dates and old information, Degree planning, Future students and families, Style, and Untrusted content and
 privacy. Keep instructions positive ("Lead with the direct answer") rather than lists of don'ts, and run the
 answer eval afterwards. Conversations that are already open keep the old prompt until the user starts a new
 chat.
@@ -181,7 +182,29 @@ then removes the saved handbook pages.
 
 Add it to `SITES` in `app/config.py` (it must be a WordPress site, and check its `robots.txt` first), then
 run `.venv/bin/python -m app.sync build --site newkey`. Mention it in `SYSTEM_TEMPLATE`, where the sites are
-listed.
+listed. Give it an `office`: the phone and general email from the site's own contact page or footer, read
+live. The bot names it when one of the site's pages is old.
+
+### Change the chat-summary PDF
+
+- The wording the model follows is `SYSTEM` in `app/summary.py`; the layout is `page_html()` and `CSS` there.
+- Which pages can become highlights: `KINDS` and `COLLEGE_KINDS` (one search each), `SEARCH_WORDS`, the
+  counts in `college_pages()`, and `ROUTINE_RE` for notices to skip. `DEPARTMENTS` holds the words that tie a
+  chat to a department.
+- Keep the checks in `check()`; they are what stops a made-up figure or an old ranking from reaching a
+  U-branded page.
+- Use only official logo files and the brand colors; the research brief explains the logo rules.
+- Run `.venv/bin/python -m tests.test_summary`, then `.venv/bin/python -m evals.summaries` (about 3 cents) and
+  open a few of the saved PDFs.
+
+### Change what counts as old, or who the bot names for current information
+
+- The age limit is `OLD_AFTER_YEARS` in `app/config.py` (2 years). The prompt reads it from there.
+- Each site's contact is its `office` in `SITES`. Check it on the live site when a department's office
+  changes, and keep general addresses (`info@…`, a front desk) over a person's own email.
+- To leave a page out of search entirely, add its URL (no trailing slash) to `NOT_INDEXED`. Prefer the
+  age note: a missing page leaves a gap, an old one comes with who to ask.
+- Run the tests, the retrieval eval and `.venv/bin/python -m evals.run answers --only old-info`.
 
 ### Change rate limits, the daily budget or the model
 

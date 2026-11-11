@@ -148,11 +148,35 @@ The index is a BM25 keyword index over ~1,400-character chunks:
 
 - A match in a page's title or URL counts extra.
 - News posts are weighted a little below evergreen pages.
+- Anything older than `OLD_AFTER_YEARS` (2, in `app/config.py`) scores three quarters as much, so a newer
+  page on the same topic comes first. Age means a post's publication date, or a page's or PDF's last update.
+  This moved the retrieval eval from 60 to 61 of 77 on Nov 11, 2026.
+- URLs in `NOT_INDEXED` (`app/config.py`) are left out entirely: two national salary news posts from 2013
+  and 2017 that read like current U figures.
 - At most 2 results come from the same folder, so a dozen near-empty sibling pages can't crowd out the
   overview page.
 - `ALIASES` expands shorthand like "ECE" or "dorm".
 
 The server rebuilds the index when `data/docs.json` changes on disk.
+
+### Old sources
+
+Much of the sites' content is old. On Nov 11, 2026, 45% of pages, 86% of news posts and 35% of PDFs were more
+than 2 years old, and the top search result was that old for 44% of the eval questions. The bot flags old
+sources rather than hiding them:
+
+- Search results and page reads show each source's date, and once it's past 2 years, its age ("7 years
+  old"). The code works this out, because Haiku is unreliable at date arithmetic.
+- Under the results comes "Who has current information about the older sources": the office of the site each
+  old result came from. The offices, with phone and general email, are the `office` entries in
+  `config.SITES`, taken from each department's contact page or footer. Campus pages get the college office.
+- The prompt's "Dates and old information" section has the bot look for something newer first (a newer
+  result, one more search, or the live page). If nothing newer turns up, it gives what it found with its date,
+  one sentence saying it's over 2 years old and may be out of date (for salaries, costs, statistics and
+  rankings, too old to rely on), and that office. It leaves the note out for recent sources and for questions
+  about past events.
+- The `old-info` eval cases check both sides: an old salary page gets the note and the office, a fresh
+  contact page and a past news story get none.
 
 ### Live reads (`app/live.py`) and events (`app/events.py`)
 
@@ -164,6 +188,42 @@ The server rebuilds the index when `data/docs.json` changes on disk.
 
 The calendar comes from the college's public Trumba JSON feed (`uu-college-of-engineering`), cached for 15
 minutes.
+
+## Chat summary PDF (`app/summary.py`, `POST /api/summary`)
+
+Once a chat has an answer, a download icon appears in the widget's header ("Save chat summary (PDF)"), with a
+status line under the header while the PDF is made. The visitor gets a branded take-home
+page: an AI summary of their chat on top, then "About the Price College", highlights picked for what they
+talked about.
+
+1. **The chat comes from the server**, not the browser: the session's own question-and-answer pairs. A
+   transcript sent by the browser could be edited to make a U-branded PDF say anything. Only the browser that
+   held the chat can download it, and only while the chat is open (30 idle minutes, and on the hosted beta, until
+   the server sleeps). Declined and crisis turns are left out.
+2. **Highlight candidates are found in code.** The chat's departments are the ones the visitor asked about (or,
+   if they named none, ones the answers discuss at least three times). For each, one search per kind of
+   highlight (`KINDS`: research and labs, student teams and competitions, hands-on projects, opportunities,
+   industry ties, awards, student community) keeps up to 2 pages from that department's site, plus its 4
+   newest news posts; with two or three departments, each gets half that. The college site adds one page per
+   kind in `COLLEGE_KINDS`. Only pages under 2 years old that the chat didn't already cite are offered, and
+   routine notices (seminars, staff news, giving pages) are skipped. A one-department chat offers about 20.
+3. **One model call** (Haiku, thinking off, JSON schema output) writes the title, overview, key points, next
+   steps and four to six highlights, each naming the page it came from, mixing kinds and, for a future
+   student, favoring what undergraduates do. About a fifth of a cent. With thinking on, long chats ran out
+   of output tokens before writing anything.
+4. **Code checks everything before it's printed** (`check()`): every figure in a key point must appear in the
+   chat's answers, and every figure in a highlight in its page; links are kept only if the chat gave them;
+   comparisons with other schools are dropped; a ranking needs a year from the last 2 years, because pages
+   updated this year still quote 2010 rankings. A big figure the page doesn't show is removed and the
+   highlight kept; a money figure is shown the way the page writes it ("$30 million"), and amounts under
+   $1,000 stay in the text. A page's date counts as part of the page ("in 2025" from a 2025 post).
+5. **WeasyPrint** turns an HTML template into a tagged PDF/UA-1 file screen readers can follow. It uses the
+   college's official logo file (`app/assets/`, unmodified from price.utah.edu), Utah Red with black and Zion
+   Cinder Cone gray, and Source Sans 3, the face the brand site links for Myriad Pro (OFL, in
+   `app/assets/fonts/`). The footer says it was written by AI and isn't an official service or decision.
+
+The PDF isn't stored; a second download of the same chat reuses it. `python -m evals.summaries` runs six
+real two-question chats and grades their summaries (about 3 cents; the PDFs are saved for a look).
 
 ## Usage records (`app/records.py`) and statistics (`app/analytics.py`)
 
@@ -241,8 +301,10 @@ The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md).
 | `python -m tests.test_sync` | nothing | build, change-only update and deletion check against a fake WordPress site |
 | `python -m tests.test_guard` | nothing | rate limits, tokens, the beta password, spend cap, request-size limits |
 | `python -m tests.test_analytics` | nothing | the usage report's counts; Firestore records and spend, against an in-memory fake |
+| `python -m tests.test_summary` | Pango (`brew install pango`) | the chat-summary PDF: what the checks keep, highlight picks, the tagged PDF, the endpoint |
 | `python -m evals.run selftest` | internet (calendar) | the eval graders accept good answers and reject empty ones |
 | `python -m evals.run retrieval` | the local index | does the first search find the right page? |
+| `python -m evals.summaries` | API key, about 3 cents | six real chats and their summary PDFs: coverage, highlights on topic, what the checks dropped |
 | `python -m evals.run answers` | API key, about $0.18 per pass | the real bot on every question in `evals/questions.json`, reported by tier (must pass, expected to pass, known gaps; [MAKING_CHANGES.md](MAKING_CHANGES.md#eval-tiers)); writes `summary.json` with 95% ranges, median answer length and model calls per answer, and exits 1 if a must-pass case fails |
 | `python -m evals.run regrade --dir …` | nothing | re-scores a saved run after a case is fixed |
 | `python -m evals.run baseline` | internet, ~12 minutes | price.utah.edu's own search box vs. the assistant's first search |
@@ -264,6 +326,9 @@ The tests use `tests/fixtures.py`, a handful of made-up documents, so they run a
   The research behind it, and what it deliberately avoids (comparisons with other schools, unsourced
   salaries, pressure), is in [the behavior report](reports/recruiting-behavior-2026-11-06.pdf) and
   [the research brief](reports/recruiting-research-2026-11-05.md). The `recruiting` eval category tests it.
+- **Old sources are flagged, not hidden.** Anything over 2 years old still gets used, with its date, a short
+  "may be out of date" note and who to ask. Dropping old pages would leave gaps where the sites have nothing
+  newer; the assistant is a helper, and the office has the current answer. See "Old sources" above.
 - **Empty replies.** With tools switched off on the last round, Haiku 5.5 sometimes ends without writing
   anything. The loop sends a "write your answer now" nudge (`FINAL_NUDGE`) and retries once. If it's still
   empty, the visitor gets search results instead of a blank bubble.

@@ -3,9 +3,10 @@
 import math
 import re
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from urllib.parse import urlparse
 
+from . import config
 from .extract import chunk_text, split_pages
 
 STOPWORDS = set("""
@@ -38,6 +39,26 @@ def _stem(tok: str) -> str:
     return tok
 
 
+def as_of(doc: dict) -> str:
+    """A post's publication date, or when a page or file was last updated (YYYY-MM-DD, or "")."""
+    return ((doc.get("date") if doc.get("type") == "post" else doc.get("modified")) or "")[:10]
+
+
+def years_old(day: str, today: date | None = None) -> int | None:
+    """Whole years since an ISO date, or None when there's no usable date."""
+    try:
+        then = date.fromisoformat(day[:10])
+    except (TypeError, ValueError):
+        return None
+    today = today or date.today()
+    return today.year - then.year - ((today.month, today.day) < (then.month, then.day))
+
+
+def is_old(day: str, today: date | None = None) -> bool:
+    n = years_old(day, today)
+    return n is not None and n >= config.OLD_AFTER_YEARS
+
+
 def tokenize(text: str, expand: bool = False) -> list[str]:
     toks = TOKEN_RE.findall(text.lower())
     if expand:
@@ -50,18 +71,22 @@ class SearchIndex:
     TITLE_BONUS = 1.5       # extra idf-weighted credit when a query term is in the title or URL
     NEWS_WEIGHT = 0.8       # prefer evergreen pages over news posts
     DOC_WEIGHT = 0.8        # PDFs and handbook pages: strong for planning questions, below pages for general ones
+    OLD_WEIGHT = 0.75       # anything past config.OLD_AFTER_YEARS, so a newer page on the same topic comes first
     PER_FOLDER = 2          # max pages from one parent folder, so a set of sibling stubs (".../aerospace",
                             # ".../energy-systems", each just "Affiliated Faculty: TBA") can't crowd out the overview
 
     def __init__(self, docs: dict[str, dict]):
-        self.docs = dict(docs)  # a background sync edits the store's dict while this index is still in use
+        # A background sync edits the store's dict while this index is still in use, so keep a copy.
+        self.docs = {k: d for k, d in docs.items() if d["url"].rstrip("/") not in config.NOT_INDEXED}
+        today = date.today()
+        self.old = {k for k, d in self.docs.items() if is_old(as_of(d), today)}
         self.built_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
         self.excluded: set[str] = set()  # URLs found to be gone since the last rebuild
         self.chunks: list[tuple[str, str]] = []  # (doc key, text)
         self.postings: dict[str, list[tuple[int, int]]] = defaultdict(list)
         self.lengths: list[int] = []
         self.doc_terms: dict[str, set[str]] = {}
-        for key, d in docs.items():
+        for key, d in self.docs.items():
             self.doc_terms[key] = set(tokenize(" ".join([
                 d["title"], urlparse(d["url"]).path.replace("-", " "), d.get("context", "")])))
             title_toks = tokenize(d["title"])
@@ -82,7 +107,7 @@ class SearchIndex:
 
     def stats(self) -> dict:
         types = Counter(d["type"] for d in self.docs.values())
-        return {"built_at": self.built_at, "docs": len(self.docs), "chunks": len(self.chunks), **types}
+        return {"built_at": self.built_at, "docs": len(self.docs), "chunks": len(self.chunks), "old": len(self.old), **types}
 
     def exclude(self, url: str):
         self.excluded.add(url.rstrip("/"))
@@ -111,6 +136,8 @@ class SearchIndex:
                 score *= self.NEWS_WEIGHT
             elif kind in ("pdf", "handbook"):
                 score *= self.DOC_WEIGHT
+            if key in self.old:
+                score *= self.OLD_WEIGHT
             score += self.TITLE_BONUS * sum(idf for t, idf in idfs.items() if t in self.doc_terms[key])
             ranked.append((score, idx))
         ranked.sort(reverse=True)

@@ -11,15 +11,36 @@ load_dotenv(ROOT / ".env")
 SITE = "https://www.price.utah.edu"
 
 # WordPress sites the assistant indexes. All expose the public WordPress REST API.
+# "office" is who the assistant names for current information when a page is old: the phone and general email
+# from the site's own contact page or footer, checked live 2026-11-11 (Mechanical lists no general email;
+# mse.utah.edu answered 503 that day, so its entry is from the contact page as synced that morning).
 SITES = {
-    "price": {"name": "Price College of Engineering", "base": "https://www.price.utah.edu"},
-    "ece": {"name": "Electrical & Computer Engineering", "base": "https://www.ece.utah.edu"},
-    "mech": {"name": "Mechanical Engineering", "base": "https://www.mech.utah.edu"},
-    "bme": {"name": "Biomedical Engineering", "base": "https://www.bme.utah.edu"},
-    "che": {"name": "Chemical Engineering", "base": "https://www.che.utah.edu"},
-    "civil": {"name": "Civil & Environmental Engineering", "base": "https://www.civil.utah.edu"},
-    "mse": {"name": "Materials Science & Engineering", "base": "https://www.mse.utah.edu"},
-    "cs": {"name": "Kahlert School of Computing", "base": "https://www.cs.utah.edu"},
+    "price": {"name": "Price College of Engineering", "base": "https://www.price.utah.edu",
+              "office": "the college office, contact@coe.utah.edu or 801-581-6911"},
+    "ece": {"name": "Electrical & Computer Engineering", "base": "https://www.ece.utah.edu",
+            "office": "the Electrical & Computer Engineering office, info@ece.utah.edu or 801-581-6941"},
+    "mech": {"name": "Mechanical Engineering", "base": "https://www.mech.utah.edu",
+             "office": "the Mechanical Engineering office, 801-581-6441"},
+    "bme": {"name": "Biomedical Engineering", "base": "https://www.bme.utah.edu",
+            "office": "the Biomedical Engineering office, 801-581-8528, or its advisors at bme-advising@utah.edu"},
+    "che": {"name": "Chemical Engineering", "base": "https://www.che.utah.edu",
+            "office": "the Chemical Engineering front desk, frontdesk@chemeng.utah.edu or 801-581-6915"},
+    "civil": {"name": "Civil & Environmental Engineering", "base": "https://www.civil.utah.edu",
+              "office": "the Civil & Environmental Engineering office, 801-581-6931, or its advisors at "
+                        "cveenadvising@utah.edu"},
+    "mse": {"name": "Materials Science & Engineering", "base": "https://www.mse.utah.edu",
+            "office": "the Materials Science & Engineering office, mse-info@lists.utah.edu or 801-581-6863"},
+    "cs": {"name": "Kahlert School of Computing", "base": "https://www.cs.utah.edu",
+           "office": "the Kahlert School of Computing office, contact@cs.utah.edu or 801-581-8224"},
+}
+CAMPUS_OFFICE = SITES["price"]["office"]  # campus office pages and anything without a site of its own
+
+# Anything older than this gets a note in answers ("may be out of date") and ranks below newer pages.
+OLD_AFTER_YEARS = 2
+# Pages left out of search entirely: national salary news from 2013 and 2017 that read like current U figures.
+NOT_INDEXED = {
+    "https://www.mech.utah.edu/top_salary",
+    "https://www.mech.utah.edu/me-degree-one-of-the-top-5-majors-for-a-lucrative-career",
 }
 
 DATA_DIR = ROOT / "data"
@@ -93,6 +114,7 @@ GLOBAL_CHAT_LIMITS = _limits("GLOBAL_CHAT_LIMITS", "30/60,600/3600")      # ever
 SEARCH_LIMITS = _limits("SEARCH_LIMITS", "20/60")
 EVENTS_LIMITS = _limits("EVENTS_LIMITS", "60/60")
 FEEDBACK_LIMITS = _limits("FEEDBACK_LIMITS", "5/60,50/86400")
+SUMMARY_LIMITS = _limits("SUMMARY_LIMITS", "3/600,10/86400")  # chat-summary PDFs per browser (one model call each)
 MAX_CONCURRENT_ANSWERS = int(os.getenv("MAX_CONCURRENT_ANSWERS", "8"))
 MAX_CONCURRENT_PER_CLIENT = int(os.getenv("MAX_CONCURRENT_PER_CLIENT", "1"))
 MAX_BODY_BYTES = 16_384

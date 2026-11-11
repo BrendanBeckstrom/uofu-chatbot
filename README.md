@@ -20,6 +20,7 @@ To run it locally:
 ```bash
 cd ~/Desktop/UofUChatBot
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # first time only
+brew install pango                          # first time only: draws the chat-summary PDF (WeasyPrint)
 
 .venv/bin/python -m app.sync build          # index all 8 sites (polite crawl, ~15-25 min, once)
 .venv/bin/uvicorn app.server:app --reload --port 8000
@@ -95,7 +96,8 @@ re-crawls.
 3. **Live sources for "now."** Claude calls `get_events` for anything about events or upcoming dates, and
    re-reads a page live when its source is old or lists dates that have passed. Every search result and
    source chip shows the page's last-updated date, so stale content is visible to both Claude and the
-   reader.
+   reader. Anything over 2 years old ranks lower, and when the bot still relies on it, it says so and names
+   the department office to ask (docs/ARCHITECTURE.md, "Old sources").
 
 Manual control:
 
@@ -250,7 +252,8 @@ app/guard.py      rate limits, browser tokens, the beta password, concurrency, d
 app/records.py    question, feedback and spend records: local files or Firestore
 app/privacy.py    redaction of identifiers in logs
 app/pricing.py    per-model token prices
-app/server.py     FastAPI: chat (SSE), sync, events, feedback, status, static pages
+app/summary.py    the take-home chat-summary PDF (app/assets: official logo file, Source Sans 3)
+app/server.py     FastAPI: chat (SSE), chat summary, sync, events, feedback, status, static pages
 web/widget.js     embeddable chat widget
 web/login.html    the hosted beta's password page
 web/wake.js       the "Starting up" screen while the hosted server wakes
