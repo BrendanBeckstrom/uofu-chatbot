@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import re
 import time
+import unicodedata
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
@@ -421,8 +422,14 @@ FINAL_NUDGE = ("(That was the last search or page read available for this questi
                "from what you found above, and point to the best page or contact for anything you couldn't confirm.)")
 
 
-def _cache_key(question: str) -> str:
-    return re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", question.lower())).strip()[:300]
+def _cache_key(question: str) -> str | None:
+    """"How do I apply?" and "how do i apply" share a key. A message with symbols, invisible characters or more
+    than 300 letters gets none, so text hidden inside a common question can't reach other visitors' answers."""
+    text = unicodedata.normalize("NFKC", question)
+    if any(unicodedata.category(c)[0] in "CMS" and not c.isspace() for c in text):
+        return None
+    key = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", text.lower())).strip()
+    return key if len(key) <= 300 else None
 
 
 GAP_RE = re.compile(r"\b(couldn't|could not|can't|cannot|didn't|did not|unable to) (find|confirm|locate|see)\b|"
@@ -647,7 +654,8 @@ class ChatEngine:
         hold["reserved"] = True
 
         # Repeated first questions ("how do I apply?") are answered from a short-lived cache.
-        cache_key = f"{sess.audience or ''}|{_cache_key(question)}" if not sess.messages else None
+        key = _cache_key(question) if not sess.messages else None
+        cache_key = f"{sess.audience or ''}|{key}" if key else None
         cached = self._answer_cache.get(cache_key) if cache_key else None
         if cached and time.time() - cached[0] < config.ANSWER_CACHE_HOURS * 3600:
             _, text, items = cached

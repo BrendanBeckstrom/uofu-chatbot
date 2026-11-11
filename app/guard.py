@@ -1,6 +1,6 @@
 """Abuse and cost protection for the public chat endpoint.
 
-Layers (all in-process; docs/SECURITY.md covers the multi-server version):
+Layers (all in-process; docs/ARCHITECTURE.md, "Protections"):
   - who is asking:    a signed per-browser token, plus the client IP (proxy-aware, IPv6 per /64);
                       with BETA_PASSWORD set, a token is issued only for the right password
   - how often:        sliding-window limits per token, per IP (looser, for shared campus Wi-Fi), and global

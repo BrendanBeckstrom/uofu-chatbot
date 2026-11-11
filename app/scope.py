@@ -23,7 +23,7 @@ DECLINE_COURSEWORK = ("I'm scoped to University of Utah questions, so I can't so
                       "department tutoring and other help.")
 
 # Resources checked on counselingcenter.utah.edu and healthcare.utah.edu (HMHI) on 2026-10-14.
-# The wording needs sign-off from the University Counseling Center before launch (docs/SECURITY.md, section 9).
+# The wording needs sign-off from the University Counseling Center before launch (docs/GOING_LIVE.md).
 CRISIS = ("I'm really sorry you're going through this. You don't have to handle it alone, and you can talk to "
           "someone right now:\n\n"
           "- **If you're in immediate danger, call 911.**\n"

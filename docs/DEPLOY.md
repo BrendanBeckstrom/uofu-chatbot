@@ -1,13 +1,14 @@
 # Hosting the beta
 
 The beta runs on Google Cloud through Firebase, under the `uofuchatbot` project. This page covers how it
-fits together, how to deploy a change, the beta password, and how to read what testers asked.
+fits together, how to deploy a change, the beta password, and how to read what testers asked. Several of its
+settings exist only for internal testing; [GOING_LIVE.md](GOING_LIVE.md) lists them.
 
 ## What runs where
 
 | Piece | Where | What it does |
 | --- | --- | --- |
-| Pages | Firebase Hosting, https://uofuchatbot.web.app | The login page (`web/login.html`), the start-up screen (`web/wake.js`), the demo page, the widget and the design concepts. Static files only. |
+| Pages | Firebase Hosting, https://uofuchatbot.web.app | The login page (`web/login.html`), the start-up screen (`web/wake.js`), the demo page and the widget. Static files only. |
 | Server | Cloud Run, service `price-assistant` in `us-central1` | The same FastAPI app as locally (`app/`), built from the `Dockerfile` with the search index (`data/docs.json`) inside. |
 | Logs | Firestore, `(default)` database in `us-central1` | One record per question and per thumbs up/down, and the day's spend (`app/records.py`). |
 | Secrets | Secret Manager | `anthropic-api-key`, `chat-token-secret` (signs browser tokens) and `beta-password`. |
@@ -99,13 +100,13 @@ Changing it signs every tester out, because tokens are signed with a key derived
 
 **In the console:** https://console.firebase.google.com/project/uofuchatbot/firestore/data shows the
 `questions` and `feedback` collections. Each question record has:
-- the question and the full answer (redacted, with crisis messages never stored)
+- the question and the full answer (redacted; messages the scope gate labels crisis are never stored)
 - `outcome`: answered, declined, crisis, cached, search_only or error
 - `topic`, `gate`, `audience`, `gap`, `sources`
 - `seconds`, `cost_usd`, token counts and `version`
 
-Feedback records point at their question through `question_id`. [DATA_PLAN.md](DATA_PLAN.md) lists every
-field.
+Feedback records point at their question through `question_id`. ARCHITECTURE.md, "Usage records", lists
+every field.
 
 **As a report:**
 

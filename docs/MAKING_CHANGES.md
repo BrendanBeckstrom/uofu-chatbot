@@ -22,6 +22,7 @@ and review what it proposes.
    .venv/bin/python -m tests.test_guard
    .venv/bin/python -m tests.test_analytics
    .venv/bin/python -m tests.test_summary
+   .venv/bin/python -m evals.run selftest   # needs internet for the events calendar
    ```
 4. **If you changed what the bot says or how it searches,** also run the real-answer eval. It costs
    about $0.18 (or $0.35 with `--reps 2`):
@@ -40,7 +41,8 @@ and review what it proposes.
 6. **Get it reviewed.** A pull request can be merged only when CI is green and the code owner listed in
    `.github/CODEOWNERS` has approved it. New commits after an approval need a fresh approval. The rule is the
    "Protect main" ruleset under the repo's Settings → Rules; the repo admin can bypass it from a pull
-   request, for their own changes.
+   request, for their own changes. `CODEOWNERS` names the student who built this. Remove it, or name the new
+   maintainer, when the project moves to university accounts.
 
 ## Recipes
 
@@ -65,7 +67,8 @@ run, so the change doesn't quietly make every answer longer.
 Edit `DECLINE`, `DECLINE_COURSEWORK` or `CRISIS` in `app/scope.py`. The eval looks for the phrase "I'm
 scoped to University of Utah questions" (`DECLINE_MARKERS` in `evals/run.py`), so update that too if you
 reword the opening. **Crisis wording and phone numbers need sign-off from the University Counseling Center;**
-re-check them on counselingcenter.utah.edu before changing them.
+re-check them on counselingcenter.utah.edu before changing them. The same numbers are on the support card in
+the widget's Contact tab (`renderContact()` in `web/widget.js`); change both.
 
 ### Change the welcome message, example questions or Contact tab
 
@@ -201,22 +204,36 @@ live. The bot names it when one of the site's pages is old.
 
 - The age limit is `OLD_AFTER_YEARS` in `app/config.py` (2 years). The prompt reads it from there.
 - Each site's contact is its `office` in `SITES`. Check it on the live site when a department's office
-  changes, and keep general addresses (`info@…`, a front desk) over a person's own email.
+  changes, and keep general addresses (`info@…`, a front desk) over a person's own email. The same numbers
+  appear in other places that need the same change:
+  - `tests/test_chat_loop.py`, which checks Mechanical's number and the ECE email
+  - eval cases in `evals/questions.json` (search for the old number)
+  - for the college office: `SYSTEM_TEMPLATE` in `app/chat.py` and the widget's Contact tab
+- The bot also quotes a number from the department's own page. The beta only picks up a changed page after
+  `app.sync update` and a server deploy.
 - To leave a page out of search entirely, add its URL (no trailing slash) to `NOT_INDEXED`. Prefer the
   age note: a missing page leaves a gap, an old one comes with who to ask.
-- Run the tests, the retrieval eval and `.venv/bin/python -m evals.run answers --only old-info`.
+- Run the tests, the retrieval eval and `.venv/bin/python -m evals.run answers --only old-info` (4 cases,
+  about a cent).
 
 ### Change rate limits, the daily budget or the model
 
 These are settings, not code; put them in `.env` (see `.env.example`):
 
-- `TOKEN_LIMITS="5/60,30/3600,100/86400"`: per browser, as "messages/seconds" rules.
+- `TOKEN_LIMITS="5/60,30/3600,100/86400"`: per browser, as "messages/seconds" rules. `IP_LIMITS` and
+  `GLOBAL_CHAT_LIMITS` work the same way per IP and for everyone combined. The whole list is in
+  ARCHITECTURE.md, "Protections". The combined limit and the budget are sized for the beta
+  ([GOING_LIVE.md](GOING_LIVE.md)).
 - `DAILY_BUDGET_USD=5`: past this, the bot shows search results without AI until midnight.
 - `CLAUDE_MODEL=claude-haiku-5-5`: if you switch, add the model's prices to `PRICES` in `app/pricing.py`
   and run the answer eval.
 - `CHATBOT_EFFORT=low`: higher is slower and more thorough.
 
 Restart the server after editing `.env`.
+
+On the hosted beta, `.env` isn't used. Add the setting to the `--set-env-vars` list in `deploy/deploy.sh` and
+run `./deploy/deploy.sh server`. A value changed by hand in the Cloud Run console is lost on the next deploy,
+because that list replaces all of them.
 
 ### Refresh the content by hand
 
@@ -228,6 +245,26 @@ Restart the server after editing `.env`.
 
 The hosted beta doesn't refresh itself; run `./deploy/deploy.sh server` afterwards to ship the new index.
 
+### Rebuild the index from scratch
+
+On a new computer, or when `data/` is lost or broken. Everything in `data/` is generated from the public sites,
+so nothing is lost for good. It needs internet access, and the requests are spaced 10 seconds apart per site, so
+it takes a while (the site build alone is about 15–25 minutes).
+
+```bash
+.venv/bin/python -m app.sync build       # every page and news post of the 8 sites
+.venv/bin/python -m app.sync documents   # handbooks, plans, flowcharts, the CS handbook, campus pages
+.venv/bin/python -m app.sync status      # check: page and post counts per site, and any errors
+.venv/bin/python -m evals.run retrieval  # check: search finds the expected pages (free)
+```
+
+- **Order matters:** `documents` finds the PDFs by reading the pages that `build` saved.
+- **A site that fails** shows its error in `status`. Rebuild just that one with `build --site <key>`, for
+  example `--site mse`.
+- **Without the network:** if `data/raw/` is still there, `build --offline` rebuilds `docs.json` from the
+  saved responses. Use it after changing how text is extracted.
+- **To ship the new index to the hosted beta,** deploy the server (next recipe).
+
 ### Put a change on the hosted beta
 
 After the pull request is merged, from `main`:
@@ -237,7 +274,28 @@ After the pull request is merged, from `main`:
 ./deploy/deploy.sh pages     # anything in web/
 ```
 
+- **Before deploying a prompt change,** run the gate cases three times (about 3 cents):
+  `.venv/bin/python -m evals.run answers --only gate --reps 3`.
+- **`server` ships the index on your computer** (`data/docs.json`). An older copy than the last deploy's
+  rolls the beta's content back, so refresh it first (above). Both commands refuse to run without that file,
+  so on a new computer rebuild the index first, even to deploy only the pages.
+
 [DEPLOY.md](DEPLOY.md) explains what each step does, how to read the server's logs and how to roll back.
+
+### Look into a reported bad answer
+
+1. **Find the record.** On the beta it's in the Firestore console's `questions` collection (DEPLOY.md,
+   "Reading the logs"); locally, in `data/usage.jsonl`. Note its `sources`, `outcome` and `version`.
+2. **Open the sources** and compare them with the live pages. When the bot relied on a source over 2 years
+   old, the answer should have said so and named the office to ask.
+3. **Decide where the fault is:**
+   - **The page itself is outdated or wrong:** that's for the college to fix. Add it to the site content audit
+     ([SITE_AUDIT.md](SITE_AUDIT.md)).
+   - **The live page is newer than the bot's copy:** the beta's index is stale. Refresh the content and
+     deploy.
+   - **The right page exists but wasn't found:** see "Make search find the right page".
+   - **The bot read the right page and still got it wrong:** add the question to the eval, then adjust
+     `SYSTEM_TEMPLATE`.
 
 ### Change the beta password
 

@@ -1,4 +1,4 @@
-"""Web server: demo and login pages, design concepts, embeddable widget and the chat API.
+"""Web server: demo and login pages, embeddable widget and the chat API.
 
 Run locally:  .venv/bin/uvicorn app.server:app --reload --port 8000
 Hosted, it runs on Cloud Run (docs/DEPLOY.md).
@@ -65,6 +65,9 @@ async def reload_if_rebuilt():
 
 @asynccontextmanager
 async def lifespan(_app):
+    if config.AUTO_SYNC and store.docs and not syncer.built_sites():
+        print("[sync] AUTO_SYNC is on, but data/ has only docs.json (no sync_state.json or raw/), so the content "
+              "will never update. See 'Keeping content current on a server' in docs/ARCHITECTURE.md.", flush=True)
     yield
     await asyncio.to_thread(records.flush)
     if syncer._client:
@@ -335,11 +338,6 @@ async def news(n: int = 4):
 @app.get("/")
 async def home():
     return FileResponse(config.WEB_DIR / "index.html", headers=NO_CACHE)
-
-
-@app.get("/designs")
-async def designs():
-    return FileResponse(config.WEB_DIR / "designs.html", headers=NO_CACHE)
 
 
 @app.get("/login.html")

@@ -341,7 +341,7 @@ textarea::placeholder { color: var(--muted); }
     }
   }
 
-  // A signed per-browser token from the server; rate limits apply per token (see docs/SECURITY.md).
+  // A signed per-browser token from the server; rate limits apply per token (docs/ARCHITECTURE.md).
   const TOKEN_KEY = "price-assistant:token";
   async function getToken(fresh) {
     if (!fresh) {

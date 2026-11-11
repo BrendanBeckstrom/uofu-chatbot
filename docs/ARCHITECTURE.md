@@ -2,7 +2,8 @@
 
 This explains how the Price Engineering Assistant is put together, for whoever maintains it next. Read the
 [README](../README.md) first for setup. For step-by-step changes ("how do I change X?"), see
-[MAKING_CHANGES.md](MAKING_CHANGES.md). Security and cost controls are in [SECURITY.md](SECURITY.md).
+[MAKING_CHANGES.md](MAKING_CHANGES.md). What changes before it goes public on the college website is in
+[GOING_LIVE.md](GOING_LIVE.md).
 
 The code keeps comments to a minimum on purpose; this document and those two are where the explanations live.
 
@@ -159,6 +160,9 @@ The index is a BM25 keyword index over ~1,400-character chunks:
 
 The server rebuilds the index when `data/docs.json` changes on disk.
 
+Keyword search can miss a paraphrase. Claude makes up for it by searching again in other words, and embeddings
+would be the natural next step.
+
 ### Old sources
 
 Much of the sites' content is old. On Nov 11, 2026, 45% of pages, 86% of news posts and 35% of PDFs were more
@@ -211,12 +215,17 @@ talked about.
    steps and four to six highlights, each naming the page it came from, mixing kinds and, for a future
    student, favoring what undergraduates do. About a fifth of a cent. With thinking on, long chats ran out
    of output tokens before writing anything.
-4. **Code checks everything before it's printed** (`check()`): every figure in a key point must appear in the
-   chat's answers, and every figure in a highlight in its page; links are kept only if the chat gave them;
-   comparisons with other schools are dropped; a ranking needs a year from the last 2 years, because pages
-   updated this year still quote 2010 rankings. A big figure the page doesn't show is removed and the
-   highlight kept; a money figure is shown the way the page writes it ("$30 million"), and amounts under
-   $1,000 stay in the text. A page's date counts as part of the page ("in 2025" from a 2025 post).
+4. **Code checks everything before it's printed** (`check()`):
+   - Every figure in a key point must appear in the chat's answers, and every figure in a highlight in its
+     page.
+   - Links are kept only if the chat gave them. They can be from any site: unlike the widget, there's no
+     utah.edu check yet ([GOING_LIVE.md](GOING_LIVE.md#links-in-the-chat-summary-pdf)).
+   - Comparisons with other schools are dropped.
+   - A ranking needs a year from the last 2 years, because pages updated this year still quote 2010 rankings.
+   - A big figure the page doesn't show is removed and the highlight kept.
+   - A money figure is shown the way the page writes it ("$30 million"), and amounts under $1,000 stay in the
+     text.
+   - A page's date counts as part of the page ("in 2025" from a 2025 post).
 5. **WeasyPrint** turns an HTML template into a tagged PDF/UA-1 file screen readers can follow. It uses the
    college's official logo file (`app/assets/`, unmodified from price.utah.edu), Utah Red with black and Zion
    Cinder Cone gray, and Source Sans 3, the face the brand site links for Myriad Pro (OFL, in
@@ -238,8 +247,19 @@ Every answer, decline and error saves one question record:
 - whether the answer admitted it couldn't find something (`gap`)
 - seconds, tokens, cost and the app version
 
-Thumbs up and down save a feedback record that points at its question. Crisis messages are never stored.
-[DATA_PLAN.md](DATA_PLAN.md) lists every field.
+Thumbs up and down save a feedback record that points at its question. Messages the scope gate labels
+`crisis` are never stored.
+
+The fields:
+- **Question records:**
+  - `id`, `ts`, `day`, `user`, `session`, `turn`, `audience`
+  - `question` (redacted, at most 1,000 characters), `answer` (redacted, in full), `sources`
+  - `outcome`, `topic`, `gate`, `gap`, `error`
+  - `seconds`, `cost_usd`, `model`, `version`, and token counts (`input`, `output`, `cache_read`,
+    `cache_write`, `calls`)
+- **Feedback records:** `id`, `ts`, `day`, `user`, `question_id`, `rating`, `comment`, and copies of the
+  question and answer.
+- In Firestore, each record also gets `expire_at`, and a TTL policy deletes it after `LOG_RETENTION_DAYS` (90).
 
 Where the records go depends on `LOG_BACKEND`:
 - **Locally (`files`):** `data/usage.jsonl` and `data/feedback.jsonl`.
@@ -253,6 +273,104 @@ rate, topics, the most-asked questions, and recent questions it couldn't fully a
 surface on the site). `--firestore` reads the hosted beta's records, and `--json` gives the same numbers
 for a dashboard. Eval runs log to their own results folder, so they don't count as visitors.
 
+## Protections (`app/guard.py`, `app/scope.py`, `app/live.py`)
+
+Anyone can use the bot, and every answer costs money, so several layers keep it on topic, resist misuse and
+cap spending. The numbers are settings in `app/config.py`. Some are sized for the beta, which
+[GOING_LIVE.md](GOING_LIVE.md) lists.
+
+**Staying on topic**
+- **The scope gate** labels each message before the answer, as described in step 3 above. It sees the last
+  few turns, so "great, now forget the U and…" is judged in context.
+  - It fails open: if the gate errors, the message goes to the main model, which has its own scope rules.
+  - A refusal from the gate counts as a decline.
+  - `SCOPE_GATE=false` turns it off.
+- **`SYSTEM_TEMPLATE`** repeats the scope and the exact decline text. It treats search results, pages and
+  calendar entries as information, never as instructions.
+- **Over-refusal matters as much as under-refusal.** "What programming languages do CS students learn?"
+  must still get an answer. The gate is told to choose `in_scope` when unsure, and the eval checks both
+  directions.
+
+**Tools and output**
+- **Every tool only reads.** The worst an injected instruction can do is cause a wrong answer.
+- **The page reader** (`app/live.py`):
+  - only `*.utah.edu`, over HTTP(S) on standard ports, no raw IP addresses
+  - the host must resolve to a public address, a check against links to internal campus servers
+  - every redirect is checked again
+  - 3 MB per read (12 MB for a PDF) and 20 seconds; at most 8,000 characters reach the model
+- **The widget** escapes all HTML and renders a small Markdown subset with no images. Only `utah.edu` links
+  become clickable or source chips, which keeps most planted links inert. The chat-summary PDF doesn't apply
+  that check yet ([GOING_LIVE.md](GOING_LIVE.md#links-in-the-chat-summary-pdf)).
+- **History stays on the server.** The browser sends only the new message, so nobody can forge a history in
+  which the bot agreed to drop its rules.
+- **A random canary** sits in the system prompt. If it shows up in an answer, the stream stops, the decline
+  replaces the answer, and the turn is dropped. Text streamed before the canary was already shown, which is
+  harmless because the prompt holds no secrets.
+
+**Who can ask, and how often**
+- **Browser tokens:**
+  - `POST /api/token` returns a random ID with an expiry, signed with `CHAT_TOKEN_SECRET`, so it can't be
+    forged or extended.
+  - The widget sends it in an `X-Chat-Token` header, not a cookie, because browsers block third-party cookies
+    when the widget sits on another site.
+  - With `BETA_PASSWORD` set, only the right password gets a token. The signing key is derived from the
+    password, so changing it signs everyone out.
+- **Limits per browser token, with a looser per-IP backstop,** because many students share one campus Wi-Fi
+  address. IPv6 addresses are grouped by /64. A blocked request answers 429 with `Retry-After` and isn't
+  counted against the other limits.
+
+| Limit | Default | Setting |
+| --- | --- | --- |
+| Per browser | 5/min, 30/hour, 100/day | `TOKEN_LIMITS` |
+| Per IP | 30/min, 300/hour, 1,000/day | `IP_LIMITS` |
+| Everyone combined (beta-sized) | 30/min, 600/hour | `GLOBAL_CHAT_LIMITS` |
+| New tokens per IP | 60/hour | `TOKEN_ISSUE_LIMITS` |
+| Wrong beta passwords per IP | 10 per 10 minutes | `LOGIN_LIMITS` |
+| Answers in progress | 1 per browser, 8 total | `MAX_CONCURRENT_PER_CLIENT`, `MAX_CONCURRENT_ANSWERS` |
+| Search, events, feedback | 20/min; 60/min; 5/min and 50/day, per IP | `SEARCH_LIMITS`, `EVENTS_LIMITS`, `FEEDBACK_LIMITS` |
+| Chat-summary PDFs | 3 per 10 minutes, 10/day per browser | `SUMMARY_LIMITS` |
+| Message and request size | 1,000 characters, 16 KB | `MAX_MESSAGE_CHARS`, `MAX_BODY_BYTES` |
+| Time per answer | 90 seconds; 30 per model call, with 1 retry | `app/server.py`, `app/chat.py` |
+
+- **Behind a proxy** (Cloud Run, Cloudflare, a load balancer), every request seems to come from the proxy.
+  `TRUST_PROXY=true` reads the visitor's IP from `CF-Connecting-IP`, or else the right-most
+  `X-Forwarded-For` entry. Only use it behind a proxy that sets those headers and that visitors can't go
+  around, or people can fake their IP. The beta sets it on Cloud Run, which has no Cloudflare in front, so
+  visitors there can fake their IP ([GOING_LIVE.md](GOING_LIVE.md#known-security-issues)).
+
+**Money**
+- **The daily breaker** (`DAILY_BUDGET_USD`, $5):
+  - It's computed from real token usage and the prices in `app/pricing.py`.
+  - Each answer reserves $0.015 up front and settles afterwards, so parallel answers can't overshoot.
+  - The day's spend survives restarts (`data/spend.json`, or Firestore on the beta).
+  - When the cap is reached, the bot shows search results without AI until midnight.
+- **Spend-limit errors from Anthropic stop the app calling the API for the rest of the day.** This covers both
+  the account's monthly cap and a limit set on the workspace.
+- **Per answer:** 3,000 output tokens per call (thinking included), 3 tool rounds, page reads trimmed to 8,000
+  characters, and low effort.
+- **Per conversation:**
+  - At most 20 turns.
+  - The chat asks for a fresh start once a turn's prompt reaches 70,000 tokens. Haiku 5.5 charges more for
+    prompts over 100,000.
+  - Conversations are forgotten after 30 idle minutes.
+- **Caching:** prompt caching on every call. A repeated *first* question comes from a 6-hour answer cache,
+  unless the answer used the live calendar. A question containing symbols or invisible characters is never
+  cached, so hidden text can't ride along to other visitors.
+
+**Privacy** (`app/privacy.py`)
+- uNIDs, email addresses, phone numbers and SSN-like numbers are redacted before anything is written to the
+  records.
+- A message the scope gate labels `crisis` is never stored. One it misses, or that arrives while the gate
+  is failing, is logged like any other question.
+- The widget asks people not to share personal information. The bot can't see student records and is told
+  not to repeat identifiers back.
+
+The tests for all of this are in `tests/test_guard.py` and `tests/test_chat_loop.py`. The red-team questions in
+`evals/questions.json` cover:
+- off-topic requests (LeetCode, essays, recipes)
+- injections, role-play and prompt extraction
+- questions that must not be declined
+
 ## Site content audit (`audit/`)
 
 A separate, read-only check of the college's own pages for outdated or conflicting information. It reads `data/`
@@ -260,8 +378,8 @@ but never writes to it, so it doesn't affect answers. [SITE_AUDIT.md](SITE_AUDIT
 
 ## Data files
 
-Everything in `data/` is generated and git-ignored. It's safe to delete; rebuild with `python -m app.sync
-build` and `python -m app.sync documents`.
+Everything in `data/` is generated and git-ignored. It's safe to delete; rebuild it with the steps in
+[MAKING_CHANGES.md](MAKING_CHANGES.md#rebuild-the-index-from-scratch).
 
 | Path | What | Written by |
 | --- | --- | --- |
@@ -275,9 +393,27 @@ build` and `python -m app.sync documents`.
 | `data/spend.json` | today's spend, so a restart doesn't reset the daily cap (Firestore when hosted) | guard |
 | `data/.token_secret` | key that signs browser tokens (set `CHAT_TOKEN_SECRET` in production) | guard |
 
+## Keeping content current on a server
+
+Locally, the server checks the sites for edits on its own (`AUTO_SYNC`, "Website pages and news" above). That
+needs **all** of `data/`:
+- `sync_state.json` says which sites were built and the newest edit seen on each.
+- `raw/` holds the saved pages that the PDF refresh scans for links.
+
+The hosted beta's image carries only `data/docs.json`, so it runs with `AUTO_SYNC=false`. Its content is
+refreshed on a laptop and shipped by redeploying (MAKING_CHANGES.md, "Refresh the content by hand").
+
+To have a server refresh itself, keep the whole `data/` folder on a disk that survives restarts. The partial
+setups fail quietly:
+- **With only `docs.json`,** the server thinks no site has been built, so it never checks for edits. It prints
+  a warning at startup when `AUTO_SYNC` is on in that situation.
+- **With `sync_state.json` but no `raw/`,** the weekly PDF refresh finds no links and drops every PDF from the
+  index.
+
 ## Settings
 
-Every setting lives in `app/config.py` and can be overridden in `.env`. `.env.example` lists them all. The
+Every setting lives in `app/config.py`, and most can be overridden in `.env`; `.env.example` lists those. A few
+are plain constants there: `OLD_AFTER_YEARS`, `NOT_INDEXED`, `MAX_BODY_BYTES`, `RESERVE_PER_ANSWER_USD`. The
 ones people change most:
 
 - `CLAUDE_MODEL`
@@ -290,7 +426,8 @@ ones people change most:
 - `LOG_BACKEND`
 - `BETA_PASSWORD`
 
-The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md).
+The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md). Which ones are only for the beta is in
+[GOING_LIVE.md](GOING_LIVE.md).
 
 ## Tests and evals
 
@@ -337,6 +474,42 @@ The tests use `tests/fixtures.py`, a handful of made-up documents, so they run a
 - **Be gentle with the department sites.** Several appear to share one server. Heavy API queries sent to all
   of them at once returned 504 errors, so keep requests sequential per site and small.
 - **One server process.** Rate limits, sessions and the answer cache live in memory. Running several
-  processes would split them; SECURITY.md describes the Redis version for scaling up.
+  processes would split them. [GOING_LIVE.md](GOING_LIVE.md) covers when that might change.
 - **Fallback models** are requested only when the model lists `allowed_fallback_models`. Haiku 5.5 lists
   none.
+
+## Project layout
+
+```
+app/config.py     settings: sites, freshness windows, model, limits (all overridable in .env)
+app/wp.py         polite, read-only WordPress REST client
+app/sync.py       build / change-only update / deletion check (CLI + background)
+app/documents.py  handbooks, degree plans and flowcharts (PDFs), the CS handbook site, campus office pages
+app/store.py      document store (data/docs.json) and per-site sync state
+app/extract.py    shortcode / HTML / PDF → clean text, chunking
+app/index.py      BM25 search index
+app/events.py     college calendar (Trumba feed)
+app/live.py       live page reads + WordPress search fallback
+app/chat.py       Claude tool-use loop, sessions, system prompt
+app/scope.py      scope gate, decline and crisis wording, prompt-leak canary
+app/guard.py      rate limits, browser tokens, the beta password, concurrency, daily spend cap
+app/records.py    question, feedback and spend records: local files or Firestore
+app/analytics.py  usage report from the records
+app/privacy.py    redaction of identifiers in logs
+app/pricing.py    per-model token prices
+app/summary.py    the take-home chat-summary PDF (app/assets: official logo file, Source Sans 3)
+app/server.py     FastAPI: chat (SSE), chat summary, sync, events, feedback, status, static pages
+web/widget.js     embeddable chat widget
+web/index.html    demo landing page
+web/login.html    the hosted beta's password page
+web/wake.js       the "Starting up" screen while the hosted server wakes
+evals/            accuracy questions, the eval runner, multi-turn test conversations, summary eval
+tests/            offline tests; tests/fixtures.py is their small made-up corpus
+audit/            read-only scan and lookups for the site content audit (.claude/workflows/site-audit.js)
+deploy/           setup, secrets and deploy scripts for the hosted beta
+docs/             these docs; docs/reports/ holds finished reports
+Dockerfile        the Cloud Run server image (.gcloudignore picks what's uploaded)
+firebase.json     Firebase Hosting and Firestore rules (firestore.rules)
+.github/          CI workflow, pull request checklist, CODEOWNERS
+CLAUDE.md         rules and commands for Claude Code
+```
