@@ -266,6 +266,7 @@ global_limiter = SlidingWindowLimiter(config.GLOBAL_CHAT_LIMITS, "global")
 search_limiter = SlidingWindowLimiter(config.SEARCH_LIMITS, "search")
 events_limiter = SlidingWindowLimiter(config.EVENTS_LIMITS, "events")
 feedback_limiter = SlidingWindowLimiter(config.FEEDBACK_LIMITS, "feedback")
+summary_limiter = SlidingWindowLimiter(config.SUMMARY_LIMITS, "summary")
 concurrency = ConcurrencyGuard(config.MAX_CONCURRENT_ANSWERS, config.MAX_CONCURRENT_PER_CLIENT)
 login_limiter = SlidingWindowLimiter(config.LOGIN_LIMITS, "login")
 spend = SpendGuard(config.DAILY_BUDGET_USD, config.DATA_DIR / "spend.json",

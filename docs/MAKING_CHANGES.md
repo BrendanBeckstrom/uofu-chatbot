@@ -21,6 +21,7 @@ and review what it proposes.
    .venv/bin/python -m tests.test_sync
    .venv/bin/python -m tests.test_guard
    .venv/bin/python -m tests.test_analytics
+   .venv/bin/python -m tests.test_summary
    ```
 4. **If you changed what the bot says or how it searches,** also run the real-answer eval. It costs
    about $0.18 (or $0.35 with `--reps 2`):
@@ -183,6 +184,17 @@ Add it to `SITES` in `app/config.py` (it must be a WordPress site, and check its
 run `.venv/bin/python -m app.sync build --site newkey`. Mention it in `SYSTEM_TEMPLATE`, where the sites are
 listed. Give it an `office`: the phone and general email from the site's own contact page or footer, read
 live. The bot names it when one of the site's pages is old.
+
+### Change the chat-summary PDF
+
+- The wording the model follows is `SYSTEM` in `app/summary.py`; the layout is `page_html()` and `CSS` there.
+- Which pages can become highlights: `HIGHLIGHT_QUERIES`, `COLLEGE_QUERIES` and the per-department counts.
+  `DEPARTMENTS` holds the words that tie a chat to a department.
+- Keep the checks in `check()`; they are what stops a made-up figure or an old ranking from reaching a
+  U-branded page.
+- Use only official logo files and the brand colors; the research brief explains the logo rules.
+- Run `.venv/bin/python -m tests.test_summary`, then `.venv/bin/python -m evals.summaries` (about 3 cents) and
+  open a few of the saved PDFs.
 
 ### Change what counts as old, or who the bot names for current information
 

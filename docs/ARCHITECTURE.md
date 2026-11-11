@@ -189,6 +189,35 @@ sources rather than hiding them:
 The calendar comes from the college's public Trumba JSON feed (`uu-college-of-engineering`), cached for 15
 minutes.
 
+## Chat summary PDF (`app/summary.py`, `POST /api/summary`)
+
+Once a chat has an answer, the widget shows "Save chat summary (PDF)". The visitor gets a branded take-home
+page: an AI summary of their chat on top, then "About the Price College", highlights picked for what they
+talked about.
+
+1. **The chat comes from the server**, not the browser: the session's own question-and-answer pairs. A
+   transcript sent by the browser could be edited to make a U-branded PDF say anything. Only the browser that
+   held the chat can download it, and only while the chat is open (30 idle minutes, and on the hosted beta, until
+   the server sleeps). Declined and crisis turns are left out.
+2. **Highlight candidates are found in code.** The chat's departments are the ones the visitor asked about (or,
+   if they named none, ones the answers discuss at least three times). For each, a few searches ("research
+   lab", "student team project", "ranked"…) collect up to 4 pages from that department's site, plus 3 from
+   the college site. Only pages under 2 years old that the chat didn't already cite are offered.
+3. **One model call** (Haiku, low effort, JSON schema output) writes the title, overview, key points, next
+   steps and three to five highlights, each naming the page it came from. About a tenth of a cent.
+4. **Code checks everything before it's printed** (`check()`): every figure in a key point must appear in the
+   chat's answers, and every figure in a highlight in its page; links are kept only if the chat gave them;
+   comparisons with other schools are dropped; a ranking needs a year from the last 2 years, because pages
+   updated this year still quote 2010 rankings. A big figure the page doesn't show is removed and the
+   highlight kept.
+5. **WeasyPrint** turns an HTML template into a tagged PDF/UA-1 file screen readers can follow. It uses the
+   college's official logo file (`app/assets/`, unmodified from price.utah.edu), Utah Red with black and Zion
+   Cinder Cone gray, and Source Sans 3, the face the brand site links for Myriad Pro (OFL, in
+   `app/assets/fonts/`). The footer says it was written by AI and isn't an official service or decision.
+
+The PDF isn't stored; a second download of the same chat reuses it. `python -m evals.summaries` runs six
+real two-question chats and grades their summaries (about 3 cents; the PDFs are saved for a look).
+
 ## Usage records (`app/records.py`) and statistics (`app/analytics.py`)
 
 Every answer, decline and error saves one question record:
@@ -265,8 +294,10 @@ The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md).
 | `python -m tests.test_sync` | nothing | build, change-only update and deletion check against a fake WordPress site |
 | `python -m tests.test_guard` | nothing | rate limits, tokens, the beta password, spend cap, request-size limits |
 | `python -m tests.test_analytics` | nothing | the usage report's counts; Firestore records and spend, against an in-memory fake |
+| `python -m tests.test_summary` | Pango (`brew install pango`) | the chat-summary PDF: what the checks keep, highlight picks, the tagged PDF, the endpoint |
 | `python -m evals.run selftest` | internet (calendar) | the eval graders accept good answers and reject empty ones |
 | `python -m evals.run retrieval` | the local index | does the first search find the right page? |
+| `python -m evals.summaries` | API key, about 3 cents | six real chats and their summary PDFs: coverage, highlights on topic, what the checks dropped |
 | `python -m evals.run answers` | API key, about $0.18 per pass | the real bot on every question in `evals/questions.json`, reported by tier (must pass, expected to pass, known gaps; [MAKING_CHANGES.md](MAKING_CHANGES.md#eval-tiers)); writes `summary.json` with 95% ranges, median answer length and model calls per answer, and exits 1 if a must-pass case fails |
 | `python -m evals.run regrade --dir …` | nothing | re-scores a saved run after a case is fixed |
 | `python -m evals.run baseline` | internet, ~12 minutes | price.utah.edu's own search box vs. the assistant's first search |

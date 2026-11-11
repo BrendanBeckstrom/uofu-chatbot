@@ -263,6 +263,7 @@ class Session:
     audience: str | None = None  # "prospective" or "current", from the widget's welcome screen
     user: str | None = None  # anonymous: a hash of the browser token, for "people per day" counts
     transcript: list = field(default_factory=list)  # (role, text) pairs, for the scope gate's context
+    summary_pdf: tuple | None = None  # (transcript length, PDF bytes): a second download costs nothing
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     last_used: float = field(default_factory=time.time)
 
@@ -289,6 +290,11 @@ class SessionStore:
             self.sessions[sid] = sess
         sess.last_used = now
         return sess
+
+    def peek(self, session_id: str) -> Session | None:
+        """An open session, without creating one."""
+        sess = self.sessions.get(session_id or "")
+        return sess if sess and time.time() - sess.last_used <= self.ttl else None
 
     def reset(self, session_id: str):
         self.sessions.pop(session_id, None)

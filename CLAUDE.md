@@ -14,17 +14,19 @@ The password-protected beta (Cloud Run, Firebase Hosting, Firestore logs): [docs
 ```bash
 .venv/bin/uvicorn app.server:app --reload --port 8000   # run locally (single process only)
 .venv/bin/python -m app.sync build | update | reconcile | documents | status
-.venv/bin/python -m tests.test_chat_loop                 # these five are free and offline; run before every PR
+.venv/bin/python -m tests.test_chat_loop                 # these six are free and offline; run before every PR
 .venv/bin/python -m tests.test_documents
 .venv/bin/python -m tests.test_sync
 .venv/bin/python -m tests.test_guard
 .venv/bin/python -m tests.test_analytics
+.venv/bin/python -m tests.test_summary                    # the chat-summary PDF; needs Pango (brew install pango)
 .venv/bin/python -m app.analytics --days 7              # usage report: people, questions, topics, gaps
 .venv/bin/python -m evals.run selftest                   # free; checks the eval graders
 .venv/bin/python -m evals.run retrieval                  # free; needs the local index
 .venv/bin/python -m evals.run answers                    # real API calls, about $0.18 a pass; ask before running
 .venv/bin/python -m evals.run answers --only gate --reps 3   # must-pass cases only, about 3 cents; before a deploy
 .venv/bin/python -m evals.run answers --only recruiting      # the future-student cases, about 3 cents
+.venv/bin/python -m evals.summaries                       # six real chats and their summary PDFs, about 3 cents
 .venv/bin/python -m evals.run regrade --dir evals/results/<run>   # free; re-score saved answers after fixing a case
 .venv/bin/python -m evals.converse say <name> "<message>"  # one real API call; needs `evals.converse serve` running
 ./deploy/deploy.sh server | pages                        # update the hosted beta; ask before running
