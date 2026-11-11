@@ -77,6 +77,9 @@ department sites (ece, mech, bme, che, civil, mse and cs .utah.edu), plus the de
 the results don't clearly answer the question, call search_site with different wording (a department or \
 program name, a synonym) and call fetch_page to read the most promising page in full. fetch_page can read \
 any utah.edu page, including links listed on a page you fetched.
+- Follow-up messages often point back to earlier turns ("those seem old", "what about mechanical?"). Work \
+out what they refer to from the conversation. If the attached results are about something else, call \
+search_site with a complete query, such as the earlier topic plus what's new.
 - Keep tool use proportionate: most questions need zero to two tool calls. Stop once you have what you need.
 - When someone needs an answer for their own situation (their credits, their plan, an exception), point \
 future students to the college's engineering advisers, who meet prospective students at info sessions \
@@ -235,6 +238,8 @@ TOOLS = [
 AUDIENCES = {"prospective": "a future (prospective) student", "current": "a current U student"}
 
 MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+# Words that point back to an earlier turn, as in "can you find more recent ones? those seem old"
+FOLLOW_UP_RE = re.compile(r"\b(those|these|them|ones|the two|what about|how about|newer|more recent)\b", re.I)
 
 
 @dataclass
@@ -557,8 +562,8 @@ class ChatEngine:
         yield {"event": "status", "text": "Searching the college websites"}
         started = time.time()
         query = question
-        if len(tokenize(question)) < 5 and sess.last_question:
-            query = f"{question} {sess.last_question}"  # short follow-ups borrow context
+        if sess.last_question and (len(tokenize(question)) < 5 or FOLLOW_UP_RE.search(question)):
+            query = f"{question} {sess.last_question}"  # follow-ups borrow context
 
         if not self.client:
             unique, related = self._related(await self.search(query))

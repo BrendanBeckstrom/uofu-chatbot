@@ -46,6 +46,9 @@ shared password; [DEPLOY.md](DEPLOY.md) covers that setup.
       The gate is a tiny Haiku call that labels the message `in_scope`, `out_of_scope`, `coursework`,
       `injection` or `crisis`. Every label except `in_scope` gets a fixed, pre-written reply and stops there.
       Crisis messages get support resources and are not written to the log.
+      A follow-up is searched together with the previous question: one with fewer than 5 meaningful words,
+      or one that points back with words like "those", "ones", "what about" or "more recent"
+      (`FOLLOW_UP_RE`). Otherwise "can you find more recent ones?" would search for the newest news posts.
    5. Claude gets the system prompt (`SYSTEM_TEMPLATE`), the conversation so far, and this turn's search
       results. It may call up to 3 rounds of tools:
       - `search_site`: the local index

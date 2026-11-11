@@ -144,6 +144,19 @@ async def main():
     assert engine.client.requests[0]["system"][0]["text"] == sess.system
     print("✓ follow-up turn replays the earlier history unchanged")
 
+    # A longer follow-up that points back ("those", "ones") is searched together with the last question.
+    queries = []
+    real_search = engine.search
+    async def spy_search(query, *args, **kwargs):
+        queries.append(query)
+        return await real_search(query, *args, **kwargs)
+    engine.search = spy_search
+    engine.client = FakeClient([NS(stop_reason="end_turn", content=[text("Here are the newest ones I found.")])])
+    await run(engine, "loop-test-1", "Can you try and find more recent ones? those seem pretty old")
+    engine.search = real_search
+    assert queries and "And tours?" in queries[0], queries
+    print("✓ a follow-up that points back is searched with the earlier question's context")
+
     # A model without fallback targets (Haiku 5.5) gets a plain request, no fallback beta.
     engine._fallbacks = None
     engine.client = FakeClient([NS(stop_reason="end_turn", content=[text("Hi!")])], fallback_models=())
