@@ -191,7 +191,8 @@ minutes.
 
 ## Chat summary PDF (`app/summary.py`, `POST /api/summary`)
 
-Once a chat has an answer, the widget shows "Save chat summary (PDF)". The visitor gets a branded take-home
+Once a chat has an answer, a download icon appears in the widget's header ("Save chat summary (PDF)"), with a
+status line under the header while the PDF is made. The visitor gets a branded take-home
 page: an AI summary of their chat on top, then "About the Price College", highlights picked for what they
 talked about.
 
