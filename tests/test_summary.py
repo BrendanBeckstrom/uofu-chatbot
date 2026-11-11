@@ -47,6 +47,10 @@ def docs():
              modified=RECENT),
         page(5, "/scholarships", "Engineering Scholarships",
              "The college awards up to 290 engineering scholarships each year.", modified=RECENT),
+        page(6, "/2026/team-wins", "Student team wins design contest", "Mechanical students won.", kind="post",
+             site="mech", base=MECH, date=RECENT),
+        page(7, "/2026/seminar", "Seminar: soft robots", "A talk on soft robots.", kind="post", site="mech",
+             base=MECH, date=RECENT),
     ]}
 
 
@@ -78,6 +82,8 @@ def main():
     assert MECH + "/research/old-lab" not in urls, "pages over 2 years old aren't highlights"
     assert MECH + "/capstone" not in urls, "pages the chat already cited aren't repeated"
     assert all(p["site"] in ("mech", "price") for p in pages), "only the chat's departments and the college"
+    assert MECH + "/2026/team-wins" in urls, "the department's newest news posts are candidates"
+    assert MECH + "/2026/seminar" not in urls, "routine notices like seminars aren't"
     print("✓ highlights come from recent pages of the chat's departments that it didn't already cite")
 
     # ---- the checks ------------------------------------------------------------------------------
@@ -100,6 +106,8 @@ def main():
             {"heading": "Made up", "text": "A lab with 99 robots.", "page": robotics, "stat": "", "stat_label": ""},
             {"heading": "Robots", "text": "The robotics lab builds walking robots.", "page": robotics,
              "stat": "5", "stat_label": "robots"},
+            {"heading": "Dated", "text": f"In {RECENT[:4]}, the robotics lab builds walking robots.", "page": robotics,
+             "stat": "", "stat_label": ""},
             {"heading": "Ranked", "text": "The robotics lab is ranked among the best.", "page": robotics,
              "stat": "", "stat_label": ""},
             {"heading": "Compared", "text": "Better than Utah State for robotics.", "page": robotics,
@@ -110,8 +118,13 @@ def main():
     out = S.check(data, turns, pages)
     assert [k["text"][:8] for k in out["key_points"]] == ["Seniors ", "The $64,"], out["key_points"]
     assert out["key_points"][0]["url"] == CAPSTONE and out["key_points"][1]["url"] == "", "only links the chat gave"
-    assert [h["heading"] for h in out["highlights"]] == ["Walking robots", "Scholarships", "Robots"], out["highlights"]
+    assert [h["heading"] for h in out["highlights"]] == ["Walking robots", "Scholarships", "Robots", "Dated"], \
+        "the page's own date counts as part of the page"
     assert out["highlights"][2]["stat"] == "", "a figure the page doesn't show is dropped, the highlight kept"
+    page_text = "a $30 million grant; up to $100 per semester for clubs; 290 scholarships"
+    assert S.big_number("30", "million NSF grant", page_text) == ("$30 million", "NSF grant")
+    assert S.big_number("100", "dollars per semester", page_text) == ("", ""), "small amounts stay in the text"
+    assert S.big_number("290", "scholarships", page_text) == ("290", "scholarships")
     assert S.dated_ranking(f"Ranked 38th by U.S. News in {date.today().year}")
     assert not S.dated_ranking("No. 82 in the world (2010)")
     print("✓ checks drop made-up figures, outside links, undated rankings and comparisons with other schools")

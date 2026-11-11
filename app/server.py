@@ -244,7 +244,8 @@ async def chat_summary(body: SummaryIn, request: Request):
     started, usage = time.time(), None
     try:
         async with asyncio.timeout(60):
-            result, usage = await summary.build(engine.client, engine.index, list(sess.transcript), dict(sess.titles))
+            result, usage = await summary.build(engine.client, engine.index, list(sess.transcript),
+                                                 dict(sess.titles), sess.audience)
     except summary.NothingToSummarize:
         result = None
     except (anthropic.APIError, TimeoutError) as e:

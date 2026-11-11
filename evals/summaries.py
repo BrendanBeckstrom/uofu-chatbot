@@ -7,7 +7,7 @@ Each case runs its questions through the real bot, then makes the summary the wa
   made        a summary came back
   points      at least two key points survived the checks
   covers      the title, overview and key points mention every topic group in "covers"
-  highlights  at least two "About the Price College" highlights survived the checks
+  highlights  at least four "About the Price College" highlights survived the checks
   on_topic    every highlight comes from one of the case's departments or the college site
   keeps_note  an "out of date" note in the chat is kept in the key points (cases with "keeps_note")
   forbidden   none of "must_not_include" appears anywhere in the PDF's text
@@ -44,7 +44,7 @@ def grade(case: dict, out: dict | None) -> dict:
         "made": True,
         "points": len(out["key_points"]) >= 2,
         "covers": all(any(contains(alt, text) for alt in group) for group in case.get("covers", [])),
-        "highlights": len(out["highlights"]) >= 2,
+        "highlights": len(out["highlights"]) >= 4,
         "on_topic": all(h["page"]["site"] in allowed for h in out["highlights"]),
         "forbidden": not any(contains(bad, everything) for bad in case.get("must_not_include", [])),
     }
@@ -74,7 +74,7 @@ async def run(cases: list[dict]):
         turns = S.chat_turns(sess.transcript)
         cited = {u for _, a in turns for _, u in S.MD_LINK_RE.findall(a)}
         pages = S.college_pages(engine.index, S.departments(turns), cited)
-        data, usage = await S.write(engine.client, turns, pages)
+        data, usage = await S.write(engine.client, turns, pages, c.get("audience"))
         dollars = cost_usd(usage, config.MODEL)
         summary_cost += dollars
         out = S.check(data, turns, pages)
