@@ -200,16 +200,22 @@ talked about.
    held the chat can download it, and only while the chat is open (30 idle minutes, and on the hosted beta, until
    the server sleeps). Declined and crisis turns are left out.
 2. **Highlight candidates are found in code.** The chat's departments are the ones the visitor asked about (or,
-   if they named none, ones the answers discuss at least three times). For each, a few searches ("research
-   lab", "student team project", "ranked"…) collect up to 4 pages from that department's site, plus 3 from
-   the college site. Only pages under 2 years old that the chat didn't already cite are offered.
-3. **One model call** (Haiku, low effort, JSON schema output) writes the title, overview, key points, next
-   steps and three to five highlights, each naming the page it came from. About a tenth of a cent.
+   if they named none, ones the answers discuss at least three times). For each, one search per kind of
+   highlight (`KINDS`: research and labs, student teams and competitions, hands-on projects, opportunities,
+   industry ties, awards, student community) keeps up to 2 pages from that department's site, plus its 4
+   newest news posts; with two or three departments, each gets half that. The college site adds one page per
+   kind in `COLLEGE_KINDS`. Only pages under 2 years old that the chat didn't already cite are offered, and
+   routine notices (seminars, staff news, giving pages) are skipped. A one-department chat offers about 20.
+3. **One model call** (Haiku, thinking off, JSON schema output) writes the title, overview, key points, next
+   steps and four to six highlights, each naming the page it came from, mixing kinds and, for a future
+   student, favoring what undergraduates do. About a fifth of a cent. With thinking on, long chats ran out
+   of output tokens before writing anything.
 4. **Code checks everything before it's printed** (`check()`): every figure in a key point must appear in the
    chat's answers, and every figure in a highlight in its page; links are kept only if the chat gave them;
    comparisons with other schools are dropped; a ranking needs a year from the last 2 years, because pages
    updated this year still quote 2010 rankings. A big figure the page doesn't show is removed and the
-   highlight kept.
+   highlight kept; a money figure is shown the way the page writes it ("$30 million"), and amounts under
+   $1,000 stay in the text. A page's date counts as part of the page ("in 2025" from a 2025 post).
 5. **WeasyPrint** turns an HTML template into a tagged PDF/UA-1 file screen readers can follow. It uses the
    college's official logo file (`app/assets/`, unmodified from price.utah.edu), Utah Red with black and Zion
    Cinder Cone gray, and Source Sans 3, the face the brand site links for Myriad Pro (OFL, in

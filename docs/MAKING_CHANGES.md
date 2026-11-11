@@ -188,8 +188,9 @@ live. The bot names it when one of the site's pages is old.
 ### Change the chat-summary PDF
 
 - The wording the model follows is `SYSTEM` in `app/summary.py`; the layout is `page_html()` and `CSS` there.
-- Which pages can become highlights: `HIGHLIGHT_QUERIES`, `COLLEGE_QUERIES` and the per-department counts.
-  `DEPARTMENTS` holds the words that tie a chat to a department.
+- Which pages can become highlights: `KINDS` and `COLLEGE_KINDS` (one search each), `SEARCH_WORDS`, the
+  counts in `college_pages()`, and `ROUTINE_RE` for notices to skip. `DEPARTMENTS` holds the words that tie a
+  chat to a department.
 - Keep the checks in `check()`; they are what stops a made-up figure or an old ranking from reaching a
   U-branded page.
 - Use only official logo files and the brand colors; the research brief explains the logo rules.
