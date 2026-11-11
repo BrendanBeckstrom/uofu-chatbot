@@ -67,6 +67,7 @@ Knobs: `SCOPE_GATE=false` turns the gate off. Anthropic recommends `high` effort
 | Everyone combined | 30/min, 600/hour | `GLOBAL_CHAT_LIMITS` |
 | Answers in progress | 1 per browser, 8 total | `MAX_CONCURRENT_*` |
 | Search / events / feedback | 20/min, 60/min, 5/min + 50/day per IP | `SEARCH_LIMITS` etc. |
+| Chat-summary PDFs | 3 per 10 min, 10/day per browser (a repeat download of the same chat is free) | `SUMMARY_LIMITS` |
 | Message length / request body | 1,000 characters / 16 KB | `MAX_MESSAGE_CHARS` |
 | Time per answer | 90 s overall; 30 s per API call with 1 retry | `server.py`, `chat.py` |
 

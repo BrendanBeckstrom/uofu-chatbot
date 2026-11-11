@@ -107,6 +107,8 @@ This is what dashboards read, so a chart never has to scan thousands of question
 - browser tokens, full browser strings, cookies
 - the system prompt, tool outputs and page text the bot read
 - the text of crisis messages
+- chat-summary PDFs: made on request from the open chat, sent to the visitor and kept only in that chat's
+  memory until it ends (only their cost is added to the day's spend)
 
 ## Retention (proposed; needs Privacy Office sign-off)
 

@@ -1,0 +1,119 @@
+[
+  {
+    "id": "mech-salary",
+    "audience": "prospective",
+    "turns": [
+      "What's mechanical engineering like at the U?",
+      "What's the starting salary for mechanical engineering graduates?"
+    ],
+    "departments": [
+      "mech"
+    ],
+    "covers": [
+      [
+        "mechanical"
+      ]
+    ],
+    "keeps_note": [
+      "out of date",
+      "outdated",
+      "too old",
+      "older",
+      "2023",
+      "years old"
+    ]
+  },
+  {
+    "id": "medical-devices",
+    "audience": "prospective",
+    "turns": [
+      "I want to build medical devices. Which engineering major fits?",
+      "What kind of research do biomedical engineering students get to do?"
+    ],
+    "departments": [
+      "bme",
+      "ece",
+      "mech"
+    ],
+    "covers": [
+      [
+        "biomedical"
+      ]
+    ],
+    "note": "The bot suggests biomedical, electrical and computer, and mechanical engineering for medical devices, so highlights from any of the three are on topic."
+  },
+  {
+    "id": "two-majors",
+    "audience": "prospective",
+    "turns": [
+      "Tell me about chemical engineering at the U.",
+      "How does materials science and engineering compare?"
+    ],
+    "departments": [
+      "che",
+      "mse"
+    ],
+    "covers": [
+      [
+        "chemical"
+      ],
+      [
+        "materials"
+      ]
+    ]
+  },
+  {
+    "id": "cs-current",
+    "audience": "current",
+    "turns": [
+      "How do I declare the computer science major?",
+      "Where can I get tutoring for CS 2420?"
+    ],
+    "departments": [
+      "cs"
+    ],
+    "covers": [
+      [
+        "computer science",
+        "CS"
+      ]
+    ]
+  },
+  {
+    "id": "parent-cost",
+    "turns": [
+      "My daughter is looking at engineering at the U. How much is tuition?",
+      "What engineering scholarships can she apply for?"
+    ],
+    "departments": [],
+    "covers": [
+      [
+        "scholarship"
+      ],
+      [
+        "tuition",
+        "cost"
+      ]
+    ]
+  },
+  {
+    "id": "declined-turn",
+    "audience": "prospective",
+    "turns": [
+      "What do civil engineers at the U work on?",
+      "Write me a poem about cats."
+    ],
+    "departments": [
+      "civil"
+    ],
+    "covers": [
+      [
+        "civil"
+      ]
+    ],
+    "must_not_include": [
+      "poem",
+      "cats"
+    ]
+  }
+]
