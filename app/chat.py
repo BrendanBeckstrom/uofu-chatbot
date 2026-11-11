@@ -14,7 +14,7 @@ import anthropic
 
 from . import config, guard, records, scope
 from .events import format_events, search_events, today
-from .index import SearchIndex, tokenize
+from .index import SearchIndex, as_of, is_old, tokenize, years_old
 from .extract import split_pages
 from .live import MAX_TEXT, FetchError, allowed_url, fetch_page, wp_search
 from .privacy import redact
@@ -90,15 +90,22 @@ academic advisors, naming the department's advising contact or page when you fin
 college office at contact@coe.utah.edu or 801-581-6911 (72 Central Campus Dr., Room 1650 WEB, Salt \
 Lake City), or a department advising office you found.
 
-## Time-sensitive questions
+## Dates and old information
 - For events, seminars, info sessions, academic calendar deadlines, or anything about today, this week or \
 an upcoming date, call get_events. It reads the college calendar live.
-- Every search result shows when its page was last updated or its post was published. For deadlines, \
-dates and schedules, check that date. If the source is old or lists dates that have already passed, read \
-the live page with fetch_page. If it's still out of date, say what it shows and when, say the dates may \
-have changed, and point to the office that can confirm.
-- News posts describe a moment in time. Give the publication date when you use one for something that \
-can change, such as a person's role.
+- Every search result and page you read shows when it was published or last updated. Anything more than \
+{old_years} years old also shows its age, like "5 years old", and may be out of date. So may a page of any \
+age that lists dates that have already passed.
+- When your answer relies on an out-of-date source for how things are now (a program, requirement, cost, \
+salary, statistic, ranking, someone's role, a contact or a schedule), look for something newer first: use a \
+newer result that covers it, or else call search_site once more with different words or read the live page \
+with fetch_page.
+- If nothing newer turns up, still give what you found with its date. Then say in one short sentence that \
+it's over {old_years} years old and may be out of date (for salaries, costs, statistics and rankings, that \
+it's too old to rely on), and name who has current information with their email and phone: the office listed \
+with the results for that page.
+- Leave that note out when your sources are recent, and when the question is about a past event. A news \
+story is a fine record of what happened then; give its date.
 - When pages disagree (one says applications are closed, another gives the next opening date), go with \
 the more recently updated page and link it.
 - Handbooks, degree plans and other PDFs come in editions, and search can list an older edition first. \
@@ -277,7 +284,8 @@ class SessionStore:
             sid = session_id if session_id and re.fullmatch(r"[\w-]{8,64}", session_id) else uuid.uuid4().hex
             sess = Session(id=sid, system=SYSTEM_TEMPLATE.format(
                 today=date.today().strftime("%A, %B %-d, %Y"), decline=scope.DECLINE,
-                decline_coursework=scope.DECLINE_COURSEWORK, crisis=scope.CRISIS, canary=scope.CANARY))
+                decline_coursework=scope.DECLINE_COURSEWORK, crisis=scope.CRISIS, canary=scope.CANARY,
+                old_years=config.OLD_AFTER_YEARS))
             self.sessions[sid] = sess
         sess.last_used = now
         return sess
@@ -336,6 +344,46 @@ def pdf_view(title: str, url: str, pages: dict[int, str], spec=None, find=None) 
     return f"{title}\nURL: {url}\nPDF, {total} pages. Showing {span}.{more}\n\n" + "\n\n".join(out)
 
 
+def office_for(site_or_url: str) -> str:
+    """Who has current information about a page: its department's office, or the college office."""
+    if site_or_url in config.SITES:
+        return config.SITES[site_or_url]["office"]
+    host = (urlparse(site_or_url).hostname or "").removeprefix("www.")
+    for site in config.SITES.values():
+        if (urlparse(site["base"]).hostname or "").removeprefix("www.") == host:
+            return site["office"]
+    return config.CAMPUS_OFFICE
+
+
+def dated(label: str, day: str) -> str:
+    """', published 2017-09-19, 9 years old'. The age shows only once a source is old."""
+    if not day:
+        return ""
+    return f", {label} {day}" + (f", {years_old(day)} years old" if is_old(day) else "")
+
+
+def contacts_note(sources: list[tuple[str, str, str]]) -> str:
+    """Who to ask about the old sources among (name, site or URL, date) triples."""
+    offices: dict[str, list[str]] = {}
+    for name, where, day in sources:
+        if is_old(day):
+            offices.setdefault(office_for(where), []).append(name)
+    if not offices:
+        return ""
+    lines = [f"- {', '.join(names)}: {office}" for office, names in offices.items()]
+    return "\n\nWho has current information about the older sources:\n" + "\n".join(lines)
+
+
+def with_age(text: str, url: str, label: str, day: str) -> str:
+    """A page read with its date (and, once it's old, who to contact) added under its URL line."""
+    if not day:
+        return text
+    head, sep, rest = text.partition(f"URL: {url}\n")
+    line = dated(label, day).removeprefix(", ")
+    line = line[0].upper() + line[1:] + "." + contacts_note([("this page", url, day)])
+    return f"{head}{sep}{line}\n{rest}" if sep else f"{line}\n\n{text}"
+
+
 def format_hits(hits: list[dict]) -> str:
     if not hits:
         return "No matching pages."
@@ -343,16 +391,18 @@ def format_hits(hits: list[dict]) -> str:
     for i, h in enumerate(hits, 1):
         host = urlparse(h["url"]).hostname or ""
         if h.get("type") == "post":
-            kind = f"news post on {host}" + (f", published {h['date']}" if h.get("date") else "")
+            kind = f"news post on {host}" + dated("published", h.get("date", ""))
         elif h.get("type") == "pdf":
-            kind = f"PDF on {host}" + (f", file dated {h['updated']}" if h.get("updated") else "")
+            kind = f"PDF on {host}" + dated("file dated", h.get("updated", ""))
         elif h.get("type") == "handbook":
             kind = f"handbook page on {host}"
         else:
-            kind = f"page on {host}" + (f", last updated {h['updated']}" if h.get("updated") else "")
+            kind = f"page on {host}" + dated("last updated", h.get("updated", ""))
         body = h.get("text") or "(no excerpt; use fetch_page to read it)"
         out.append(f"[{i}] {h['title']} ({kind})\nURL: {h['url']}\n{body}")
-    return "\n\n".join(out)
+    ages = [(f"[{i}]", h.get("site") or h["url"], (h.get("date") if h.get("type") == "post" else h.get("updated")) or "")
+            for i, h in enumerate(hits, 1) if h.get("type") != "handbook"]
+    return "\n\n".join(out) + contacts_note(ages)
 
 
 class PromptLeak(Exception):
@@ -472,7 +522,8 @@ class ChatEngine:
             doc = self.index.lookup(url) if self.index else None
             if doc and doc["type"] == "pdf":
                 sess.titles.setdefault(doc["url"], doc["title"])
-                return pdf_view(doc["title"], doc["url"], split_pages(doc["text"]), args.get("pages"), args.get("find")), False
+                view = pdf_view(doc["title"], doc["url"], split_pages(doc["text"]), args.get("pages"), args.get("find"))
+                return with_age(view, doc["url"], "file dated", as_of(doc)), False
             try:
                 page = await fetch_page(url)
             except FetchError as e:
@@ -488,7 +539,13 @@ class ChatEngine:
             if page.get("pages") is not None:
                 return pdf_view(page["title"], page["url"], page["pages"], args.get("pages"), args.get("find")), False
             links = "\n".join(f"- {l['text']}: {l['url']}" for l in page["links"])
-            return f"{page['title']}\nURL: {page['url']}\n\n{page['text']}\n\nLinks on this page:\n{links}", False
+            text = f"{page['title']}\nURL: {page['url']}\n\n{page['text']}\n\nLinks on this page:\n{links}"
+            known = (self.index.lookup(page["url"]) if self.index else None) or doc
+            if known and known["type"] in ("page", "post"):
+                label, day = ("published" if known["type"] == "post" else "last updated"), as_of(known)
+            else:
+                label, day = ("published", page["published"]) if page.get("published") else ("last updated", page.get("updated", ""))
+            return with_age(text, page["url"], label, day), False
         if name == "get_events":
             args = args if isinstance(args, dict) else {}
             query = args.get("query") or ""
