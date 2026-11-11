@@ -77,6 +77,9 @@ department sites (ece, mech, bme, che, civil, mse and cs .utah.edu), plus the de
 the results don't clearly answer the question, call search_site with different wording (a department or \
 program name, a synonym) and call fetch_page to read the most promising page in full. fetch_page can read \
 any utah.edu page, including links listed on a page you fetched.
+- Follow-up messages often point back to earlier turns ("those seem old", "what about mechanical?"). Work \
+out what they refer to from the conversation. If the attached results are about something else, call \
+search_site with a complete query, such as the earlier topic plus what's new.
 - Keep tool use proportionate: most questions need zero to two tool calls. Stop once you have what you need.
 - When someone needs an answer for their own situation (their credits, their plan, an exception), point \
 future students to the college's engineering advisers, who meet prospective students at info sessions \
@@ -122,6 +125,30 @@ starting math level, transfer or AP credit, or a lighter course load.
 - You can't see their transcript or credits, so don't build a complete personal plan or promise a \
 graduation date. Close by suggesting they confirm with an advisor: their department's academic advisor \
 for current students, or the college's engineering advisers for future students.
+
+## Future students and families
+Future students and their parents are usually deciding whether the U is right for them. When someone is \
+(they said they're a future student, or their messages show they or their child are choosing a college), \
+answer the question behind their question:
+- Work out what they're weighing. "What's chemical engineering like?" usually means "would I enjoy it, and \
+where does it lead?" "How much does it cost?" usually means "can we afford it?"
+- Answer that with the most relevant specifics from the pages you read: what students build and do, \
+research and co-op options, scholarships and how to be considered, where graduates work. Pick the one or \
+two that matter most to them, say in a few words what each means for them, and keep to the usual length. \
+Describe what the U offers, not outcomes it can't promise, such as a job or a salary.
+- When a next step fits what they asked, name one: an info session, a visit, an event where they can see \
+students' work, or a question for a student ambassador.
+- Everything you add must help answer their question. Leave out anything that doesn't.
+- If they ask which major to choose and haven't said what they enjoy, ask one short question about the \
+problems they'd like to work on (for example medical devices, robots and vehicles, computers and AI, energy \
+and the environment, buildings and cities, new materials). Once you know, suggest two or three matching \
+majors with one U example each.
+- Be honest. If the U doesn't offer something, say so. Describe the U on its own terms without comparing it \
+to other schools or commenting on them, and call something the best or top-ranked only when a page you read \
+says so and names who ranked it and when. Leave the decision to them, and when they're deciding, suggest \
+talking it over with family, a counselor or an adviser.
+- Questions about a task, such as a form, a deadline or a building, just get the answer.
+Help current students the same way, without the recruiting angle.
 
 ## Style
 - You're in a small chat window. Lead with the direct answer, then the key details: usually two to \
@@ -211,6 +238,8 @@ TOOLS = [
 AUDIENCES = {"prospective": "a future (prospective) student", "current": "a current U student"}
 
 MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+# Words that point back to an earlier turn, as in "can you find more recent ones? those seem old"
+FOLLOW_UP_RE = re.compile(r"\b(those|these|them|ones|the two|what about|how about|newer|more recent)\b", re.I)
 
 
 @dataclass
@@ -533,8 +562,8 @@ class ChatEngine:
         yield {"event": "status", "text": "Searching the college websites"}
         started = time.time()
         query = question
-        if len(tokenize(question)) < 5 and sess.last_question:
-            query = f"{question} {sess.last_question}"  # short follow-ups borrow context
+        if sess.last_question and (len(tokenize(question)) < 5 or FOLLOW_UP_RE.search(question)):
+            query = f"{question} {sess.last_question}"  # follow-ups borrow context
 
         if not self.client:
             unique, related = self._related(await self.search(query))

@@ -54,7 +54,7 @@ class SearchIndex:
                             # ".../energy-systems", each just "Affiliated Faculty: TBA") can't crowd out the overview
 
     def __init__(self, docs: dict[str, dict]):
-        self.docs = docs
+        self.docs = dict(docs)  # a background sync edits the store's dict while this index is still in use
         self.built_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
         self.excluded: set[str] = set()  # URLs found to be gone since the last rebuild
         self.chunks: list[tuple[str, str]] = []  # (doc key, text)

@@ -46,6 +46,9 @@ shared password; [DEPLOY.md](DEPLOY.md) covers that setup.
       The gate is a tiny Haiku call that labels the message `in_scope`, `out_of_scope`, `coursework`,
       `injection` or `crisis`. Every label except `in_scope` gets a fixed, pre-written reply and stops there.
       Crisis messages get support resources and are not written to the log.
+      A follow-up is searched together with the previous question: one with fewer than 5 meaningful words,
+      or one that points back with words like "those", "ones", "what about" or "more recent"
+      (`FOLLOW_UP_RE`). Otherwise "can you find more recent ones?" would search for the newest news posts.
    5. Claude gets the system prompt (`SYSTEM_TEMPLATE`), the conversation so far, and this turn's search
       results. It may call up to 3 rounds of tools:
       - `search_site`: the local index
@@ -240,7 +243,7 @@ The hosted beta's values are listed in [DEPLOY.md](DEPLOY.md).
 | `python -m tests.test_analytics` | nothing | the usage report's counts; Firestore records and spend, against an in-memory fake |
 | `python -m evals.run selftest` | internet (calendar) | the eval graders accept good answers and reject empty ones |
 | `python -m evals.run retrieval` | the local index | does the first search find the right page? |
-| `python -m evals.run answers` | API key, about $0.12 per pass | the real bot on every question in `evals/questions.json`, reported by tier (must pass, expected to pass, known gaps; [MAKING_CHANGES.md](MAKING_CHANGES.md#eval-tiers)); writes `summary.json` with 95% ranges and exits 1 if a must-pass case fails |
+| `python -m evals.run answers` | API key, about $0.18 per pass | the real bot on every question in `evals/questions.json`, reported by tier (must pass, expected to pass, known gaps; [MAKING_CHANGES.md](MAKING_CHANGES.md#eval-tiers)); writes `summary.json` with 95% ranges, median answer length and model calls per answer, and exits 1 if a must-pass case fails |
 | `python -m evals.run regrade --dir …` | nothing | re-scores a saved run after a case is fixed |
 | `python -m evals.run baseline` | internet, ~12 minutes | price.utah.edu's own search box vs. the assistant's first search |
 | `python -m evals.converse` | API key, about $0.001 a message | multi-turn test conversations against a separate eval server, for people or agents |
@@ -253,6 +256,14 @@ The tests use `tests/fixtures.py`, a handful of made-up documents, so they run a
   random canary. Changing it mid-conversation would break prompt caching and Claude's saved reasoning.
 - **History only grows.** A turn that fails, is refused or leaks is removed whole, so the history never holds
   a tool call without its result.
+- **Future students get answers aimed at what they're deciding.** The "Future students and families" section
+  of `SYSTEM_TEMPLATE` has the bot work out what a prospective student or parent is weighing (fit, cost,
+  where it leads) and answer that with specifics from the pages it read, plus at most one fitting next step.
+  It applies when the visitor chose "Future student" or their messages show they're choosing a college. It
+  describes behavior only, with no page names or figures, for the same reason the campus pages aren't named.
+  The research behind it, and what it deliberately avoids (comparisons with other schools, unsourced
+  salaries, pressure), is in [the behavior report](reports/recruiting-behavior-2026-11-06.pdf) and
+  [the research brief](reports/recruiting-research-2026-11-05.md). The `recruiting` eval category tests it.
 - **Empty replies.** With tools switched off on the last round, Haiku 5.5 sometimes ends without writing
   anything. The loop sends a "write your answer now" nudge (`FINAL_NUDGE`) and retries once. If it's still
   empty, the visitor gets search results instead of a blank bubble.
